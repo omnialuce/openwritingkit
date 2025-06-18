@@ -2,7 +2,7 @@
 // src/app/page.tsx
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react"; // Added useCallback
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle } from "lucide-react";
@@ -15,12 +15,9 @@ export default function DashboardPage() {
   const [writingStreak, setWritingStreak] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Streak logic will also need to be story-specific if we want per-story streaks
-  // For now, this updates a global streak, but ideally, keys should be dynamic
-  const updateStreakDisplay = () => {
-    if (typeof window !== 'undefined' && activeStoryId) { // Only update streak if a story is active
+  const updateStreakDisplay = useCallback(() => {
+    if (typeof window !== 'undefined' && activeStoryId) {
       const today = new Date().toISOString().split('T')[0];
-      // Story-specific keys for streak
       const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`;
       const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`;
       const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
@@ -59,13 +56,14 @@ export default function DashboardPage() {
           setWritingStreak(0);
         }
       }
-    } else { // No active story, reset streak display
+    } else {
         setWritingStreak(0);
     }
-  };
+  }, [activeStoryId]);
+
 
   useEffect(() => {
-    setIsMounted(true); // Ensure client-side execution
+    setIsMounted(true);
     updateStreakDisplay(); 
 
     const handleStorageChange = (event: StorageEvent) => {
@@ -87,24 +85,17 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [activeStoryId]); // Rerun when activeStoryId changes
-
-  useEffect(() => {
-    // This effect is purely to update streak when activeStoryId changes
-    // as the keys for localStorage depend on it.
-    updateStreakDisplay();
-  }, [activeStoryId]);
+  }, [activeStoryId, updateStreakDisplay]);
 
 
   const quickActions = [
     { title: "New Document", description: "Start writing in the editor.", href: "/editor", icon: BookText, cta: "Open Editor" },
     { title: "My Stories", description: "Manage your stories.", href: "/stories", icon: BookOpenCheck, cta: "View Stories"},
     { title: "AI Tools", description: "Explore creative writing prompts and analysis.", href: "/ai-tools", icon: Cpu, cta: "Use AI Tools" },
-    // { title: "My Documents", description: "Manage your saved work.", href: "/documents", icon: FolderOpen, cta: "View Documents" },
     { title: "Writing Analytics", description: "Track your progress and insights.", href: "/analytics", icon: BarChart3, cta: "See Analytics" },
   ];
   
-  if (!isMounted) return null; // Or a loading skeleton
+  if (!isMounted) return null;
 
   return (
     <div className="space-y-8">
@@ -176,7 +167,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardFooter>
                 <Link href={action.href} passHref className="w-full">
-                  <Button variant="outline" className="w-full rounded-none" disabled={!activeStoryId && !['/stories', '/settings'].includes(action.href) && action.href !== '/'}>
+                  <Button variant="outline" className="w-full rounded-none" disabled={!activeStoryId && !['/stories', '/settings', '/ai-tools'].includes(action.href) }>
                     {action.cta} <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -191,7 +182,7 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-6 w-6 text-primary" />
-              <CardTitle>Daily Writing Streak {activeStoryId ? `(for ${activeStoryName})` : ''}</CardTitle>
+              <CardTitle>Daily Writing Streak {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
             </div>
             <CardDescription>Keep your momentum going! Streak is per story.</CardDescription>
           </CardHeader>
@@ -207,7 +198,7 @@ export default function DashboardPage() {
           <CardHeader>
              <div className="flex items-center gap-2">
               <TrendingUp className="h-6 w-6 text-primary" />
-              <CardTitle>Word Count Goal {activeStoryId ? `(for ${activeStoryName})` : ''}</CardTitle>
+              <CardTitle>Word Count Goal {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
             </div>
             <CardDescription>Set and track your daily/weekly targets. (View in Analytics)</CardDescription>
           </CardHeader>
