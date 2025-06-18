@@ -10,20 +10,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { BookOpenCheck, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { BookOpenCheck, PlusCircle, Edit, Trash2, CheckCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface Story {
-  id: string;
-  title: string;
-  description: string;
-  lastModified: string;
-}
-
-const STORIES_STORAGE_KEY = 'openwritingkit-stories';
+import { useStoryContext, type Story } from '@/contexts/StoryContext';
+import { cn } from '@/lib/utils';
 
 export default function StoriesPage() {
-  const [stories, setStories] = useState<Story[]>([]);
+  const { stories, activeStoryId, setActiveStory, addStory: contextAddStory, updateStory: contextUpdateStory, deleteStory: contextDeleteStory, refreshStories } = useStoryContext();
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStory, setEditingStory] = useState<Story | null>(null);
   
@@ -31,20 +25,9 @@ export default function StoriesPage() {
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedStories = localStorage.getItem(STORIES_STORAGE_KEY);
-      if (storedStories) {
-        setStories(JSON.parse(storedStories));
-      }
-    }
-  }, []);
+    refreshStories(); // Ensure stories are up-to-date on mount
+  }, [refreshStories]);
 
-  const saveStories = (updatedStories: Story[]) => {
-    setStories(updatedStories);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORIES_STORAGE_KEY, JSON.stringify(updatedStories));
-    }
-  };
 
   const resetForm = () => {
     setTitle('');
@@ -76,21 +59,21 @@ export default function StoriesPage() {
     };
 
     if (editingStory) {
-      const updatedStories = stories.map(s =>
-        s.id === editingStory.id ? { ...s, ...storyData } : s
-      );
-      saveStories(updatedStories);
+      contextUpdateStory({ ...editingStory, ...storyData });
     } else {
       const newStoryWithId = { ...storyData, id: Date.now().toString() };
-      saveStories([...stories, newStoryWithId]);
+      contextAddStory(newStoryWithId);
     }
     setIsDialogOpen(false);
     resetForm();
   };
 
   const handleDeleteStory = (id: string) => {
-    const updatedStories = stories.filter(s => s.id !== id);
-    saveStories(updatedStories);
+    contextDeleteStory(id);
+  };
+
+  const handleSelectStory = (storyId: string) => {
+    setActiveStory(storyId);
   };
 
   return (
@@ -100,7 +83,7 @@ export default function StoriesPage() {
           <h1 className="text-3xl font-bold mb-2 flex items-center">
             <BookOpenCheck className="mr-3 h-8 w-8 text-primary" /> Your Stories
           </h1>
-          <p className="text-muted-foreground">Manage your different writing projects and narratives.</p>
+          <p className="text-muted-foreground">Manage your different writing projects and narratives. Select a story to make it active.</p>
         </div>
         <Button onClick={handleOpenCreateDialog}>
           <PlusCircle className="mr-2 h-5 w-5" /> Create New Story
@@ -117,7 +100,13 @@ export default function StoriesPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {stories.map(story => (
-            <Card key={story.id} className="flex flex-col">
+            <Card 
+              key={story.id} 
+              className={cn(
+                "flex flex-col transition-all",
+                activeStoryId === story.id && "border-primary ring-2 ring-primary shadow-lg"
+              )}
+            >
               <CardHeader>
                 <CardTitle className="truncate">{story.title}</CardTitle>
                 <CardDescription>Last modified: {new Date(story.lastModified).toLocaleDateString()}</CardDescription>
@@ -125,34 +114,44 @@ export default function StoriesPage() {
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-4">{story.description || "No description provided."}</p>
               </CardContent>
-              <CardFooter className="flex gap-2">
-                {/* Placeholder for "View Details" button to be implemented later */}
-                {/* <Button variant="secondary" size="sm" className="flex-1" disabled>View Details</Button> */}
-                <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(story)} className="flex-1">
-                  <Edit className="mr-2 h-4 w-4" /> Edit
+              <CardFooter className="flex flex-col gap-2">
+                <Button 
+                  variant={activeStoryId === story.id ? "default" : "outline"} 
+                  size="sm" 
+                  className="w-full" 
+                  onClick={() => handleSelectStory(story.id)}
+                  disabled={activeStoryId === story.id}
+                >
+                  {activeStoryId === story.id ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
+                  {activeStoryId === story.id ? 'Active Story' : 'Select Story'}
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the story: "{story.title}".
-                        Associated characters, outlines, etc., will NOT be deleted by this action (future integration will handle this).
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDeleteStory(story.id)}>
-                        Delete Story
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex gap-2 w-full">
+                  <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(story)} className="flex-1">
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" className="flex-1">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the story: "{story.title}".
+                          Associated data (characters, outlines, etc.) for this story will become inaccessible if not re-associated.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteStory(story.id)}>
+                          Delete Story
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardFooter>
             </Card>
           ))}
@@ -202,4 +201,3 @@ export default function StoriesPage() {
     </div>
   );
 }
-

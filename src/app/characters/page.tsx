@@ -11,8 +11,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, PlusCircle, Edit, Trash2, FileImage } from 'lucide-react';
+import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useStoryContext, getCharactersStorageKey } from '@/contexts/StoryContext';
+import Link from 'next/link';
 
 interface CharacterProfile {
   id: string;
@@ -23,29 +25,10 @@ interface CharacterProfile {
   imageHint?: string; // For data-ai-hint
 }
 
-const CHARACTERS_STORAGE_KEY = 'openwritingkit-characters';
-
-const initialCharacters: CharacterProfile[] = [
-  {
-    id: 'char1',
-    name: 'Anya Sharma',
-    description: 'A resourceful investigator with a mysterious past.',
-    backstory: 'Orphaned at a young age, Anya honed her survival skills on the streets before being recruited by a clandestine organization. She is haunted by fragmented memories of her parents.',
-    imageUrl: 'https://placehold.co/300x400.png',
-    imageHint: 'female investigator'
-  },
-  {
-    id: 'char2',
-    name: 'Kaelen Vance',
-    description: 'A charismatic but morally ambiguous sorcerer.',
-    backstory: 'Once a promising student at the Grand Academy, Kaelen was exiled after dabbling in forbidden magic. He seeks power to prove his former masters wrong, often blurring the line between hero and villain.',
-    imageUrl: 'https://placehold.co/300x400.png',
-    imageHint: 'male sorcerer'
-  },
-];
-
+// Initial characters are removed, will be loaded per story or empty if new story.
 
 export default function CharactersPage() {
+  const { activeStoryId } = useStoryContext();
   const [characters, setCharacters] = useState<CharacterProfile[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<CharacterProfile | null>(null);
@@ -57,21 +40,24 @@ export default function CharactersPage() {
   const [imageHint, setImageHint] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedCharacters = localStorage.getItem(CHARACTERS_STORAGE_KEY);
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const storageKey = getCharactersStorageKey(activeStoryId);
+      const storedCharacters = localStorage.getItem(storageKey);
       if (storedCharacters) {
         setCharacters(JSON.parse(storedCharacters));
       } else {
-        setCharacters(initialCharacters); // Load initial if nothing in storage
-        localStorage.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(initialCharacters));
+        setCharacters([]); // Start with empty array for a new story context
       }
+    } else if (!activeStoryId) {
+      setCharacters([]); // Clear characters if no story is active
     }
-  }, []);
+  }, [activeStoryId]);
 
   const saveCharacters = (updatedCharacters: CharacterProfile[]) => {
-    setCharacters(updatedCharacters);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(CHARACTERS_STORAGE_KEY, JSON.stringify(updatedCharacters));
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const storageKey = getCharactersStorageKey(activeStoryId);
+      setCharacters(updatedCharacters);
+      localStorage.setItem(storageKey, JSON.stringify(updatedCharacters));
     }
   };
 
@@ -101,7 +87,7 @@ export default function CharactersPage() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !activeStoryId) return;
 
     const newCharacterData = {
       name: name.trim(),
@@ -129,6 +115,19 @@ export default function CharactersPage() {
     saveCharacters(updatedCharacters);
   };
 
+  if (!activeStoryId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to manage characters.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -147,7 +146,7 @@ export default function CharactersPage() {
         <Card>
           <CardContent className="py-10 text-center">
             <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No character profiles yet. Start by creating one!</p>
+            <p className="text-muted-foreground">No character profiles for this story yet. Start by creating one!</p>
           </CardContent>
         </Card>
       ) : (

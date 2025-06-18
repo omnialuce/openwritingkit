@@ -5,30 +5,33 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays } from "lucide-react";
+import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-// Define new localStorage keys
-const LAST_ACTIVE_DATE_KEY = 'openwriting-kit-last-active-date';
-const WRITING_STREAK_KEY = 'openwriting-kit-writing-streak';
-const LAST_STREAK_DATE_KEY = 'openwriting-kit-last-streak-date';
+import { useStoryContext } from "@/contexts/StoryContext";
 
 export default function DashboardPage() {
+  const { activeStoryId, activeStoryName } = useStoryContext();
   const [writingStreak, setWritingStreak] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
+  // Streak logic will also need to be story-specific if we want per-story streaks
+  // For now, this updates a global streak, but ideally, keys should be dynamic
   const updateStreakDisplay = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && activeStoryId) { // Only update streak if a story is active
       const today = new Date().toISOString().split('T')[0];
-      const lastActiveDateStr = localStorage.getItem(LAST_ACTIVE_DATE_KEY);
-      const storedStreak = parseInt(localStorage.getItem(WRITING_STREAK_KEY) || '0', 10);
-      const lastStreakUpdateDate = localStorage.getItem(LAST_STREAK_DATE_KEY);
+      // Story-specific keys for streak
+      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`;
+      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`;
+      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
+
+      const lastActiveDateStr = localStorage.getItem(lastActiveDateKey);
+      const storedStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
+      const lastStreakUpdateDate = localStorage.getItem(lastStreakDateKey);
 
       if (lastStreakUpdateDate === today) {
-        // Streak was updated today (likely by useAutosave)
         setWritingStreak(storedStreak);
       } else {
-        // Streak not updated today, check if it should be reset
         if (lastActiveDateStr) {
           const lastActiveDate = new Date(lastActiveDateStr);
           const todayDate = new Date(today);
@@ -37,43 +40,44 @@ export default function DashboardPage() {
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
           if (diffDays > 1) {
-            // More than one day of inactivity, reset streak
-            localStorage.setItem(WRITING_STREAK_KEY, '0');
+            localStorage.setItem(streakKey, '0');
             setWritingStreak(0);
           } else {
-            // Activity was yesterday or earlier today, but streak not updated for *today*
-            // rely on useAutosave to update it on first write.
-            // For display, if it's a new day and no write yet, show stored streak.
-            // If lastStreakUpdateDate wasn't today, but was yesterday, it means streak should continue.
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             if (lastStreakUpdateDate === yesterday.toISOString().split('T')[0]) {
-               setWritingStreak(storedStreak); // Show yesterday's streak, will increment on write
-            } else if (lastStreakUpdateDate !== today && lastActiveDateStr !== today) { 
-              // If not updated today and not active today, means it should be 0 unless lastStreakUpdate was yesterday
-               localStorage.setItem(WRITING_STREAK_KEY, '0');
+               setWritingStreak(storedStreak);
+            } else if (lastStreakUpdateDate !== today && lastActiveDateStr !== today) {
+               localStorage.setItem(streakKey, '0');
                setWritingStreak(0);
             } else {
-                 setWritingStreak(storedStreak); // Default to stored if not explicitly reset
+                 setWritingStreak(storedStreak);
             }
           }
         } else {
-          // No last active date found, so streak is 0
-          localStorage.setItem(WRITING_STREAK_KEY, '0');
+          localStorage.setItem(streakKey, '0');
           setWritingStreak(0);
         }
       }
+    } else { // No active story, reset streak display
+        setWritingStreak(0);
     }
   };
 
   useEffect(() => {
-    updateStreakDisplay(); // Initial load
+    setIsMounted(true); // Ensure client-side execution
+    updateStreakDisplay(); 
 
     const handleStorageChange = (event: StorageEvent) => {
+      if (!activeStoryId) return;
+      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`;
+      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`;
+      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
+
       if (
-        event.key === WRITING_STREAK_KEY ||
-        event.key === LAST_ACTIVE_DATE_KEY ||
-        event.key === LAST_STREAK_DATE_KEY
+        event.key === streakKey ||
+        event.key === lastActiveDateKey ||
+        event.key === lastStreakDateKey
       ) {
         updateStreakDisplay();
       }
@@ -83,28 +87,41 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [activeStoryId]); // Rerun when activeStoryId changes
+
+  useEffect(() => {
+    // This effect is purely to update streak when activeStoryId changes
+    // as the keys for localStorage depend on it.
+    updateStreakDisplay();
+  }, [activeStoryId]);
 
 
   const quickActions = [
     { title: "New Document", description: "Start writing in the editor.", href: "/editor", icon: BookText, cta: "Open Editor" },
+    { title: "My Stories", description: "Manage your stories.", href: "/stories", icon: BookOpenCheck, cta: "View Stories"},
     { title: "AI Tools", description: "Explore creative writing prompts and analysis.", href: "/ai-tools", icon: Cpu, cta: "Use AI Tools" },
-    { title: "My Documents", description: "Manage your saved work.", href: "/documents", icon: FolderOpen, cta: "View Documents" },
+    // { title: "My Documents", description: "Manage your saved work.", href: "/documents", icon: FolderOpen, cta: "View Documents" },
     { title: "Writing Analytics", description: "Track your progress and insights.", href: "/analytics", icon: BarChart3, cta: "See Analytics" },
   ];
+  
+  if (!isMounted) return null; // Or a loading skeleton
 
   return (
     <div className="space-y-8">
       <section className="bg-card p-6 md:p-8 rounded-none border">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-primary">Welcome to OpenWriting Kit</h1>
+             <h1 className="text-4xl font-bold mb-4 text-primary">
+              {activeStoryName ? `Working on: ${activeStoryName}` : "Welcome to OpenWriting Kit"}
+            </h1>
             <p className="text-lg text-foreground mb-6">
-              Your intelligent writing companion. Unleash creativity, refine prose, and stay focused.
+              {activeStoryId 
+                ? "Continue your writing journey or explore other tools." 
+                : "Your intelligent writing companion. Select a story or create a new one to get started!"}
             </p>
-            <Link href="/editor" passHref>
+            <Link href={activeStoryId ? "/editor" : "/stories"} passHref>
               <Button size="lg" className="rounded-none">
-                Start Writing <ArrowRight className="ml-2 h-5 w-5" />
+                {activeStoryId ? "Open Editor" : "Go to Stories"} <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
@@ -120,6 +137,28 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
+      
+      {!activeStoryId && (
+         <Card className="border-primary">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-8 w-8 text-primary" />
+              <CardTitle className="text-xl text-primary">No Story Selected</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">
+              Please select an existing story or create a new one to begin working. 
+              Most features are disabled until a story is active.
+            </p>
+            <Link href="/stories" passHref>
+              <Button variant="default">
+                <BookOpenCheck className="mr-2 h-4 w-4" /> Go to Stories
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       <section>
         <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
@@ -137,7 +176,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardFooter>
                 <Link href={action.href} passHref className="w-full">
-                  <Button variant="outline" className="w-full rounded-none">
+                  <Button variant="outline" className="w-full rounded-none" disabled={!activeStoryId && !['/stories', '/settings'].includes(action.href) && action.href !== '/'}>
                     {action.cta} <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -152,31 +191,33 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-6 w-6 text-primary" />
-              <CardTitle>Daily Writing Streak</CardTitle>
+              <CardTitle>Daily Writing Streak {activeStoryId ? `(for ${activeStoryName})` : ''}</CardTitle>
             </div>
-            <CardDescription>Keep your momentum going!</CardDescription>
+            <CardDescription>Keep your momentum going! Streak is per story.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center">
-              <p className="text-6xl font-bold text-primary">{writingStreak}</p>
+              <p className="text-6xl font-bold text-primary">{activeStoryId ? writingStreak : "-"}</p>
               <p className="text-muted-foreground">{writingStreak === 1 ? "day" : "days"}</p>
             </div>
+             {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">Select a story to see its streak.</p>}
           </CardContent>
         </Card>
         <Card className="rounded-none border">
           <CardHeader>
              <div className="flex items-center gap-2">
               <TrendingUp className="h-6 w-6 text-primary" />
-              <CardTitle>Word Count Goal</CardTitle>
+              <CardTitle>Word Count Goal {activeStoryId ? `(for ${activeStoryName})` : ''}</CardTitle>
             </div>
             <CardDescription>Set and track your daily/weekly targets. (View in Analytics)</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-center py-4">
+            <div className="text-muted-foreground text-center py-4">
                 <Link href="/analytics" passHref>
-                    <Button variant="link">Set & View Goal in Analytics</Button>
+                    <Button variant="link" disabled={!activeStoryId}>Set & View Goal in Analytics</Button>
                 </Link>
-            </p>
+                {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-1">Select a story first.</p>}
+            </div>
           </CardContent>
         </Card>
       </section>

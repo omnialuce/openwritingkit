@@ -3,10 +3,12 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, CalendarClock } from "lucide-react"; // Added TrendingUp, CalendarClock
+import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, CalendarClock, AlertTriangle } from "lucide-react"; // Added TrendingUp, CalendarClock
 import Image from "next/image";
 import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 import { useEffect, useState } from "react";
+import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
+import Link from "next/link";
 
 interface InsightCardProps {
   title: string;
@@ -22,7 +24,7 @@ interface ActivityLogEntry {
   wordCount: number;
 }
 
-const ACTIVITY_LOG_KEY = 'openwritingkit-activity-log';
+// ACTIVITY_LOG_KEY is now dynamic: getActivityLogKey(activeStoryId)
 
 function InsightCard({ title, description, icon: Icon, value, unit, children }: InsightCardProps) {
   return (
@@ -44,7 +46,7 @@ function InsightCard({ title, description, icon: Icon, value, unit, children }: 
         )}
         {children && <div>{children}</div>}
         {!value && !children && (
-          <p className="text-muted-foreground">Data will appear here once you start writing.</p>
+          <p className="text-muted-foreground">Data will appear here once you start writing in the selected story.</p>
         )}
       </CardContent>
     </Card>
@@ -52,35 +54,40 @@ function InsightCard({ title, description, icon: Icon, value, unit, children }: 
 }
 
 export default function AnalyticsPage() {
+  const { activeStoryId } = useStoryContext();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedLog = localStorage.getItem(ACTIVITY_LOG_KEY);
+    setIsMounted(true);
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const activityLogStorageKey = getActivityLogKey(activeStoryId);
+      const storedLog = localStorage.getItem(activityLogStorageKey);
       if (storedLog) {
         setActivityLog(JSON.parse(storedLog));
+      } else {
+        setActivityLog([]);
       }
+    } else if (!activeStoryId) {
+      setActivityLog([]);
     }
-  }, []);
+  }, [activeStoryId]);
 
   const getTodayISOString = () => new Date().toISOString().split('T')[0];
 
   const calculateWordCountTrends = () => {
+    if (!activeStoryId) return "0 words (No story selected)";
     const todayISO = getTodayISOString();
     const todayEntries = activityLog.filter(entry => entry.timestamp.startsWith(todayISO));
     
-    if (todayEntries.length === 0) return "0 words today";
+    if (todayEntries.length === 0) return "0 words recorded today";
 
-    // Assuming each entry's wordCount is the total at that point for the current doc.
-    // For "words written today", we'd ideally track diffs, but for simplicity:
-    // Let's take the word count of the last entry today.
-    // This is a simplification; true "words written today" would need more complex logic
-    // if the user switches documents or clears content often.
     const lastEntryToday = todayEntries[todayEntries.length - 1];
     return `${lastEntryToday.wordCount.toLocaleString()} words recorded in editor today`;
   };
 
   const calculateProductiveTimes = () => {
+    if (!activeStoryId) return "No activity (No story selected)";
     const todayISO = getTodayISOString();
     const todayEntries = activityLog.filter(entry => entry.timestamp.startsWith(todayISO));
 
@@ -89,7 +96,7 @@ export default function AnalyticsPage() {
     const savesByHour: Record<string, number> = {};
     todayEntries.forEach(entry => {
       const hour = new Date(entry.timestamp).getHours();
-      savesByHour[hour] = (savesByHour[hour] || 0) + 1;
+      savesByHour[hour] = (savesByHour[hour] || 0) + 1; // Counting saves/entries per hour
     });
 
     let mostActiveHour = -1;
@@ -107,28 +114,41 @@ export default function AnalyticsPage() {
 
 
   const insights = [
-    // { title: "Word Count Trends", description: "Track your daily/weekly writing output.", icon: BarChart3, value: "1,200", unit: "words this week" },
-    // { title: "Productive Times", description: "Discover when you write the most.", icon: Clock, value: "Evenings", unit: "" },
     { title: "Vocabulary Richness", description: "Assess the diversity of your word usage.", icon: BookOpen, value: "N/A", unit: "analysis pending" },
     { title: "Dialogue Ratio", description: "Analyze dialogue vs. narrative balance.", icon: Users, value: "N/A", unit: "analysis pending" },
     { title: "Chapter Length Consistency", description: "Monitor the consistency of your chapter lengths.", icon: FileText, value: "N/A", unit: "analysis pending" },
     { title: "Reading Difficulty", description: "Gauge the readability of your text.", icon: Percent, value: "N/A", unit: "analysis pending" },
   ];
 
+  if (!isMounted) return null; // Or a loading skeleton
+
+  if (!activeStoryId && isMounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to view analytics.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Writing Analytics & Insights</h1>
-        <p className="text-muted-foreground">Understand your writing patterns and improve your craft.</p>
+        <p className="text-muted-foreground">Understand your writing patterns for the current story.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         <WordGoalCard /> 
-        <InsightCard title="Word Count Today" description="Words recorded in the editor today based on saves." icon={TrendingUp}>
+        <InsightCard title="Word Count Today" description="Words recorded in the editor today based on saves for this story." icon={TrendingUp}>
            <p className="text-2xl font-bold">{calculateWordCountTrends()}</p>
            <p className="text-xs text-muted-foreground mt-1">Based on auto-saves. More detailed daily/weekly trends coming soon.</p>
         </InsightCard>
-        <InsightCard title="Productive Times Today" description="Hour with most saves in the editor today." icon={CalendarClock}>
+        <InsightCard title="Productive Times Today" description="Hour with most saves in the editor today for this story." icon={CalendarClock}>
            <p className="text-2xl font-bold">{calculateProductiveTimes()}</p>
            <p className="text-xs text-muted-foreground mt-1">Based on auto-saves. Deeper analysis coming soon.</p>
         </InsightCard>
@@ -146,7 +166,7 @@ export default function AnalyticsPage() {
       <Card className="mt-12">
         <CardHeader>
           <CardTitle>Overall Progress Overview</CardTitle>
-          <CardDescription>A visual summary of your writing journey.</CardDescription>
+          <CardDescription>A visual summary of your writing journey for this story.</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
            <Image src="https://placehold.co/800x300.png" data-ai-hint="monochrome data chart graph" alt="Progress chart placeholder" width={800} height={300} className="mx-auto rounded-md" />

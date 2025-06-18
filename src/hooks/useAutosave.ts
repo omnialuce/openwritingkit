@@ -4,10 +4,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast'; 
+import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext'; // Import useStoryContext and key generator
 
 const MAX_HISTORY_LENGTH = 20; 
-const EDITOR_CONTENT_KEY = 'openwritingkit-active-document-content';
-const ACTIVITY_LOG_KEY = 'openwritingkit-activity-log'; // New key for activity logging
+// EDITOR_CONTENT_KEY is now generated dynamically
 
 interface DocumentData<T> {
   current: T;
@@ -20,35 +20,37 @@ interface ActivityLogEntry {
   wordCount: number;
 }
 
+// The 'key' parameter will now be the dynamically generated, story-specific key
 function useAutosave<T extends string>( 
-  key: string, 
+  dynamicStorageKey: string, // Renamed to reflect its dynamic nature
   initialValue: T,
   saveInterval: number = 2000
 ): [T, (value: T) => void, boolean, () => void, Date | null] {
   const { toast } = useToast(); 
+  const { activeStoryId } = useStoryContext(); // Get activeStoryId for activity log
 
   const [currentText, setCurrentTextInternal] = useState<T>(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !dynamicStorageKey) { // Check for dynamicStorageKey
       return initialValue;
     }
     try {
-      const item = window.localStorage.getItem(key);
+      const item = window.localStorage.getItem(dynamicStorageKey);
       if (item) {
         const data: DocumentData<T> = JSON.parse(item);
         return data.current || initialValue;
       }
       return initialValue;
     } catch (error) {
-      console.warn(`Error reading localStorage key "${key}":`, error);
+      console.warn(`Error reading localStorage key "${dynamicStorageKey}":`, error);
       return initialValue;
     }
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(() => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined' || !dynamicStorageKey) return null;
     try {
-      const item = window.localStorage.getItem(key);
+      const item = window.localStorage.getItem(dynamicStorageKey);
       if (item) {
         const data: DocumentData<T> = JSON.parse(item);
         return data.lastSaved ? new Date(data.lastSaved) : null;
@@ -59,36 +61,60 @@ function useAutosave<T extends string>(
     }
   });
 
+  // Effect to re-initialize currentText and lastSavedTime when dynamicStorageKey changes (e.g. story switch)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && dynamicStorageKey) {
+      try {
+        const item = window.localStorage.getItem(dynamicStorageKey);
+        if (item) {
+          const data: DocumentData<T> = JSON.parse(item);
+          setCurrentTextInternal(data.current || initialValue);
+          setLastSavedTime(data.lastSaved ? new Date(data.lastSaved) : null);
+        } else {
+          setCurrentTextInternal(initialValue);
+          setLastSavedTime(null);
+        }
+      } catch (error) {
+        console.warn(`Error reading localStorage key "${dynamicStorageKey}" on key change:`, error);
+        setCurrentTextInternal(initialValue);
+        setLastSavedTime(null);
+      }
+    } else if (!dynamicStorageKey) {
+        setCurrentTextInternal(initialValue); // Reset if no key (e.g. no active story)
+        setLastSavedTime(null);
+    }
+  }, [dynamicStorageKey, initialValue]);
+
+
   const logActivity = useCallback((textToSave: T) => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const activityLogStorageKey = getActivityLogKey(activeStoryId);
       const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
       const wordCount = words.length;
       const newLogEntry: ActivityLogEntry = { timestamp: new Date().toISOString(), wordCount };
 
       try {
-        const existingLog = window.localStorage.getItem(ACTIVITY_LOG_KEY);
+        const existingLog = window.localStorage.getItem(activityLogStorageKey);
         let activityLog: ActivityLogEntry[] = existingLog ? JSON.parse(existingLog) : [];
         activityLog.push(newLogEntry);
-        // Optional: Prune old log entries if it gets too large
-        // if (activityLog.length > 1000) activityLog = activityLog.slice(-1000); 
-        window.localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(activityLog));
+        window.localStorage.setItem(activityLogStorageKey, JSON.stringify(activityLog));
       } catch (error) {
         console.warn(`Error updating activity log:`, error);
       }
     }
-  }, []);
+  }, [activeStoryId]);
 
 
   const saveDocument = useCallback(
     (textToSave: T) => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && dynamicStorageKey) { // Check for dynamicStorageKey
         setIsSaving(true);
         try {
           const now = new Date();
           const timestamp = now.toISOString();
           
           let documentData: DocumentData<T>;
-          const existingItem = window.localStorage.getItem(key);
+          const existingItem = window.localStorage.getItem(dynamicStorageKey);
           if (existingItem) {
             documentData = JSON.parse(existingItem);
           } else {
@@ -107,14 +133,15 @@ function useAutosave<T extends string>(
           documentData.current = textToSave;
           documentData.lastSaved = timestamp;
 
-          window.localStorage.setItem(key, JSON.stringify(documentData));
+          window.localStorage.setItem(dynamicStorageKey, JSON.stringify(documentData));
           setLastSavedTime(now);
-          logActivity(textToSave); // Log activity on successful save
+          logActivity(textToSave);
 
           const today = now.toISOString().split('T')[0];
-          const lastActiveDateKey = 'openwritingkit-last-active-date';
-          const streakKey = 'openwritingkit-writing-streak';
-          const lastStreakDateKey = 'openwritingkit-last-streak-date';
+          const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`; // Story-specific
+          const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`; // Story-specific
+          const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`; // Story-specific
+
 
           const lastActiveDate = localStorage.getItem(lastActiveDateKey);
           
@@ -137,20 +164,22 @@ function useAutosave<T extends string>(
             window.dispatchEvent(new Event('storage')); 
           }
         } catch (error) {
-          console.error(`Error saving to localStorage key "${key}":`, error);
+          console.error(`Error saving to localStorage key "${dynamicStorageKey}":`, error);
           toast({ title: "Save Error", description: "Could not save changes.", variant: "destructive" });
         } finally {
           setTimeout(() => setIsSaving(false), 500); 
         }
       }
     },
-    [key, initialValue, toast, logActivity]
+    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId]
   );
   
   useEffect(() => {
+    if (!dynamicStorageKey) return; // Don't run autosave if there's no key
+
     const handler = setTimeout(() => {
       if (typeof window !== 'undefined') {
-        const item = window.localStorage.getItem(key);
+        const item = window.localStorage.getItem(dynamicStorageKey);
         let existingCurrentText = initialValue;
         if (item) {
           try {
@@ -165,21 +194,21 @@ function useAutosave<T extends string>(
     }, saveInterval);
 
     return () => clearTimeout(handler);
-  }, [currentText, saveInterval, saveDocument, key, initialValue]);
+  }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue]);
 
   const clearSavedDocument = useCallback(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && dynamicStorageKey) { // Check for dynamicStorageKey
       try {
-        window.localStorage.removeItem(key);
+        window.localStorage.removeItem(dynamicStorageKey);
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
-        toast({ title: "Content Cleared", description: "The document content and its history have been cleared." });
+        toast({ title: "Content Cleared", description: "The document content and its history have been cleared for this story." });
       } catch (error) {
-        console.error(`Error clearing localStorage key "${key}":`, error);
+        console.error(`Error clearing localStorage key "${dynamicStorageKey}":`, error);
         toast({ title: "Error", description: "Could not clear content.", variant: "destructive" });
       }
     }
-  }, [key, initialValue, toast]);
+  }, [dynamicStorageKey, initialValue, toast]);
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);

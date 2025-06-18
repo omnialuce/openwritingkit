@@ -2,13 +2,13 @@
 // src/components/editor/WritingArea.tsx
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
 import useAutosave from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -26,13 +26,18 @@ import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 import { useSidebar } from '@/components/ui/sidebar';
 import { formatDistanceToNow } from 'date-fns';
+import { useStoryContext, getEditorContentKey } from '@/contexts/StoryContext'; // Import StoryContext and key generator
+import Link from 'next/link';
 
 type EditorTheme = 'light' | 'dark';
-const EDITOR_CONTENT_KEY = 'openwritingkit-active-document-content';
+// EDITOR_CONTENT_KEY is now generated dynamically by getEditorContentKey(activeStoryId)
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 export function WritingArea() {
-  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(EDITOR_CONTENT_KEY, '<p></p>');
+  const { activeStoryId } = useStoryContext();
+  const editorStorageKey = getEditorContentKey(activeStoryId);
+
+  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(editorStorageKey, '<p></p>');
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [editorTheme, setEditorTheme] = useState<EditorTheme>('light');
@@ -60,10 +65,12 @@ export function WritingArea() {
         },
       }),
     ],
-    content: savedContent,
-    immediatelyRender: false, // Add this line to fix SSR hydration issue
+    content: savedContent, // Initial content from autosave
+    immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
-      setSavedContent(currentEditor.getHTML());
+      if (activeStoryId) { // Only save if a story is active
+        setSavedContent(currentEditor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
@@ -90,11 +97,24 @@ export function WritingArea() {
     }
   }, []);
 
+  // This effect ensures that when the story (and thus editorStorageKey) changes,
+  // or when savedContent from useAutosave changes (due to loading from new key),
+  // the editor's content is updated.
   useEffect(() => {
-    if (editor && savedContent !== editor.getHTML()) {
-      editor.commands.setContent(savedContent, false);
+    if (editor && activeStoryId) {
+      // `savedContent` is already updated by useAutosave's internal useEffect when key changes.
+      // So, we just need to ensure editor gets this new `savedContent`.
+      if (savedContent !== editor.getHTML()) {
+        editor.commands.setContent(savedContent, false);
+      }
+    } else if (editor && !activeStoryId) {
+      editor.commands.setContent("<p>Please select a story to start writing.</p>", false);
+      editor.setEditable(false);
     }
-  }, [savedContent, editor]);
+     if (editor && activeStoryId) {
+      editor.setEditable(true);
+    }
+  }, [savedContent, editor, activeStoryId]);
 
 
   useEffect(() => {
@@ -137,7 +157,7 @@ export function WritingArea() {
   };
 
   const handleExportTXT = () => {
-    if (!editor) return;
+    if (!editor || !activeStoryId) return;
     const textContent = editor.getText();
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
@@ -149,7 +169,7 @@ export function WritingArea() {
   };
   
   const handleExportHTML = () => {
-    if (!editor) return;
+    if (!editor || !activeStoryId) return;
     const htmlContent = editor.getHTML();
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const link = document.createElement('a');
@@ -160,16 +180,23 @@ export function WritingArea() {
     document.body.removeChild(link);
   }
 
-  const handleImportClick = () => fileInputRef.current?.click();
+  const handleImportClick = () => {
+     if (!activeStoryId) {
+      toast({ title: "No Active Story", description: "Please select a story before importing content.", variant: "destructive" });
+      return;
+    }
+    fileInputRef.current?.click();
+  }
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && editor) {
+    if (file && editor && activeStoryId) {
       if (file.type === "text/plain" || file.type === "text/html" || file.type === "text/markdown") {
         const reader = new FileReader();
         reader.onload = (e) => {
           const fileContent = e.target?.result as string;
           editor.commands.setContent(fileContent); 
+          // setSavedContent will be called by onUpdate, triggering autosave
           toast({ title: "Success", description: "File content imported." });
         };
         reader.onerror = () => {
@@ -200,7 +227,7 @@ export function WritingArea() {
   const toggleFocusMode = () => setIsFocusMode(!isFocusMode);
 
   const handleGetFeedback = async () => {
-    if (!editor) return;
+    if (!editor || !activeStoryId) return;
     if (!aiFeaturesEnabled) {
       toast({ title: "AI Features Disabled", description: "Please enable AI features in settings to use this."});
       return;
@@ -212,14 +239,14 @@ export function WritingArea() {
     }
 
     if (isFocusMode) {
-      toggleFocusMode(); // Exit focus mode to show panel
+      toggleFocusMode(); 
     }
 
     setIsFetchingFeedback(true);
     setFeedbackResult(null);
     
     if (sidebarContext.open && !sidebarContext.isMobile) {
-      sidebarContext.setOpen(false); // Collapse sidebar
+      sidebarContext.setOpen(false); 
     }
 
     try {
@@ -235,12 +262,37 @@ export function WritingArea() {
       setIsFetchingFeedback(false);
     }
   };
-
-  if (!editor) {
+  
+  if (!isMounted) { // Delay rendering until client-side checks are complete
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="ml-2">Loading editor...</p>
+      </div>
+    );
+  }
+
+  if (!activeStoryId && isMounted) { // Check isMounted here too
+    return (
+      <Card className="m-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">The editor is disabled until a story is selected.</p>
+          <Link href="/stories" passHref>
+            <Button variant="default">Go to Stories Page</Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (!editor) { // This should ideally not be hit if activeStoryId and isMounted are handled
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Initializing editor...</p>
       </div>
     );
   }
@@ -268,53 +320,53 @@ export function WritingArea() {
   return (
     <TooltipProvider>
       <div className={cn("flex h-full", currentOverallTheme, themeClasses[editorTheme])}>
-        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", isFeedbackPanelOpen ? "w-2/3" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", isFeedbackPanelOpen ? "md:w-2/3" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
           {!isFocusMode && (
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
-                  <Button variant="ghost" size="icon" title="Save (auto-saved)">
+                  <Button variant="ghost" size="icon" title="Save (auto-saved)" disabled={!activeStoryId}>
                     <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
                   </Button>
                   <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md" style={{ display: 'none' }} />
-                  <Button variant="ghost" size="icon" onClick={handleImportClick} title="Import File">
+                  <Button variant="ghost" size="icon" onClick={handleImportClick} title="Import File" disabled={!activeStoryId}>
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title="Export">
+                      <Button variant="ghost" size="icon" title="Export" disabled={!activeStoryId}>
                         <Download className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="rounded-none">
-                      <DropdownMenuItem onClick={handleExportTXT}>Export as TXT</DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportHTML}>Export as HTML</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportTXT} disabled={!activeStoryId}>Export as TXT</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportHTML} disabled={!activeStoryId}>Export as HTML</DropdownMenuItem>
                       <DropdownMenuItem disabled>Export as PDF (soon)</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="ghost" size="icon" onClick={() => { if(confirm('Are you sure you want to clear all content and history? This cannot be undone.')) { editor.commands.clearContent(true); clearSavedContent();} }} title="Clear Content & History">
+                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm('Are you sure you want to clear all content and history for this story? This cannot be undone.')) { editor?.commands.clearContent(true); clearSavedContent();} }} title="Clear Content & History" disabled={!activeStoryId}>
                     <Trash2 className="h-5 w-5 text-destructive" />
                   </Button>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                       <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-disabled={!aiFeaturesEnabled || !isMounted}>
-                        {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className={cn("h-5 w-5", aiFeaturesEnabled && isMounted ? "text-muted-foreground" : "text-muted-foreground/50")} />}
+                       <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={!activeStoryId || isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-disabled={!activeStoryId || !aiFeaturesEnabled || !isMounted}>
+                        {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className={cn("h-5 w-5", activeStoryId && aiFeaturesEnabled && isMounted ? "text-muted-foreground" : "text-muted-foreground/50")} />}
                       </Button>
                     </TooltipTrigger>
                      <TooltipContent>
-                      <p>{aiFeaturesEnabled && isMounted ? "Get Writing Feedback" : "AI features disabled in Settings"}</p>
+                      <p>{!activeStoryId ? "Select a story first" : (aiFeaturesEnabled && isMounted ? "Get Writing Feedback" : "AI features disabled in Settings")}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
-                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"}>
+                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"} disabled={!activeStoryId}>
                     {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title="Reset Session Timer" disabled={sessionTime === 0 && !isTimerRunning}>
+                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title="Reset Session Timer" disabled={!activeStoryId || (sessionTime === 0 && !isTimerRunning)}>
                     <RotateCcw className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <span className="text-xs md:text-sm text-muted-foreground min-w-[60px] md:min-w-[70px] text-center px-1"><TimerIcon className="inline h-4 w-4 mr-0.5 md:mr-1" />{formatTime(sessionTime)}</span>
-                  <Button variant="ghost" size="icon" onClick={toggleFocusMode} title="Focus Mode">
+                  <Button variant="ghost" size="icon" onClick={toggleFocusMode} title="Focus Mode" disabled={!activeStoryId}>
                     <Expand className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <DropdownMenu>
@@ -346,15 +398,15 @@ export function WritingArea() {
           </CardContent>
           {!isFocusMode && (
             <div className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
-              <span>Words: {wordCount}</span>
-              <span>Chars: {charCount}</span>
-              <span>{isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved"}</span>
+              <span>Words: {activeStoryId ? wordCount : '-'}</span>
+              <span>Chars: {activeStoryId ? charCount : '-'}</span>
+              <span>{activeStoryId ? (isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved") : "No active story"}</span>
             </div>
           )}
         </Card>
 
         {isFeedbackPanelOpen && feedbackResult && (
-          <Card className={cn("w-1/3 h-full border-l flex flex-col rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+          <Card className={cn("hidden md:flex md:flex-col md:w-1/3 h-full border-l rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
             <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
               <div>
                 <CardTitle className="text-lg">AI Writing Feedback</CardTitle>
@@ -428,4 +480,3 @@ export function WritingArea() {
     </TooltipProvider>
   );
 }
-

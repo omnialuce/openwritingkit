@@ -7,26 +7,30 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Target, Edit3, Save } from 'lucide-react';
-
-const WORD_GOAL_KEY = 'openwriting-kit-word-goal';
-const EDITOR_DOC_KEY = 'openwriting-kit-active-document-content'; 
+import { Target, Edit3, Save, AlertTriangle } from 'lucide-react';
+import { useStoryContext, getWordGoalKey, getEditorContentKey } from '@/contexts/StoryContext';
+import Link from 'next/link';
 
 interface DocumentData {
   current: string;
-  // other fields if needed, like history or lastSaved
 }
 
 export function WordGoalCard() {
+  const { activeStoryId } = useStoryContext();
+  const wordGoalStorageKey = getWordGoalKey(activeStoryId);
+  const editorDocStorageKey = getEditorContentKey(activeStoryId);
+
   const [goal, setGoal] = useState<number>(1000);
   const [currentWords, setCurrentWords] = useState<number>(0);
   const [progress, setProgress] = useState<number>(0);
   const [isEditingGoal, setIsEditingGoal] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>(goal.toString());
+  const [isMounted, setIsMounted] = useState(false);
+
 
   const updateCurrentWords = () => {
-    if (typeof window !== 'undefined') {
-      const editorDocRaw = localStorage.getItem(EDITOR_DOC_KEY);
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const editorDocRaw = localStorage.getItem(editorDocStorageKey);
       if (editorDocRaw) {
         try {
           const docData = JSON.parse(editorDocRaw) as DocumentData;
@@ -40,20 +44,32 @@ export function WordGoalCard() {
       } else {
         setCurrentWords(0);
       }
+    } else {
+      setCurrentWords(0);
     }
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedGoal = localStorage.getItem(WORD_GOAL_KEY);
+    setIsMounted(true);
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const savedGoal = localStorage.getItem(wordGoalStorageKey);
       if (savedGoal) {
         const numGoal = parseInt(savedGoal, 10);
         setGoal(numGoal);
         setInputValue(numGoal.toString());
+      } else {
+        // Reset to default if no saved goal for this story
+        setGoal(1000);
+        setInputValue("1000");
       }
-      updateCurrentWords(); // Initial load
+      updateCurrentWords(); 
+    } else if (!activeStoryId) {
+      // Reset when no story is active
+      setGoal(1000);
+      setInputValue("1000");
+      setCurrentWords(0);
     }
-  }, []);
+  }, [activeStoryId, wordGoalStorageKey]); // Depend on activeStoryId and the derived key
 
   useEffect(() => {
     if (goal > 0) {
@@ -65,8 +81,14 @@ export function WordGoalCard() {
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === EDITOR_DOC_KEY) {
+      // Listen to changes on the specific story's editor content key
+      if (event.key === editorDocStorageKey) {
         updateCurrentWords();
+      }
+      if (event.key === wordGoalStorageKey) {
+         const newGoal = parseInt(event.newValue || '1000', 10);
+         setGoal(newGoal);
+         setInputValue(newGoal.toString());
       }
     };
 
@@ -74,22 +96,47 @@ export function WordGoalCard() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [editorDocStorageKey, wordGoalStorageKey]); // Re-attach listener if key changes
 
   const handleGoalChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
   const handleSetGoal = () => {
+    if (!activeStoryId) return;
     const numValue = parseInt(inputValue, 10);
     if (!isNaN(numValue) && numValue > 0) {
       setGoal(numValue);
-      localStorage.setItem(WORD_GOAL_KEY, numValue.toString());
+      localStorage.setItem(wordGoalStorageKey, numValue.toString());
       setIsEditingGoal(false);
     } else {
       setInputValue(goal.toString()); 
     }
   };
+
+  if (!isMounted) return null; // Or a loading skeleton
+
+  if (!activeStoryId) {
+     return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Target className="h-6 w-6 text-primary" />
+            <CardTitle>Word Count Goal</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center text-muted-foreground">
+            <AlertTriangle className="mr-2 h-5 w-5 text-destructive" />
+            Select a story to set and track word goals.
+          </div>
+           <Link href="/stories" passHref className="mt-2">
+            <Button variant="link" className="p-0">Go to Stories</Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -103,7 +150,7 @@ export function WordGoalCard() {
             {isEditingGoal ? <Save className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
           </Button>
         </div>
-        <CardDescription>Set a target and track your writing progress.</CardDescription>
+        <CardDescription>Set a target for the current story and track progress.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isEditingGoal ? (
@@ -132,7 +179,7 @@ export function WordGoalCard() {
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-xs text-muted-foreground">Your goal is saved in your browser.</p>
+        <p className="text-xs text-muted-foreground">Your goal is saved for this story in your browser.</p>
       </CardFooter>
     </Card>
   );
