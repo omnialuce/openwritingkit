@@ -3,13 +3,14 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useEditor, EditorContent, Editor } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2 } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
-import { EditorToolbar } from './EditorToolbar'; // New Toolbar
+import { EditorToolbar } from './EditorToolbar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,12 +19,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle as DialogTitleComponent, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"; // Aliased DialogTitle to avoid conflict
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
+import { useSidebar } from '@/components/ui/sidebar';
+import { formatDistanceToNow } from 'date-fns';
 
 type EditorTheme = 'light' | 'dark';
 const EDITOR_CONTENT_KEY = 'openwritingkit-active-document-content';
@@ -37,14 +39,16 @@ export function WritingArea() {
   const [isFocusMode, setIsFocusMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const sidebarContext = useSidebar();
 
   const [sessionTime, setSessionTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
+  const [isFeedbackPanelOpen, setIsFeedbackPanelOpen] = useState(false);
   const [feedbackResult, setFeedbackResult] = useState<GetWritingFeedbackOutput | null>(null);
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
+  const [feedbackTimestamp, setFeedbackTimestamp] = useState<number | null>(null);
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -99,7 +103,7 @@ export function WritingArea() {
       setWordCount(words.length);
       setCharCount(textContent.length);
     }
-  }, [savedContent, editor]); // Re-calculate on savedContent change (which happens on editor update)
+  }, [savedContent, editor]);
 
   useEffect(() => {
     if (isTimerRunning) {
@@ -164,8 +168,6 @@ export function WritingArea() {
         const reader = new FileReader();
         reader.onload = (e) => {
           const fileContent = e.target?.result as string;
-          // For TXT, it's fine. For HTML/MD, TipTap might need specific extensions
-          // or a conversion step for perfect import. For now, setting as HTML.
           editor.commands.setContent(fileContent); 
           toast({ title: "Success", description: "File content imported." });
         };
@@ -187,12 +189,11 @@ export function WritingArea() {
   
   const editorContainerClasses = {
     light: 'bg-background',
-    dark: 'dark bg-neutral-900', // Apply 'dark' class for ProseMirror dark theme
+    dark: 'dark bg-neutral-900',
   }
 
   const applyEditorTheme = (selectedTheme: EditorTheme) => {
     setEditorTheme(selectedTheme);
-    // The .prose-dark class is handled by globals.css via Tailwind typography plugin
   };
 
   const toggleFocusMode = () => setIsFocusMode(!isFocusMode);
@@ -208,15 +209,27 @@ export function WritingArea() {
       toast({ title: "Empty Content", description: "Please write some text before requesting feedback." });
       return;
     }
+
+    if (isFocusMode) {
+      toggleFocusMode(); // Exit focus mode to show panel
+    }
+
     setIsFetchingFeedback(true);
     setFeedbackResult(null);
+    
+    if (sidebarContext.open && !sidebarContext.isMobile) {
+      sidebarContext.setOpen(false); // Collapse sidebar
+    }
+
     try {
       const result = await getWritingFeedback({ text: textContent });
       setFeedbackResult(result);
-      setIsFeedbackDialogOpen(true);
+      setFeedbackTimestamp(Date.now());
+      setIsFeedbackPanelOpen(true);
     } catch (error) {
       console.error("Error getting writing feedback:", error);
       toast({ title: "AI Feedback Error", description: (error as Error).message || "Could not retrieve feedback.", variant: "destructive" });
+      setIsFeedbackPanelOpen(false);
     } finally {
       setIsFetchingFeedback(false);
     }
@@ -253,8 +266,8 @@ export function WritingArea() {
 
   return (
     <TooltipProvider>
-      <div className={cn("flex flex-col h-full rounded-none shadow-lg", currentOverallTheme, themeClasses[editorTheme], isFocusMode ? 'fixed inset-0 z-50' : '')}>
-        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", themeClasses[editorTheme])}>
+      <div className={cn("flex h-full", currentOverallTheme, themeClasses[editorTheme])}>
+        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", isFeedbackPanelOpen ? "w-2/3" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
           {!isFocusMode && (
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
@@ -326,7 +339,7 @@ export function WritingArea() {
             </>
           )}
           <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
-            <ScrollArea className="h-full w-full"> {/* Added ScrollArea */}
+            <ScrollArea className="h-full w-full">
               <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
             </ScrollArea>
           </CardContent>
@@ -338,77 +351,80 @@ export function WritingArea() {
             </div>
           )}
         </Card>
-      </div>
 
-      {isFeedbackDialogOpen && feedbackResult && (
-         <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh]">
-            <DialogHeader>
-              <DialogTitleComponent>AI Writing Feedback</DialogTitleComponent>
-              <DialogDescription>
-                Here's an analysis of your text.
-              </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="max-h-[60vh] p-1 pr-3">
-              <div className="space-y-6 pr-3">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Overall Assessment</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm whitespace-pre-wrap">{feedbackResult.overallAssessment}</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Readability</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm"><strong>Score:</strong> {feedbackResult.readability.scoreDescription}</p>
-                    <p className="text-sm whitespace-pre-wrap"><strong>Assessment:</strong> {feedbackResult.readability.assessment}</p>
-                  </CardContent>
-                </Card>
-
-                {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Grammar & Spelling Suggestions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {feedbackResult.grammarSpellingSuggestions.map((suggestion, index) => (
-                        <div key={index} className="p-3 border rounded-md bg-muted/50">
-                          <p className="text-xs text-muted-foreground uppercase">{suggestion.issueType}</p>
-                          <p className="text-sm my-1">Original: <span className="line-through text-red-500 dark:text-red-400">{suggestion.originalText}</span></p>
-                          <p className="text-sm my-1">Suggested: <span className="text-green-600 dark:text-green-400 font-medium">{suggestion.suggestedCorrection}</span></p>
-                          {suggestion.explanation && (
-                            <p className="text-xs text-muted-foreground italic mt-1">{suggestion.explanation}</p>
-                          )}
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
+        {isFeedbackPanelOpen && feedbackResult && (
+          <Card className={cn("w-1/3 h-full border-l flex flex-col rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+            <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
+              <div>
+                <CardTitle className="text-lg">AI Writing Feedback</CardTitle>
+                {feedbackTimestamp && (
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}
+                  </p>
                 )}
-                 {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length === 0 && (
-                   <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Grammar & Spelling</CardTitle>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setIsFeedbackPanelOpen(false)} title="Close Feedback Panel">
+                <X className="h-5 w-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="flex-grow overflow-y-auto p-0">
+              <ScrollArea className="h-full p-4">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader className="p-3">
+                      <CardTitle className="text-base">Overall Assessment</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm">No specific grammar or spelling issues found by the AI.</p>
+                    <CardContent className="p-3 pt-0">
+                      <p className="text-sm whitespace-pre-wrap">{feedbackResult.overallAssessment}</p>
                     </CardContent>
                   </Card>
-                 )}
-              </div>
-            </ScrollArea>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">Close</Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+
+                  <Card>
+                    <CardHeader className="p-3">
+                      <CardTitle className="text-base">Readability</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0 space-y-1">
+                      <p className="text-sm"><strong>Score:</strong> {feedbackResult.readability.scoreDescription}</p>
+                      <p className="text-sm whitespace-pre-wrap"><strong>Assessment:</strong> {feedbackResult.readability.assessment}</p>
+                    </CardContent>
+                  </Card>
+
+                  {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length > 0 && (
+                    <Card>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Grammar & Spelling Suggestions</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-3 pt-0 space-y-3">
+                        {feedbackResult.grammarSpellingSuggestions.map((suggestion, index) => (
+                          <div key={index} className="p-2 border rounded-md bg-muted/30">
+                            <p className="text-xs text-muted-foreground uppercase">{suggestion.issueType}</p>
+                            <p className="text-sm my-1">Original: <span className="line-through text-red-500 dark:text-red-400">{suggestion.originalText}</span></p>
+                            <p className="text-sm my-1">Suggested: <span className="text-green-600 dark:text-green-400 font-medium">{suggestion.suggestedCorrection}</span></p>
+                            {suggestion.explanation && (
+                              <p className="text-xs text-muted-foreground italic mt-1">{suggestion.explanation}</p>
+                            )}
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
+                  {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length === 0 && (
+                    <Card>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Grammar & Spelling</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-3 pt-0">
+                        <p className="text-sm">No specific grammar or spelling issues found by the AI.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </TooltipProvider>
   );
 }
+
