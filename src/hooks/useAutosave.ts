@@ -69,7 +69,7 @@ function useAutosave<T extends string>(
         let activityLog: ActivityLogEntry[] = existingLog ? JSON.parse(existingLog) : [];
         activityLog.push(newLogEntry);
         window.localStorage.setItem(activityLogStorageKey, JSON.stringify(activityLog));
-      } catch (error)
+      } catch (error) {
         console.warn(`Error updating activity log:`, error);
       }
     }
@@ -192,4 +192,3 @@ function useAutosave<T extends string>(
 }
 
 export default useAutosave;
-

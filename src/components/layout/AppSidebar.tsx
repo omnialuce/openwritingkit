@@ -85,84 +85,88 @@ export function AppSidebar() {
           {secondaryNavItems.map(renderNavItem)}
         </SidebarMenu>
         
-        <div className="p-2 mt-2"> {/* Google Drive UI Container */}
-          <div className="group-data-[collapsible=icon]:hidden">
-            <TooltipProvider delayDuration={100}>
-              <Tooltip>
-                <TooltipTrigger asChild className="w-full">
-                  {isDriveConnected ? (
-                    <Card className="cursor-default shadow-none border rounded-none">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1.5">
-                        <CardTitle className="text-sm font-medium">Google Drive</CardTitle>
-                        <Cloud className="h-4 w-4 text-muted-foreground" />
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <div className="text-xs text-muted-foreground">
-                          {driveStorageInfo.used} / {driveStorageInfo.total}
-                        </div>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-xs mt-1 text-primary hover:text-primary/80" onClick={handleDisconnectDriveClick}>
-                          Disconnect
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <Button variant="outline" className="w-full justify-start rounded-none" onClick={handleConnectDriveClick}>
-                      <DatabaseZap className="mr-2 h-4 w-4" />
-                      Connect to Drive
-                    </Button>
-                  )}
-                </TooltipTrigger>
-                <TooltipContent side="right" align="start" className="max-w-xs z-50">
-                  <p className="font-semibold mb-1">Cloud Storage</p>
-                  <p>
-                    Connect to Google Drive to back up your stories, outlines, and characters,
-                    and access them across your devices.
-                  </p>
-                  <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                    <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only.
-                    This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          <div className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
-            <TooltipProvider delayDuration={100}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={isDriveConnected ? () => { /* Placeholder for potential drive settings popup */ } : handleConnectDriveClick}
-                    className="h-9 w-9 p-0 rounded-md"
+        <SidebarMenu className="mt-2">
+           <SidebarMenuItem>
+            {isDriveConnected ? (
+              <>
+                <div className="group-data-[collapsible=icon]:hidden w-full">
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Card className="cursor-default shadow-none border rounded-none w-full text-left">
+                          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1.5">
+                            <CardTitle className="text-sm font-medium">Google Drive</CardTitle>
+                            <Cloud className="h-4 w-4 text-muted-foreground" />
+                          </CardHeader>
+                          <CardContent className="p-3 pt-0">
+                            <div className="text-xs text-muted-foreground">
+                              {driveStorageInfo.used} / {driveStorageInfo.total}
+                            </div>
+                            <Button variant="link" size="sm" className="p-0 h-auto text-xs mt-1 text-primary hover:text-primary/80" onClick={handleDisconnectDriveClick}>
+                              Disconnect
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" align="start" className="max-w-xs z-50">
+                        <p className="font-semibold mb-1">Cloud Storage Connected</p>
+                        <p>
+                          Your data is being backed up to Google Drive. Storage: {driveStorageInfo.used} / {driveStorageInfo.total}.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="hidden group-data-[collapsible=icon]:flex w-full">
+                   <SidebarMenuButton 
+                    onClick={() => alert("Open Google Drive settings (placeholder).")}
+                    tooltip={{
+                        children: <>
+                          <p className="font-semibold mb-1">Cloud Storage Connected</p>
+                          <p>Storage: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
+                        </>,
+                        side: 'right',
+                        align: 'center'
+                    }}
+                    className="w-full rounded-none"
                   >
-                    {isDriveConnected ? <Cloud className="h-5 w-5" /> : <DatabaseZap className="h-5 w-5" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right" align="center" className="max-w-xs z-50">
-                   <p className="font-semibold mb-1">Cloud Storage</p>
-                   <p>
-                    {isDriveConnected ? 
-                      `Connected to Google Drive. Storage: ${driveStorageInfo.used} / ${driveStorageInfo.total}` : 
-                      "Connect to Google Drive for cloud backup and cross-device access." }
-                  </p>
-                   {!isDriveConnected && (
-                    <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                      <strong>Important:</strong> Data is currently local to this browser.
-                    </p>
-                   )}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
+                    <Cloud />
+                    <span className="group-data-[collapsible=icon]:hidden">Google Drive Connected</span>
+                  </SidebarMenuButton>
+                </div>
+              </>
+            ) : (
+               <SidebarMenuButton 
+                onClick={handleConnectDriveClick}
+                tooltip={{
+                    children: <>
+                      <p className="font-semibold mb-1">Cloud Storage</p>
+                      <p>
+                        Connect to Google Drive to back up your stories, outlines, and characters,
+                        and access them across your devices.
+                      </p>
+                      <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
+                        <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only.
+                        This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
+                      </p>
+                    </>,
+                    side: 'right',
+                    align: 'center'
+                }}
+                className="w-full rounded-none"
+              >
+                <DatabaseZap />
+                <span className="group-data-[collapsible=icon]:hidden">Connect to Drive</span>
+              </SidebarMenuButton>
+            )}
+           </SidebarMenuItem>
+        </SidebarMenu>
       
         <SidebarMenu className="mt-auto">
            <SidebarMenuItem>
              <SidebarMenuButton 
                 asChild 
-                className="w-full justify-start rounded-none"
+                className="w-full rounded-none"
                 tooltip={{ children: "Support the Developer", side: 'right', align: 'center' }}
              >
                <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
@@ -176,3 +180,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

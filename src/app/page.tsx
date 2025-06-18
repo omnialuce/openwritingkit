@@ -2,7 +2,7 @@
 // src/app/page.tsx
 'use client';
 
-import { useEffect, useState, useCallback } from "react"; // Added useCallback
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle } from "lucide-react";
@@ -64,7 +64,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    updateStreakDisplay(); 
+    if (activeStoryId) { // Only update streak if a story is active initially
+        updateStreakDisplay();
+    } else {
+        setWritingStreak(0); // Reset streak if no story active on mount
+    }
 
     const handleStorageChange = (event: StorageEvent) => {
       if (!activeStoryId) return;
@@ -129,7 +133,7 @@ export default function DashboardPage() {
         </div>
       </section>
       
-      {!activeStoryId && (
+      {!activeStoryId && isMounted && (
          <Card className="border-primary">
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -147,71 +151,79 @@ export default function DashboardPage() {
                 <BookOpenCheck className="mr-2 h-4 w-4" /> Go to Stories
               </Button>
             </Link>
+            <p className="text-sm mt-3 text-muted-foreground">
+              From the Stories page, you can create your first project or select an existing one.
+            </p>
           </CardContent>
         </Card>
       )}
 
-      <section>
-        <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {quickActions.map((action) => (
-            <Card key={action.title} className="hover:shadow-md transition-shadow duration-300 rounded-none border">
-              <CardHeader>
-                <div className="flex items-start gap-3 mb-2">
-                  <action.icon className="h-7 w-7 text-primary mt-1" />
-                  <div>
-                    <CardTitle className="text-xl">{action.title}</CardTitle>
-                    <CardDescription>{action.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardFooter>
-                <Link href={action.href} passHref className="w-full">
-                  <Button variant="outline" className="w-full rounded-none" disabled={!activeStoryId && !['/stories', '/settings', '/ai-tools'].includes(action.href) }>
-                    {action.cta} <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {activeStoryId && isMounted && (
+        <>
+          <section>
+            <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {quickActions.map((action) => (
+                <Card key={action.title} className="hover:shadow-md transition-shadow duration-300 rounded-none border">
+                  <CardHeader>
+                    <div className="flex items-start gap-3 mb-2">
+                      <action.icon className="h-7 w-7 text-primary mt-1" />
+                      <div>
+                        <CardTitle className="text-xl">{action.title}</CardTitle>
+                        <CardDescription>{action.description}</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardFooter>
+                    <Link href={action.href} passHref className="w-full">
+                      <Button variant="outline" className="w-full rounded-none" disabled={!activeStoryId && !['/stories', '/settings', '/ai-tools'].includes(action.href) }>
+                        {action.cta} <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </section>
 
-      <section className="grid md:grid-cols-2 gap-6">
-        <Card className="rounded-none border">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-6 w-6 text-primary" />
-              <CardTitle>Daily Writing Streak {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
-            </div>
-            <CardDescription>Keep your momentum going! Streak is per story.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center">
-              <p className="text-6xl font-bold text-primary">{activeStoryId ? writingStreak : "-"}</p>
-              <p className="text-muted-foreground">{writingStreak === 1 ? "day" : "days"}</p>
-            </div>
-             {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">Select a story to see its streak.</p>}
-          </CardContent>
-        </Card>
-        <Card className="rounded-none border">
-          <CardHeader>
-             <div className="flex items-center gap-2">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <CardTitle>Word Count Goal {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
-            </div>
-            <CardDescription>Set and track your daily/weekly targets. (View in Analytics)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-muted-foreground text-center py-4">
-                <Link href="/analytics" passHref>
-                    <Button variant="link" disabled={!activeStoryId}>Set & View Goal in Analytics</Button>
-                </Link>
-                {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-1">Select a story first.</p>}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+          <section className="grid md:grid-cols-2 gap-6">
+            <Card className="rounded-none border">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-6 w-6 text-primary" />
+                  <CardTitle>Daily Writing Streak {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
+                </div>
+                <CardDescription>Keep your momentum going! Streak is per story.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <p className="text-6xl font-bold text-primary">{activeStoryId ? writingStreak : "-"}</p>
+                  <p className="text-muted-foreground">{writingStreak === 1 ? "day" : "days"}</p>
+                </div>
+                 {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">Select a story to see its streak.</p>}
+              </CardContent>
+            </Card>
+            <Card className="rounded-none border">
+              <CardHeader>
+                 <div className="flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                  <CardTitle>Word Count Goal {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
+                </div>
+                <CardDescription>Set and track your daily/weekly targets. (View in Analytics)</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-muted-foreground text-center py-4">
+                    <Link href="/analytics" passHref>
+                        <Button variant="link" disabled={!activeStoryId}>Set & View Goal in Analytics</Button>
+                    </Link>
+                    {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-1">Select a story first.</p>}
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        </>
+      )}
     </div>
   );
 }
+
