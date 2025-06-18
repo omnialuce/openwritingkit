@@ -71,8 +71,6 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
     const setOpen = React.useCallback(
@@ -83,21 +81,19 @@ const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
-
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        if (typeof window !== 'undefined') {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        }
       },
       [setOpenProp, open]
     )
 
-    // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile
         ? setOpenMobile((open) => !open)
         : setOpen((open) => !open)
     }, [isMobile, setOpen, setOpenMobile])
 
-    // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
@@ -108,13 +104,28 @@ const SidebarProvider = React.forwardRef<
           toggleSidebar()
         }
       }
-
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
+      if (typeof window !== 'undefined') {
+        window.addEventListener("keydown", handleKeyDown)
+        return () => window.removeEventListener("keydown", handleKeyDown)
+      }
     }, [toggleSidebar])
+    
+    React.useEffect(() => {
+      if (typeof window !== 'undefined') {
+        const cookieValue = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+          ?.split("=")[1]
+        if (cookieValue) {
+          const cookieOpenState = cookieValue === "true"
+          if (openProp === undefined && _open !== cookieOpenState) {
+            _setOpen(cookieOpenState)
+          }
+        }
+      }
+    }, [openProp, _open]);
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
+
     const state = open ? "expanded" : "collapsed"
 
     const contextValue = React.useMemo<SidebarContext>(
@@ -213,44 +224,39 @@ const Sidebar = React.forwardRef<
       )
     }
 
-    // This outer div is the 'peer' for SidebarInset
     return (
-      <div
+      <div // Outer PEER div. Should not have intrinsic size in the flex flow.
         ref={ref}
         className="group peer hidden md:block text-sidebar-foreground"
-        data-state={state} // 'expanded' or 'collapsed'
+        data-state={state}
         data-collapsible={(state === "collapsed" && collapsible === "icon") ? "icon" : collapsible}
         data-variant={variant}
         data-side={side}
       >
-        {/* Spacer div to push content, its width changes based on sidebar state */}
-        <div
-          className={cn(
-            "relative h-svh bg-transparent transition-[width] duration-200 ease-linear",
-            (state === "expanded" || collapsible !== "icon") && "w-[var(--sidebar-width)]",
-            state === "collapsed" && collapsible === "icon" && "w-[var(--sidebar-width-icon)]",
-            collapsible === "offcanvas" && state === "collapsed" && "!w-0" // offcanvas specific
-          )}
-        />
         {/* Actual Sidebar content, fixed position */}
         <div
           className={cn(
-            "fixed inset-y-0 z-10 flex h-svh transition-[width] duration-200 ease-linear",
+            "fixed inset-y-0 z-10 flex h-svh transition-[width,transform] duration-200 ease-linear",
             side === "left" ? "left-0" : "right-0",
-            (state === "expanded" || collapsible !== "icon") && "w-[var(--sidebar-width)]",
-            state === "collapsed" && collapsible === "icon" && "w-[var(--sidebar-width-icon)]",
-            collapsible === "offcanvas" && state === "collapsed" && (side === "left" ? "!left-[calc(var(--sidebar-width)*-1)] !w-[var(--sidebar-width)]" : "!right-[calc(var(--sidebar-width)*-1)] !w-[var(--sidebar-width)]"),
-            (variant === "floating" || variant === "inset") && "p-2",
-            className
+            // Width classes
+            (state === "expanded" || (collapsible !== "icon" && collapsible !== "offcanvas")) && "w-[var(--sidebar-width)]",
+            (state === "collapsed" && collapsible === "icon") && "w-[var(--sidebar-width-icon)]",
+            (state === "collapsed" && collapsible === "offcanvas") && "w-[var(--sidebar-width)]", // Offcanvas keeps full width but translates
+            // Transform for offcanvas
+            (collapsible === "offcanvas" && state === "collapsed") && (side === "left" ? "!-translate-x-full" : "!translate-x-full"),
+            // User-provided classes for this fixed container
+            className 
           )}
-          {...props}
+          {...props} // User-provided props for this fixed container
         >
+          {/* Inner wrapper for styling like background, border, rounded corners */}
           <div
-            data-sidebar="sidebar" // Keep this for styling children
-            className={cn("flex h-full w-full flex-col bg-sidebar",
-             variant === "sidebar" && (side === "left" ? "border-r" : "border-l"),
-             variant === "floating" && "rounded-lg border border-sidebar-border shadow",
-             variant === "inset" && "rounded-lg" // Inset might not need its own border if SidebarInset handles it
+            data-sidebar="sidebar"
+            className={cn(
+              "flex h-full w-full flex-col bg-sidebar",
+              variant === "sidebar" && (side === "left" ? "border-r border-sidebar-border" : "border-l border-sidebar-border"),
+              variant === "floating" && "m-2 rounded-lg border border-sidebar-border shadow",
+              variant === "inset" && "m-2 rounded-lg" 
             )}
           >
             {children}
@@ -326,22 +332,19 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background transition-[margin-left] duration-200 ease-linear",
-        // Default 'sidebar' variant styles for left sidebar
-        "md:peer-data-[variant=sidebar]:peer-data-[side=left]:ml-[var(--sidebar-width)]",
-        "md:peer-data-[variant=sidebar]:peer-data-[side=left][data-state=collapsed]:ml-[var(--sidebar-width-icon)]",
+        // Default sidebar variant, left side
+        "md:peer-data-[variant=sidebar][data-side=left][data-state=expanded]:ml-[var(--sidebar-width)]",
+        "md:peer-data-[variant=sidebar][data-side=left][data-state=collapsed][data-collapsible=icon]:ml-[var(--sidebar-width-icon)]",
+        "md:peer-data-[variant=sidebar][data-side=left][data-state=collapsed][data-collapsible=offcanvas]:ml-0",
         
-        // Placeholder for right sidebar (if implemented)
-        // "md:peer-data-[variant=sidebar]:peer-data-[side=right]:mr-[var(--sidebar-width)]",
-        // "md:peer-data-[variant=sidebar]:peer-data-[side=right][data-state=collapsed]:mr-[var(--sidebar-width-icon)]",
+        // Inset variant (main content is also inset)
+        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))]",
+        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "md:peer-data-[variant=inset][data-side=left][data-state=expanded]:ml-[calc(var(--sidebar-width)_+_theme(spacing.2))]", // Adjust for sidebar's own m-2
+        "md:peer-data-[variant=inset][data-side=left][data-state=collapsed][data-collapsible=icon]:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.2))]",
+        // Floating variant (main content fills space, sidebar overlays)
+        "md:peer-data-[variant=floating]:ml-0", // If sidebar truly floats and does not push content
 
-        // 'inset' variant styles
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))]", // Takes full height minus padding
-        "md:peer-data-[variant=inset]:m-2", // Margin on all sides for inset
-        "md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
-        // For 'inset', the margin is handled by m-2, so explicit ml might not be needed or needs to be adjusted
-        // If sidebar is 'inset' and on left, its width (icon or full) + p-2 needs to be considered for main content's ml
-        // This part might need refinement if 'inset' variant is heavily used with collapsed state.
-        // For now, focusing on 'sidebar' variant as used in AppSidebar.
         className
       )}
       {...props}
@@ -479,7 +482,6 @@ const SidebarGroupAction = React.forwardRef<
       data-sidebar="group-action"
       className={cn(
         "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "group-data-[collapsible=icon]:hidden",
         className
@@ -625,7 +627,6 @@ const SidebarMenuAction = React.forwardRef<
       data-sidebar="menu-action"
       className={cn(
         "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&gt;svg]:size-4 [&gt;svg]:shrink-0",
-        // Increases the hit area of the button on mobile.
         "after:absolute after:-inset-2 after:md:hidden",
         "peer-data-[size=sm]/menu-button:top-1",
         "peer-data-[size=default]/menu-button:top-1.5",
@@ -668,7 +669,6 @@ const SidebarMenuSkeleton = React.forwardRef<
     showIcon?: boolean
   }
 >(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
   const width = React.useMemo(() => {
     return `${Math.floor(Math.random() * 40) + 50}%`
   }, [])
