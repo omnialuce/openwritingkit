@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarSeparator,
+  useSidebar, // Import useSidebar to access state if needed for tooltip logic
 } from '@/components/ui/sidebar';
 import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
@@ -21,13 +22,14 @@ import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
+  TooltipProvider, // TooltipProvider is already in SidebarProvider
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { state: sidebarState, isMobile } = useSidebar(); // Get sidebar state and mobile status
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
   const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
@@ -53,12 +55,18 @@ export function AppSidebar() {
           isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
           disabled={item.disabled}
           aria-disabled={item.disabled}
-          tooltip={{ children: item.label, side: 'right', align: 'center' }}
-          className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0")}
+          tooltip={{ 
+            children: item.label, 
+            side: 'right', 
+            align: 'center',
+            // hidden: sidebarState === 'expanded' && !isMobile // Hide tooltip if expanded on desktop
+          }}
+          className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
         >
           <Link href={item.href}>
             <item.icon />
-            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+            {/* Apply specific group selector for hiding text */}
+            <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -68,8 +76,15 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-          <span className="font-headline text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
+        <Link href="/" className={cn(
+            "flex items-center gap-2",
+            "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" // Center logo when collapsed
+          )}>
+           {/* You can add a smaller icon-only logo here for collapsed state if desired */}
+          <span className={cn(
+              "font-headline text-xl font-semibold text-primary",
+              "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" // Hide text when collapsed
+            )}>
             OpenWritingKit
           </span>
         </Link>
@@ -87,78 +102,42 @@ export function AppSidebar() {
         
         <SidebarMenu className="mt-2">
            <SidebarMenuItem>
-            {isDriveConnected ? (
-              <>
-                <div className="group-data-[collapsible=icon]:hidden w-full">
-                  <TooltipProvider delayDuration={100}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Card className="cursor-default shadow-none border rounded-none w-full text-left">
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1.5">
-                            <CardTitle className="text-sm font-medium">Google Drive</CardTitle>
-                            <Cloud className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent className="p-3 pt-0">
-                            <div className="text-xs text-muted-foreground">
-                              {driveStorageInfo.used} / {driveStorageInfo.total}
-                            </div>
-                            <Button variant="link" size="sm" className="p-0 h-auto text-xs mt-1 text-primary hover:text-primary/80" onClick={handleDisconnectDriveClick}>
-                              Disconnect
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" align="start" className="max-w-xs z-50">
-                        <p className="font-semibold mb-1">Cloud Storage Connected</p>
-                        <p>
-                          Your data is being backed up to Google Drive. Storage: {driveStorageInfo.used} / {driveStorageInfo.total}.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="hidden group-data-[collapsible=icon]:flex w-full">
-                   <SidebarMenuButton 
-                    onClick={() => alert("Open Google Drive settings (placeholder).")}
-                    tooltip={{
-                        children: <>
-                          <p className="font-semibold mb-1">Cloud Storage Connected</p>
-                          <p>Storage: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
-                        </>,
-                        side: 'right',
-                        align: 'center'
-                    }}
-                    className="w-full rounded-none"
-                  >
-                    <Cloud />
-                    <span className="group-data-[collapsible=icon]:hidden">Google Drive Connected</span>
-                  </SidebarMenuButton>
-                </div>
-              </>
-            ) : (
-               <SidebarMenuButton 
-                onClick={handleConnectDriveClick}
+              <SidebarMenuButton 
+                onClick={isDriveConnected ? () => alert("Open Google Drive settings (placeholder).") : handleConnectDriveClick}
                 tooltip={{
                     children: <>
-                      <p className="font-semibold mb-1">Cloud Storage</p>
-                      <p>
-                        Connect to Google Drive to back up your stories, outlines, and characters,
-                        and access them across your devices.
-                      </p>
-                      <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                        <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only.
-                        This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
-                      </p>
+                      <p className="font-semibold mb-1">{isDriveConnected ? "Cloud Storage Connected" : "Cloud Storage"}</p>
+                      {isDriveConnected ? (
+                        <p>Storage: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
+                      ) : (
+                        <>
+                        <p>
+                          Connect to Google Drive to back up your stories, outlines, and characters,
+                          and access them across your devices.
+                        </p>
+                        <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
+                          <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only.
+                          This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
+                        </p>
+                        </>
+                      )}
                     </>,
                     side: 'right',
-                    align: 'center'
+                    align: 'center',
+                    // hidden: sidebarState === 'expanded' && !isMobile // Hide tooltip if expanded on desktop
                 }}
                 className="w-full rounded-none"
               >
-                <DatabaseZap />
-                <span className="group-data-[collapsible=icon]:hidden">Connect to Drive</span>
+                {isDriveConnected ? <Cloud /> : <DatabaseZap />}
+                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
+                  {isDriveConnected ? `Drive: ${driveStorageInfo.used}` : "Connect to Drive"}
+                  {isDriveConnected && (
+                    <Button variant="link" size="sm" className="p-0 h-auto text-xs ml-auto text-primary hover:text-primary/80 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" onClick={handleDisconnectDriveClick}>
+                      Disconnect
+                    </Button>
+                  )}
+                </span>
               </SidebarMenuButton>
-            )}
            </SidebarMenuItem>
         </SidebarMenu>
       
@@ -167,11 +146,11 @@ export function AppSidebar() {
              <SidebarMenuButton 
                 asChild 
                 className="w-full rounded-none"
-                tooltip={{ children: "Support the Developer", side: 'right', align: 'center' }}
+                tooltip={{ children: "Support the Developer", side: 'right', align: 'center' /*, hidden: sidebarState === 'expanded' && !isMobile */}}
              >
                <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
                  <Coffee />
-                 <span className="group-data-[collapsible=icon]:hidden">Buy Me a Coffee</span>
+                 <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">Buy Me a Coffee</span>
                </Link>
              </SidebarMenuButton>
            </SidebarMenuItem>
@@ -180,4 +159,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
