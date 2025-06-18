@@ -16,6 +16,7 @@ import {
 import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Coffee } from 'lucide-react'; // Added Coffee icon
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -59,8 +60,11 @@ export function AppSidebar() {
           {secondaryNavItems.map(renderNavItem)}
         </SidebarMenu>
         <div className="mt-auto p-2 group-data-[collapsible=icon]:hidden">
-            <Button variant="outline" className="w-full rounded-none">
-                Upgrade to Pro
+            <Button variant="outline" className="w-full rounded-none" asChild>
+              <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
+                <Coffee className="mr-2 h-4 w-4" />
+                Buy Me a Coffee
+              </Link>
             </Button>
         </div>
       </SidebarFooter>
