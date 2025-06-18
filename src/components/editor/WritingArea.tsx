@@ -1,7 +1,8 @@
+
 // src/components/editor/WritingArea.tsx
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,9 +20,10 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 type Theme = 'light' | 'dark';
+const EDITOR_CONTENT_KEY = 'openwriting-kit-active-document-content';
 
 export function WritingArea() {
-  const [content, setContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>('linguaflow-editor-content', '');
+  const [content, setContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(EDITOR_CONTENT_KEY, '');
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [theme, setTheme] = useState<Theme>('light');
@@ -30,26 +32,16 @@ export function WritingArea() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Session Timer State
   const [sessionTime, setSessionTime] = useState(0); // in seconds
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
 
   useEffect(() => {
     const words = content.trim() ? content.trim().split(/\s+/).filter(word => word.length > 0) : [];
     setWordCount(words.length);
     setCharCount(content.length);
-
-    // Update last active date for streak counter whenever content changes
-    if (typeof window !== 'undefined' && content !== '') { // only update if there's content
-        const today = new Date().toISOString().split('T')[0];
-        localStorage.setItem('linguaflow-last-active-date', today);
-    }
-
   }, [content]);
 
-  // Session Timer Effects
   useEffect(() => {
     if (isTimerRunning) {
       timerIntervalRef.current = setInterval(() => {
@@ -83,7 +75,6 @@ export function WritingArea() {
     setSessionTime(0);
   };
 
-
   const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(event.target.value);
   };
@@ -109,7 +100,7 @@ export function WritingArea() {
         const reader = new FileReader();
         reader.onload = (e) => {
           const text = e.target?.result as string;
-          setContent(text);
+          setContent(text); // This will trigger autosave with versioning
           toast({ title: "Success", description: "File content imported." });
         };
         reader.onerror = () => {
@@ -119,7 +110,7 @@ export function WritingArea() {
       } else {
         toast({ title: "Error", description: "Please select a .txt file.", variant: "destructive" });
       }
-      event.target.value = '';
+      event.target.value = ''; // Reset file input
     }
   };
 
@@ -129,7 +120,7 @@ export function WritingArea() {
   
   const themeClasses = {
     light: 'bg-background text-foreground',
-    dark: 'bg-neutral-900 text-neutral-100', // Specific dark for editor content area
+    dark: 'bg-neutral-900 text-neutral-100', 
   };
 
   const toggleFocusMode = () => setIsFocusMode(!isFocusMode);
@@ -185,12 +176,11 @@ export function WritingArea() {
                   <DropdownMenuItem disabled>Export as PDF (soon)</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="ghost" size="icon" onClick={() => { if(confirm('Are you sure you want to clear all content? This cannot be undone.')) clearSavedContent();}} title="Clear Content">
+              <Button variant="ghost" size="icon" onClick={() => { if(confirm('Are you sure you want to clear all content and history? This cannot be undone.')) clearSavedContent();}} title="Clear Content & History">
                 <Trash2 className="h-5 w-5 text-destructive" />
               </Button>
             </div>
             <div className="flex items-center gap-1 md:gap-2">
-               {/* Timer Controls */}
               <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"}>
                 {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
               </Button>
@@ -198,8 +188,6 @@ export function WritingArea() {
                 <RotateCcw className="h-5 w-5 text-muted-foreground" />
               </Button>
               <span className="text-sm text-muted-foreground min-w-[70px] text-center"><TimerIcon className="inline h-4 w-4 mr-1" />{formatTime(sessionTime)}</span>
-
-
               <Button variant="ghost" size="icon" onClick={toggleFocusMode} title="Focus Mode">
                 <Expand className="h-5 w-5 text-muted-foreground" />
               </Button>
@@ -240,7 +228,7 @@ export function WritingArea() {
           <div className="p-3 border-t border-border text-sm text-muted-foreground flex justify-between items-center">
             <span>Words: {wordCount}</span>
             <span>Chars: {charCount}</span>
-            <span>{isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Saved"}</span>
+            <span>{isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved"}</span>
           </div>
         )}
       </Card>

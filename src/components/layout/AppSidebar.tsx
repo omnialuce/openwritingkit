@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Square } from 'lucide-react';
+// Removed Square import
 import {
   Sidebar,
   SidebarHeader,
@@ -39,13 +39,14 @@ export function AppSidebar() {
     </SidebarMenuItem>
   );
 
+
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-          <Square className="h-8 w-8 text-primary group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
+          {/* Removed Square icon */}
           <span className="font-headline text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
-            LinguaFlow
+            OpenWriting Kit
           </span>
         </Link>
       </SidebarHeader>

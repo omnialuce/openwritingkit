@@ -1,3 +1,4 @@
+
 import type { ReactNode } from 'react';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { AppHeader } from '@/components/layout/AppHeader';
@@ -18,7 +19,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
         <footer className="p-4 text-center text-sm text-muted-foreground border-t">
-          LinguaFlow &copy; {new Date().getFullYear()}
+          OpenWriting Kit &copy; {new Date().getFullYear()}
         </footer>
       </SidebarInset>
       <Toaster />

@@ -1,3 +1,4 @@
+
 // src/components/analytics/WordGoalCard.tsx
 'use client';
 
@@ -8,8 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Target, Edit3, Save } from 'lucide-react';
 
-const WORD_GOAL_KEY = 'linguaflow-word-goal';
-const EDITOR_CONTENT_KEY = 'linguaflow-editor-content'; // Assuming this is where editor content is saved
+const WORD_GOAL_KEY = 'openwriting-kit-word-goal';
+const EDITOR_DOC_KEY = 'openwriting-kit-active-document-content'; 
+
+interface DocumentData {
+  current: string;
+  // other fields if needed, like history or lastSaved
+}
 
 export function WordGoalCard() {
   const [goal, setGoal] = useState<number>(1000);
@@ -18,27 +24,34 @@ export function WordGoalCard() {
   const [isEditingGoal, setIsEditingGoal] = useState<boolean>(false);
   const [inputValue, setInputValue] = useState<string>(goal.toString());
 
+  const updateCurrentWords = () => {
+    if (typeof window !== 'undefined') {
+      const editorDocRaw = localStorage.getItem(EDITOR_DOC_KEY);
+      if (editorDocRaw) {
+        try {
+          const docData = JSON.parse(editorDocRaw) as DocumentData;
+          const editorContent = docData.current || "";
+          const words = editorContent.trim() ? editorContent.trim().split(/\s+/).filter(w => w.length > 0) : [];
+          setCurrentWords(words.length);
+        } catch (e) {
+          setCurrentWords(0);
+          console.error("Error parsing editor document data for word goal:", e);
+        }
+      } else {
+        setCurrentWords(0);
+      }
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Load goal from localStorage
       const savedGoal = localStorage.getItem(WORD_GOAL_KEY);
       if (savedGoal) {
         const numGoal = parseInt(savedGoal, 10);
         setGoal(numGoal);
         setInputValue(numGoal.toString());
       }
-
-      // Load current words from localStorage (editor content)
-      const editorContentRaw = localStorage.getItem(EDITOR_CONTENT_KEY);
-      if (editorContentRaw) {
-        try {
-          const editorContent = JSON.parse(editorContentRaw) as string;
-          const words = editorContent.trim() ? editorContent.trim().split(/\s+/).filter(w => w.length > 0) : [];
-          setCurrentWords(words.length);
-        } catch (e) {
-          setCurrentWords(0);
-        }
-      }
+      updateCurrentWords(); // Initial load
     }
   }, []);
 
@@ -50,19 +63,10 @@ export function WordGoalCard() {
     }
   }, [currentWords, goal]);
 
-  // Listen to storage changes to update current words if editor content changes
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === EDITOR_CONTENT_KEY && event.newValue) {
-        try {
-          const editorContent = JSON.parse(event.newValue) as string;
-          const words = editorContent.trim() ? editorContent.trim().split(/\s+/).filter(w => w.length > 0) : [];
-          setCurrentWords(words.length);
-        } catch (e) {
-          setCurrentWords(0);
-        }
-      } else if (event.key === EDITOR_CONTENT_KEY && !event.newValue) {
-        setCurrentWords(0);
+      if (event.key === EDITOR_DOC_KEY) {
+        updateCurrentWords();
       }
     };
 
@@ -83,8 +87,7 @@ export function WordGoalCard() {
       localStorage.setItem(WORD_GOAL_KEY, numValue.toString());
       setIsEditingGoal(false);
     } else {
-      // Handle invalid input, maybe show a toast
-      setInputValue(goal.toString()); // Reset to current valid goal
+      setInputValue(goal.toString()); 
     }
   };
 
@@ -96,7 +99,7 @@ export function WordGoalCard() {
             <Target className="h-6 w-6 text-primary" />
             <CardTitle>Word Count Goal</CardTitle>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)}>
+          <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)} title={isEditingGoal ? "Save Goal" : "Edit Goal"}>
             {isEditingGoal ? <Save className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
           </Button>
         </div>

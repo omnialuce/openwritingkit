@@ -1,11 +1,12 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'LinguaFlow - Your Creative Writing Companion',
-  description: 'Enhance your writing with LinguaFlow\'s AI-powered tools and focus-enhancing features.',
+  title: 'OpenWriting Kit - Your Creative Writing Companion',
+  description: 'Enhance your writing with OpenWriting Kit\'s AI-powered tools and focus-enhancing features.',
 };
 
 export default function RootLayout({

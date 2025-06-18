@@ -1,20 +1,36 @@
+
 // src/hooks/useAutosave.ts
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useToast } from '@/hooks/use-toast'; // Keep for toast notifications
 
-function useAutosave<T>(
-  key: string,
+const MAX_HISTORY_LENGTH = 20; // Max number of versions to keep in history
+
+interface DocumentData<T> {
+  current: T;
+  history: Array<{ timestamp: string; text: T }>;
+  lastSaved: string | null;
+}
+
+function useAutosave<T extends string>( // Ensure T is a string for text content
+  key: string, // e.g., 'openwriting-kit-active-document-content'
   initialValue: T,
-  saveInterval: number = 2000 // Default 2 seconds
+  saveInterval: number = 2000
 ): [T, (value: T) => void, boolean, () => void, Date | null] {
-  const [value, setValue] = useState<T>(() => {
+  const { toast } = useToast(); // For notifications
+
+  const [currentText, setCurrentTextInternal] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
     }
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      if (item) {
+        const data: DocumentData<T> = JSON.parse(item);
+        return data.current || initialValue;
+      }
+      return initialValue;
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
       return initialValue;
@@ -22,100 +38,131 @@ function useAutosave<T>(
   });
 
   const [isSaving, setIsSaving] = useState(false);
-  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        const data: DocumentData<T> = JSON.parse(item);
+        return data.lastSaved ? new Date(data.lastSaved) : null;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  });
 
-  const saveValue = useCallback(
-    (currentValue: T) => {
+  const saveDocument = useCallback(
+    (textToSave: T) => {
       if (typeof window !== 'undefined') {
         setIsSaving(true);
         try {
-          const item = JSON.stringify(currentValue);
-          window.localStorage.setItem(key, item);
           const now = new Date();
+          const timestamp = now.toISOString();
+          
+          let documentData: DocumentData<T>;
+          const existingItem = window.localStorage.getItem(key);
+          if (existingItem) {
+            documentData = JSON.parse(existingItem);
+          } else {
+            documentData = { current: initialValue, history: [], lastSaved: null };
+          }
+
+          // Add to history if different from latest history entry
+          const latestHistoryEntry = documentData.history[0]?.text;
+          if (textToSave !== latestHistoryEntry) {
+            const newHistoryEntry = { timestamp, text: textToSave };
+            documentData.history.unshift(newHistoryEntry);
+            if (documentData.history.length > MAX_HISTORY_LENGTH) {
+              documentData.history.pop();
+            }
+          }
+          
+          documentData.current = textToSave;
+          documentData.lastSaved = timestamp;
+
+          window.localStorage.setItem(key, JSON.stringify(documentData));
           setLastSavedTime(now);
 
-          // For streak counter: update last active date on save
+          // Streak counter logic with new keys
           const today = now.toISOString().split('T')[0];
-          const lastActiveDate = localStorage.getItem('linguaflow-last-active-date');
-          const currentStreak = parseInt(localStorage.getItem('linguaflow-writing-streak') || '0', 10);
-          const lastStreakDate = localStorage.getItem('linguaflow-last-streak-date');
+          const lastActiveDateKey = 'openwriting-kit-last-active-date';
+          const streakKey = 'openwriting-kit-writing-streak';
+          const lastStreakDateKey = 'openwriting-kit-last-streak-date';
 
+          const lastActiveDate = localStorage.getItem(lastActiveDateKey);
+          
           if (lastActiveDate !== today) { // First save of a new day
-            localStorage.setItem('linguaflow-last-active-date', today);
+            localStorage.setItem(lastActiveDateKey, today);
+            let currentStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
+            const lastStreakUpdateDate = localStorage.getItem(lastStreakDateKey);
             
-            // Update streak
             const yesterday = new Date(now);
             yesterday.setDate(now.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-            if (lastStreakDate === yesterdayStr) { // Continued from yesterday
-              localStorage.setItem('linguaflow-writing-streak', (currentStreak + 1).toString());
+            if (lastStreakUpdateDate === yesterdayStr) { // Continued from yesterday
+              currentStreak++;
             } else { // New streak or first day
-              localStorage.setItem('linguaflow-writing-streak', '1');
+              currentStreak = 1;
             }
-            localStorage.setItem('linguaflow-last-streak-date', today);
-            // Dispatch a storage event so dashboard updates if open
-            window.dispatchEvent(new Event('storage'));
+            localStorage.setItem(streakKey, currentStreak.toString());
+            localStorage.setItem(lastStreakDateKey, today);
+            window.dispatchEvent(new Event('storage')); // Notify other tabs/components
           }
-
-
         } catch (error) {
           console.error(`Error saving to localStorage key "${key}":`, error);
+          toast({ title: "Save Error", description: "Could not save changes.", variant: "destructive" });
         } finally {
-          setTimeout(() => setIsSaving(false), 500);
+          setTimeout(() => setIsSaving(false), 500); // UI feedback for saving
         }
       }
     },
-    [key]
+    [key, initialValue, toast]
   );
   
   useEffect(() => {
     const handler = setTimeout(() => {
       if (typeof window !== 'undefined') {
-        const storedItem = window.localStorage.getItem(key);
-        // Only save if content has actually changed from what's in localStorage or if it's the initial non-empty value
-        if (JSON.stringify(value) !== storedItem || (value !== initialValue && storedItem === null && JSON.stringify(value) !== JSON.stringify(initialValue))) {
-           saveValue(value);
+        const item = window.localStorage.getItem(key);
+        let existingCurrentText = initialValue;
+        if (item) {
+          try {
+            const data: DocumentData<T> = JSON.parse(item);
+            existingCurrentText = data.current;
+          } catch { /* ignore parse error, use initialValue */ }
+        }
+        if (currentText !== existingCurrentText || (currentText !== initialValue && !item) ) {
+           saveDocument(currentText);
         }
       }
     }, saveInterval);
 
     return () => clearTimeout(handler);
-  }, [value, saveInterval, saveValue, initialValue, key]);
+  }, [currentText, saveInterval, saveDocument, key, initialValue]);
 
-
-  const clearSavedValue = useCallback(() => {
+  const clearSavedDocument = useCallback(() => {
     if (typeof window !== 'undefined') {
       try {
         window.localStorage.removeItem(key);
-        setValue(initialValue); 
+        setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
-        // Optionally, clear related streak data if content is fully cleared
-        // localStorage.removeItem('linguaflow-last-active-date');
-        // localStorage.removeItem('linguaflow-writing-streak');
-        // localStorage.removeItem('linguaflow-last-streak-date');
-        // window.dispatchEvent(new Event('storage'));
-        toast({ title: "Content Cleared", description: "The editor content has been cleared from local storage." });
+        // Optionally clear streak if all content is removed - for now, streak is independent of specific doc clear
+        toast({ title: "Content Cleared", description: "The document content and its history have been cleared." });
       } catch (error) {
         console.error(`Error clearing localStorage key "${key}":`, error);
-         toast({ title: "Error", description: "Could not clear content.", variant: "destructive" });
+        toast({ title: "Error", description: "Could not clear content.", variant: "destructive" });
       }
     }
-  }, [key, initialValue]);
+  }, [key, initialValue, toast]);
 
-  // Load last saved time on initial mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-        const item = window.localStorage.getItem(key);
-        if (item) {
-            // This doesn't store the actual save time, just that it exists.
-            // For actual last saved time, it's updated on saveValue.
-            // If you need to persist lastSavedTime itself, it'd need its own localStorage item.
-        }
-    }
-  }, [key]);
+  const setAndSaveCurrentText = (value: T) => {
+    setCurrentTextInternal(value);
+    // Immediate save on explicit set can be considered, or rely on autosave interval
+    // For now, rely on autosave interval to pick up the change.
+  };
 
-  return [value, setValue, isSaving, clearSavedValue, lastSavedTime];
+  return [currentText, setAndSaveCurrentText, isSaving, clearSavedDocument, lastSavedTime];
 }
 
 export default useAutosave;
