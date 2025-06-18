@@ -5,8 +5,8 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'OpenWriting Kit - Your Creative Writing Companion',
-  description: 'Enhance your writing with OpenWriting Kit\'s AI-powered tools and focus-enhancing features.',
+  title: 'OpenWritingKit - Your Creative Writing Companion',
+  description: 'Enhance your writing with OpenWritingKit\'s AI-powered tools and focus-enhancing features.',
 };
 
 export default function RootLayout({

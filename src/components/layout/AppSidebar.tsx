@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-// Removed Square import
 import {
   Sidebar,
   SidebarHeader,
@@ -22,21 +21,21 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   const renderNavItem = (item: NavItem) => (
-    <SidebarMenuItem key={item.href}>
-      <SidebarMenuButton
-        asChild
-        isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
-        disabled={item.disabled}
-        aria-disabled={item.disabled}
-        tooltip={{ children: item.label, side: 'right', align: 'center' }}
-        className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
-      >
-        <Link href={item.href}>
-          <item.icon />
-          <span>{item.label}</span>
-        </Link>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+     <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton
+          asChild
+          isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+          disabled={item.disabled}
+          aria-disabled={item.disabled}
+          tooltip={{ children: item.label, side: 'right', align: 'center' }}
+          className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
+        >
+          <Link href={item.href}>
+            <item.icon />
+            <span>{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
   );
 
 
@@ -44,9 +43,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-          {/* Removed Square icon */}
           <span className="font-headline text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
-            OpenWriting Kit
+            OpenWritingKit
           </span>
         </Link>
       </SidebarHeader>

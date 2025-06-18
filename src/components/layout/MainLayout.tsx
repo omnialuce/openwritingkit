@@ -19,7 +19,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
         <footer className="p-4 text-center text-sm text-muted-foreground border-t">
-          OpenWriting Kit &copy; {new Date().getFullYear()}
+          OpenWritingKit &copy; {new Date().getFullYear()}
         </footer>
       </SidebarInset>
       <Toaster />
