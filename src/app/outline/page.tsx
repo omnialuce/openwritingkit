@@ -1,14 +1,18 @@
+
 // src/app/outline/page.tsx
 'use client';
 
-import { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Image from 'next/image'; // Added this import
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,28 +24,49 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from '@/components/ui/badge';
+
+type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
 
 interface OutlineItem {
   id: string;
   title: string;
   notes?: string;
+  type: OutlineItemType;
 }
 
-const OUTLINE_STORAGE_KEY = 'linguaflow-outline-items';
+const OUTLINE_STORAGE_KEY = 'linguaflow-outline-items'; // Keep old key for compatibility
+const itemTypes: OutlineItemType[] = ['Chapter', 'Scene', 'Plot Point/Notes'];
 
 export default function OutlineBuilderPage() {
   const [items, setItems] = useState<OutlineItem[]>([]);
+  
+  // State for Add New Item Dialog
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemNotes, setNewItemNotes] = useState('');
+  const [newItemType, setNewItemType] = useState<OutlineItemType>('Plot Point/Notes');
+
+  // State for Edit Item Form (existing)
   const [editingItem, setEditingItem] = useState<OutlineItem | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  // Note: Editing item type is not part of this change, but could be added later.
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedItems = localStorage.getItem(OUTLINE_STORAGE_KEY);
       if (storedItems) {
-        setItems(JSON.parse(storedItems));
+        try {
+          const parsedItems = JSON.parse(storedItems).map((item: any) => ({
+            ...item,
+            type: item.type || 'Plot Point/Notes' // Default type for old items
+          }));
+          setItems(parsedItems as OutlineItem[]);
+        } catch (e) {
+          console.error("Failed to parse outline items from localStorage", e);
+          setItems([]);
+        }
       }
     }
   }, []);
@@ -52,6 +77,17 @@ export default function OutlineBuilderPage() {
     }
   }, [items]);
 
+  const resetAddForm = () => {
+    setNewItemTitle('');
+    setNewItemNotes('');
+    setNewItemType('Plot Point/Notes');
+  };
+
+  const handleOpenAddDialog = () => {
+    resetAddForm();
+    setIsAddDialogOpen(true);
+  };
+
   const handleAddItem = (e: FormEvent) => {
     e.preventDefault();
     if (!newItemTitle.trim()) return;
@@ -59,10 +95,11 @@ export default function OutlineBuilderPage() {
       id: Date.now().toString(),
       title: newItemTitle.trim(),
       notes: newItemNotes.trim() || undefined,
+      type: newItemType,
     };
     setItems([...items, newItem]);
-    setNewItemTitle('');
-    setNewItemNotes('');
+    setIsAddDialogOpen(false);
+    resetAddForm();
   };
 
   const handleDeleteItem = (id: string) => {
@@ -91,51 +128,89 @@ export default function OutlineBuilderPage() {
     ));
     handleCancelEdit();
   };
+  
+  const getTypeBadgeVariant = (type: OutlineItemType) => {
+    switch (type) {
+      case 'Chapter': return 'default';
+      case 'Scene': return 'secondary';
+      case 'Plot Point/Notes': return 'outline';
+      default: return 'outline';
+    }
+  };
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold mb-2 flex items-center">
-          <ListTree className="mr-3 h-8 w-8 text-primary" /> Outline Builder
-        </h1>
-        <p className="text-muted-foreground">Structure your story with chapters, scenes, and key plot points.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2 flex items-center">
+            <ListTree className="mr-3 h-8 w-8 text-primary" /> Outline Builder
+          </h1>
+          <p className="text-muted-foreground">Structure your story with chapters, scenes, and key plot points.</p>
+        </div>
+        <Button onClick={handleOpenAddDialog}>
+          <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
+        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>New Outline Item</CardTitle>
-        </CardHeader>
-        <form onSubmit={handleAddItem}>
-          <CardContent className="space-y-4">
-            <div>
-              <label htmlFor="newItemTitle" className="block text-sm font-medium mb-1">Title</label>
-              <Input
-                id="newItemTitle"
-                value={newItemTitle}
-                onChange={(e) => setNewItemTitle(e.target.value)}
-                placeholder="e.g., Chapter 1: The Discovery, Scene: The Confrontation"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="newItemNotes" className="block text-sm font-medium mb-1">Notes (Optional)</label>
-              <Textarea
-                id="newItemNotes"
-                value={newItemNotes}
-                onChange={(e) => setNewItemNotes(e.target.value)}
-                placeholder="Add brief notes or a summary for this item..."
-                rows={3}
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit">
-              <PlusCircle className="mr-2 h-5 w-5" /> Add Item
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+      {/* Add New Item Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
+          setIsAddDialogOpen(isOpen);
+          if (!isOpen) resetAddForm();
+      }}>
+        <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Add New Outline Item</DialogTitle>
+              <DialogDescription>
+                Choose a type, add a title, and optional notes for your new outline item.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddItem} className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="itemType" className="text-right">Type</Label>
+                <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select item type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {itemTypes.map(type => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="newItemTitleDialog" className="text-right">Title</Label>
+                <Input 
+                  id="newItemTitleDialog" 
+                  value={newItemTitle} 
+                  onChange={(e) => setNewItemTitle(e.target.value)} 
+                  className="col-span-3" 
+                  placeholder="e.g., The Discovery"
+                  required 
+                />
+              </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="newItemNotesDialog" className="text-right pt-2">Notes</Label>
+                <Textarea 
+                  id="newItemNotesDialog" 
+                  value={newItemNotes} 
+                  onChange={(e) => setNewItemNotes(e.target.value)} 
+                  className="col-span-3" 
+                  rows={4}
+                  placeholder="Add brief notes or a summary..."
+                />
+              </div>
+              <DialogFooter className="mt-4">
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button type="submit">Add Item</Button>
+              </DialogFooter>
+            </form>
+        </DialogContent>
+      </Dialog>
 
+      {/* Edit Item Form (Existing - Rendered as a Card when editingItem is not null) */}
       {editingItem && (
         <Card className="mt-6">
           <CardHeader>
@@ -183,18 +258,13 @@ export default function OutlineBuilderPage() {
         </CardHeader>
         <CardContent>
           {items.length > 0 ? (
-            <ScrollArea className="h-[400px] pr-4"> {/* Added ScrollArea */}
+            <ScrollArea className="h-[400px] pr-4">
               <ul className="space-y-4">
                 {items.map((item) => (
                   <li key={item.id} className="p-4 border rounded-md hover:shadow-sm transition-shadow">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-semibold">{item.title}</h3>
-                        {item.notes && (
-                          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.notes}</p>
-                        )}
-                      </div>
-                      <div className="flex gap-2 shrink-0 ml-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge variant={getTypeBadgeVariant(item.type)} className="text-xs">{item.type}</Badge>
+                      <div className="flex gap-2 shrink-0">
                         <Button variant="ghost" size="icon" onClick={() => handleStartEdit(item)} title="Edit Item">
                           <Edit3 className="h-5 w-5" />
                         </Button>
@@ -221,6 +291,12 @@ export default function OutlineBuilderPage() {
                         </AlertDialog>
                       </div>
                     </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">{item.title}</h3>
+                      {item.notes && (
+                        <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.notes}</p>
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -242,4 +318,3 @@ export default function OutlineBuilderPage() {
     </div>
   );
 }
-
