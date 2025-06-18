@@ -11,18 +11,19 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Network, PlusCircle, Edit, Trash2, AlignLeft } from 'lucide-react';
+import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey } from '@/contexts/StoryContext';
+import Link from 'next/link';
 
 // --- Plot Point Tracker ---
 interface PlotPoint {
   id: string;
-  name: string; // e.g., "Inciting Incident"
+  name: string; 
   description: string;
 }
 
-const PLOT_POINTS_STORAGE_KEY = 'openwritingkit-plotpoints';
-const initialPlotPoints: PlotPoint[] = [
+const initialPlotPointTemplate: PlotPoint[] = [
   { id: 'pp1', name: 'Exposition / Setup', description: '' },
   { id: 'pp2', name: 'Inciting Incident', description: '' },
   { id: 'pp3', name: 'Rising Action 1 (Plot Point 1)', description: '' },
@@ -37,13 +38,13 @@ const initialPlotPoints: PlotPoint[] = [
 interface TimelineEvent {
   id: string;
   title: string;
-  dateTime: string; // Simple text for now
+  dateTime: string;
   description: string;
 }
 
-const TIMELINE_EVENTS_STORAGE_KEY = 'openwritingkit-timeline-events';
-
 export default function PlotToolsPage() {
+  const { activeStoryId } = useStoryContext();
+
   // Plot Point State
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
 
@@ -55,43 +56,59 @@ export default function PlotToolsPage() {
   const [eventDateTime, setEventDateTime] = useState('');
   const [eventDescription, setEventDescription] = useState('');
 
-
-  // Load data from localStorage
+  // Load Plot Points
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Plot Points
-      const storedPlotPoints = localStorage.getItem(PLOT_POINTS_STORAGE_KEY);
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId);
+      const storedPlotPoints = localStorage.getItem(plotPointsStorageKey);
       if (storedPlotPoints) {
         setPlotPoints(JSON.parse(storedPlotPoints));
       } else {
-        setPlotPoints(initialPlotPoints);
-        localStorage.setItem(PLOT_POINTS_STORAGE_KEY, JSON.stringify(initialPlotPoints));
+        // If no plot points for this story, initialize with template and save
+        setPlotPoints(initialPlotPointTemplate);
+        localStorage.setItem(plotPointsStorageKey, JSON.stringify(initialPlotPointTemplate));
       }
+    } else if (!activeStoryId) {
+      setPlotPoints([]); // Clear if no active story
+    }
+  }, [activeStoryId]);
 
-      // Timeline Events
-      const storedTimelineEvents = localStorage.getItem(TIMELINE_EVENTS_STORAGE_KEY);
+  // Load Timeline Events
+  useEffect(() => {
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId);
+      const storedTimelineEvents = localStorage.getItem(timelineEventsStorageKey);
       if (storedTimelineEvents) {
         setTimelineEvents(JSON.parse(storedTimelineEvents));
+      } else {
+        setTimelineEvents([]); // No timeline events for this story yet
       }
+    } else if (!activeStoryId) {
+      setTimelineEvents([]); // Clear if no active story
     }
-  }, []);
+  }, [activeStoryId]);
+
 
   // Save Plot Points
   const handlePlotPointChange = (id: string, newDescription: string) => {
+    if (!activeStoryId) return;
+    const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId);
     const updatedPlotPoints = plotPoints.map(pp => 
       pp.id === id ? { ...pp, description: newDescription } : pp
     );
     setPlotPoints(updatedPlotPoints);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(PLOT_POINTS_STORAGE_KEY, JSON.stringify(updatedPlotPoints));
+      localStorage.setItem(plotPointsStorageKey, JSON.stringify(updatedPlotPoints));
     }
   };
 
   // Save Timeline Events (helper)
   const saveTimelineEvents = (updatedEvents: TimelineEvent[]) => {
+    if (!activeStoryId) return;
+    const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId);
     setTimelineEvents(updatedEvents);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(TIMELINE_EVENTS_STORAGE_KEY, JSON.stringify(updatedEvents));
+      localStorage.setItem(timelineEventsStorageKey, JSON.stringify(updatedEvents));
     }
   };
   
@@ -104,11 +121,13 @@ export default function PlotToolsPage() {
   };
 
   const handleOpenCreateEventDialog = () => {
+    if(!activeStoryId) return;
     resetEventForm();
     setIsEventDialogOpen(true);
   };
 
   const handleOpenEditEventDialog = (event: TimelineEvent) => {
+     if(!activeStoryId) return;
     setEditingEvent(event);
     setEventTitle(event.title);
     setEventDateTime(event.dateTime);
@@ -118,7 +137,7 @@ export default function PlotToolsPage() {
 
   const handleEventSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!eventTitle.trim()) return;
+    if (!eventTitle.trim() || !activeStoryId) return;
 
     const newEventData: Omit<TimelineEvent, 'id'> = {
       title: eventTitle.trim(),
@@ -140,10 +159,23 @@ export default function PlotToolsPage() {
   };
 
   const handleDeleteEvent = (id: string) => {
+    if(!activeStoryId) return;
     const updatedEvents = timelineEvents.filter(event => event.id !== id);
     saveTimelineEvents(updatedEvents);
   };
 
+  if (!activeStoryId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to use plot tools.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-12">
@@ -152,7 +184,7 @@ export default function PlotToolsPage() {
           <h1 className="text-3xl font-bold mb-2 flex items-center">
             <Network className="mr-3 h-8 w-8 text-primary" /> Plot Development Tools
           </h1>
-          <p className="text-muted-foreground">Structure your narrative, track key points, and build your timeline.</p>
+          <p className="text-muted-foreground">Structure your narrative, track key points, and build your timeline for the current story.</p>
         </div>
       </div>
 
@@ -160,7 +192,7 @@ export default function PlotToolsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Plot Point Tracker</CardTitle>
-          <CardDescription>Outline the key moments of your story using a common structure (e.g., Three-Act Structure). Describe what happens at each point.</CardDescription>
+          <CardDescription>Outline the key moments of your story using a common structure. Describe what happens at each point.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {plotPoints.map(pp => (
@@ -173,9 +205,13 @@ export default function PlotToolsPage() {
                 placeholder={`Describe the ${pp.name.toLowerCase()} of your story...`}
                 rows={4}
                 className="text-sm"
+                disabled={!activeStoryId}
               />
             </div>
           ))}
+           {plotPoints.length === 0 && activeStoryId && (
+             <p className="text-muted-foreground">Loading plot points or no plot points defined for this story yet.</p>
+           )}
         </CardContent>
       </Card>
 
@@ -185,16 +221,16 @@ export default function PlotToolsPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
                 <CardTitle>Timeline Creator</CardTitle>
-                <CardDescription>Log important events, scenes, or historical points in chronological order. Use the date/time field flexibly (e.g., "Day 1, Morning", "10 ABY", "Chapter 3").</CardDescription>
+                <CardDescription>Log important events, scenes, or historical points in chronological order. Use the date/time field flexibly.</CardDescription>
             </div>
-            <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0">
+            <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0" disabled={!activeStoryId}>
               <PlusCircle className="mr-2 h-5 w-5" /> Add Timeline Event
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {timelineEvents.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No timeline events yet. Add one to start building your timeline.</p>
+            <p className="text-muted-foreground text-center py-4">No timeline events yet for this story. Add one to start building your timeline.</p>
           ) : (
             <ScrollArea className="h-auto max-h-[60vh]">
               <div className="space-y-4 pr-3">
@@ -207,12 +243,12 @@ export default function PlotToolsPage() {
                             {event.dateTime && <p className="text-xs text-muted-foreground font-medium">{event.dateTime}</p>}
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditEventDialog(event)} title="Edit Event">
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditEventDialog(event)} title="Edit Event" disabled={!activeStoryId}>
                             <Edit className="h-4 w-4" />
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" title="Delete Event">
+                              <Button variant="ghost" size="icon" title="Delete Event" disabled={!activeStoryId}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             </AlertDialogTrigger>
@@ -256,7 +292,7 @@ export default function PlotToolsPage() {
         <CardContent className="text-center py-8">
           <AlignLeft className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">
-            This section will integrate with the Outline Builder to display your scene summaries.
+            This section will integrate with the Outline Builder to display your scene summaries for the active story.
           </p>
           <p className="text-sm text-primary mt-2">Coming Soon!</p>
           <Image 

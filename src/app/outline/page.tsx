@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle, GripVertical } from 'lucide-react';
+import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle, GripVertical, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -27,6 +27,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { useStoryContext, getOutlineStorageKey } from '@/contexts/StoryContext';
+import Link from 'next/link';
 
 type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
 
@@ -35,10 +37,9 @@ interface OutlineItem {
   title: string;
   notes?: string;
   type: OutlineItemType;
-  children: OutlineItem[]; // Always has children array, even if empty
+  children: OutlineItem[];
 }
 
-const OUTLINE_STORAGE_KEY = 'openwritingkit-outline-items-v3'; // Incremented key for new structure
 const itemTypes: OutlineItemType[] = ['Chapter', 'Scene', 'Plot Point/Notes'];
 
 const createNewItem = (title: string, notes: string | undefined, type: OutlineItemType): OutlineItem => ({
@@ -49,11 +50,10 @@ const createNewItem = (title: string, notes: string | undefined, type: OutlineIt
   children: [],
 });
 
-// Recursive helper to delete an item
 const deleteItemRecursive = (items: OutlineItem[], itemId: string): OutlineItem[] => {
   return items.reduce((acc, item) => {
     if (item.id === itemId) {
-      return acc; // Skip this item
+      return acc;
     }
     const newChildren = item.children ? deleteItemRecursive(item.children, itemId) : [];
     acc.push({ ...item, children: newChildren });
@@ -61,7 +61,6 @@ const deleteItemRecursive = (items: OutlineItem[], itemId: string): OutlineItem[
   }, [] as OutlineItem[]);
 };
 
-// Recursive helper to update an item
 const updateItemRecursive = (items: OutlineItem[], updatedItemData: Partial<OutlineItem> & { id: string }): OutlineItem[] => {
   return items.map(item => {
     if (item.id === updatedItemData.id) {
@@ -74,14 +73,12 @@ const updateItemRecursive = (items: OutlineItem[], updatedItemData: Partial<Outl
   });
 };
 
-
 interface OutlineItemDisplayProps {
   item: OutlineItem;
-  index: number; // Required by react-beautiful-dnd
+  index: number;
   level: number;
   onEdit: (item: OutlineItem) => void;
   onDelete: (id: string) => void;
-  // D&D props are now handled by the library wrappers
 }
 
 function OutlineItemDisplay({ 
@@ -96,7 +93,7 @@ function OutlineItemDisplay({
     }
   };
 
-  const canHaveChildren = item.type === 'Chapter'; // Example: Only chapters can have children
+  const canHaveChildren = item.type === 'Chapter';
 
   return (
     <Draggable draggableId={item.id} index={index}>
@@ -161,7 +158,7 @@ function OutlineItemDisplay({
                   ref={dropProvided.innerRef}
                   {...dropProvided.droppableProps}
                   className={cn(
-                    "mt-3 space-y-2 pl-4 border-l min-h-[20px]", // min-h for empty drop target
+                    "mt-3 space-y-2 pl-4 border-l min-h-[20px]",
                     dropSnapshot.isDraggingOver && "bg-accent/50 rounded"
                   )}
                 >
@@ -181,13 +178,12 @@ function OutlineItemDisplay({
             </Droppable>
           )}
            {!canHaveChildren && item.children && item.children.length > 0 && (
-             // If not supposed to have children but has them (e.g. old data), render them non-droppably
               <ul className="mt-3 space-y-3 pl-4 border-l">
                   {item.children.map((child, childIndex) => (
                     <OutlineItemDisplay
                       key={child.id}
                       item={child}
-                      index={childIndex} // This index isn't used for dnd here but good practice
+                      index={childIndex}
                       level={level + 1}
                       onEdit={onEdit}
                       onDelete={onDelete}
@@ -203,6 +199,7 @@ function OutlineItemDisplay({
 
 
 export default function OutlineBuilderPage() {
+  const { activeStoryId } = useStoryContext();
   const [items, setItems] = useState<OutlineItem[]>([]);
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -215,8 +212,9 @@ export default function OutlineBuilderPage() {
   const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedItems = localStorage.getItem(OUTLINE_STORAGE_KEY);
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const outlineStorageKey = getOutlineStorageKey(activeStoryId);
+      const storedItems = localStorage.getItem(outlineStorageKey);
       if (storedItems) {
         try {
           const parsedItems = JSON.parse(storedItems).map((item: any): OutlineItem => ({
@@ -229,15 +227,20 @@ export default function OutlineBuilderPage() {
           console.error("Failed to parse outline items from localStorage", e);
           setItems([]);
         }
+      } else {
+        setItems([]); // No items for this story yet
       }
+    } else if (!activeStoryId) {
+      setItems([]); // Clear items if no story is active
     }
-  }, []);
+  }, [activeStoryId]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(OUTLINE_STORAGE_KEY, JSON.stringify(items));
+    if (typeof window !== 'undefined' && activeStoryId) {
+      const outlineStorageKey = getOutlineStorageKey(activeStoryId);
+      localStorage.setItem(outlineStorageKey, JSON.stringify(items));
     }
-  }, [items]);
+  }, [items, activeStoryId]);
 
   const resetAddForm = () => {
     setNewItemTitle('');
@@ -246,6 +249,7 @@ export default function OutlineBuilderPage() {
   };
 
   const handleOpenAddDialog = () => {
+    if (!activeStoryId) return;
     resetAddForm();
     setEditingItem(null); 
     setIsAddDialogOpen(true);
@@ -253,7 +257,7 @@ export default function OutlineBuilderPage() {
 
   const handleAddItem = (e: FormEvent) => {
     e.preventDefault();
-    if (!newItemTitle.trim()) return;
+    if (!newItemTitle.trim() || !activeStoryId) return;
     const newItem = createNewItem(newItemTitle.trim(), newItemNotes.trim() || undefined, newItemType);
     setItems(prevItems => [...prevItems, newItem]);
     setIsAddDialogOpen(false);
@@ -261,16 +265,17 @@ export default function OutlineBuilderPage() {
   };
 
   const handleDeleteItem = useCallback((id: string) => {
+    if (!activeStoryId) return;
     setItems(prevItems => deleteItemRecursive(prevItems, id));
-  }, []);
+  }, [activeStoryId]);
 
   const handleStartEdit = useCallback((item: OutlineItem) => {
+    if (!activeStoryId) return;
     setEditingItem(item);
     setEditTitle(item.title);
     setEditNotes(item.notes || '');
-    // Type editing could be added here if needed
     setIsAddDialogOpen(false); 
-  }, []);
+  }, [activeStoryId]);
 
   const handleCancelEdit = () => {
     setEditingItem(null);
@@ -280,20 +285,16 @@ export default function OutlineBuilderPage() {
 
   const handleSaveEdit = (e: FormEvent) => {
     e.preventDefault();
-    if (!editingItem || !editTitle.trim()) return;
+    if (!editingItem || !editTitle.trim() || !activeStoryId) return;
     const updatedDetails: Partial<OutlineItem> & { id: string } = { 
       id: editingItem.id,
       title: editTitle.trim(), 
       notes: editNotes.trim() || undefined 
-      // type: editingItem.type (type not editable in this form for simplicity)
     };
     setItems(prevItems => updateItemRecursive(prevItems, updatedDetails));
     handleCancelEdit();
   };
-
-  // --- @hello-pangea/dnd Logic ---
   
-  // Helper to find an item and its parent list, and its index in that list
   const findItemAndParentList = (
     itemId: string,
     currentItems: OutlineItem[]
@@ -313,14 +314,13 @@ export default function OutlineBuilderPage() {
   };
 
   const handleDragEnd = (result: DropResult) => {
+    if (!activeStoryId) return;
     const { source, destination, draggableId } = result;
 
-    if (!destination) return; // Dropped outside a valid droppable
+    if (!destination) return; 
 
-    // Create a deep clone to modify
     let newItems = JSON.parse(JSON.stringify(items)) as OutlineItem[];
 
-    // Find the source item and its original list
     const findAndRemove = (
       currentList: OutlineItem[],
       sDroppableId: string,
@@ -344,12 +344,12 @@ export default function OutlineBuilderPage() {
         }
         if (currentList[i].children) {
           const recursionResult = findAndRemove(currentList[i].children, sDroppableId, sIndex, dId);
-          if (recursionResult.removed) { // If item was found and removed in children
+          if (recursionResult.removed) {
             return { updatedList: currentList, removed: recursionResult.removed };
           }
         }
       }
-      return { updatedList: currentList, removed: null }; // Item not found in this path
+      return { updatedList: currentList, removed: null };
     };
     
     const { updatedList: listAfterRemoval, removed: draggedItem } = findAndRemove(
@@ -361,12 +361,10 @@ export default function OutlineBuilderPage() {
 
     if (!draggedItem) {
       console.error("Dragged item not found for removal");
-      return; // Should not happen if draggableId is correct
+      return;
     }
-    newItems = listAfterRemoval; // Update newItems with the list after removal
+    newItems = listAfterRemoval;
 
-
-    // Insert into destination
     const insertIntoList = (
       currentList: OutlineItem[],
       dDroppableId: string,
@@ -379,7 +377,6 @@ export default function OutlineBuilderPage() {
       }
       for (let i = 0; i < currentList.length; i++) {
         if (currentList[i].id === dDroppableId) {
-          // Ensure children array exists
           currentList[i].children = currentList[i].children || [];
           currentList[i].children.splice(dIndex, 0, itemToInsert);
           return true;
@@ -397,6 +394,18 @@ export default function OutlineBuilderPage() {
     setItems(newItems);
   };
 
+  if (!activeStoryId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to build an outline.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
@@ -408,7 +417,7 @@ export default function OutlineBuilderPage() {
             </h1>
             <p className="text-muted-foreground">Structure your story. Drag items to reorder or nest them within 'Chapter' type items.</p>
           </div>
-          <Button onClick={handleOpenAddDialog}>
+          <Button onClick={handleOpenAddDialog} disabled={!activeStoryId}>
             <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
           </Button>
         </div>
@@ -515,7 +524,7 @@ export default function OutlineBuilderPage() {
           <CardHeader>
             <CardTitle>Your Outline Structure</CardTitle>
             <CardDescription>
-              {items.length > 0 ? "Drag and drop to reorder items or nest them under 'Chapter' type items." : "Your outline is empty."}
+              {items.length > 0 ? "Drag and drop to reorder items or nest them under 'Chapter' type items." : "Your outline is empty for this story."}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -527,7 +536,7 @@ export default function OutlineBuilderPage() {
                       ref={provided.innerRef} 
                       {...provided.droppableProps}
                       className={cn(
-                        "space-y-0", // No space between items from UL, handled by LI margin
+                        "space-y-0", 
                         snapshot.isDraggingOver && "bg-accent/30 rounded"
                       )}
                     >
