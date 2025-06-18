@@ -17,7 +17,7 @@ import {
 import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Coffee, DatabaseZap, Cloud } from 'lucide-react'; // Added DatabaseZap, Cloud
+import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -29,12 +29,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export function AppSidebar() {
   const pathname = usePathname();
 
-  // Placeholder state for Google Drive connection - for UI demonstration only
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
   const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
 
   const handleConnectDriveClick = () => {
-    // Placeholder: Actual Google Drive connection logic is complex and requires backend.
     alert("Connecting to Google Drive requires server-side authentication (OAuth 2.0) and Google Drive API integration. This functionality needs to be implemented separately. This is a UI placeholder.");
     // To simulate connection for UI testing (uncomment to test UI):
     // setIsDriveConnected(true);
@@ -42,7 +40,7 @@ export function AppSidebar() {
   };
 
   const handleDisconnectDriveClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click if it has one
+    e.stopPropagation(); 
     setIsDriveConnected(false);
     setDriveStorageInfo({ used: '0 MB', total: 'Not Connected' });
     alert("Disconnected from Google Drive (UI simulation).");
@@ -71,7 +69,6 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-           {/* <Image src="/logo-placeholder.svg" width={32} height={32} alt="OpenWritingKit Logo" /> */}
           <span className="font-headline text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
             OpenWritingKit
           </span>
@@ -84,9 +81,11 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarSeparator />
       <SidebarFooter className="p-2">
-        {/* Google Drive Connection UI */}
-        <div className="p-2">
-          {/* Expanded view */}
+        <SidebarMenu>
+          {secondaryNavItems.map(renderNavItem)}
+        </SidebarMenu>
+        
+        <div className="p-2 mt-2"> {/* Added mt-2 for spacing */}
           <div className="group-data-[collapsible=icon]:hidden">
             <TooltipProvider delayDuration={100}>
               <Tooltip>
@@ -128,7 +127,6 @@ export function AppSidebar() {
             </TooltipProvider>
           </div>
 
-          {/* Icon-only view for collapsed sidebar */}
           <div className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center">
             <TooltipProvider delayDuration={100}>
               <Tooltip>
@@ -137,7 +135,7 @@ export function AppSidebar() {
                     variant="ghost" 
                     size="icon" 
                     onClick={isDriveConnected ? () => { /* Placeholder for potential drive settings popup */ } : handleConnectDriveClick}
-                    className="h-9 w-9 p-0 rounded-md" // Standard icon button size
+                    className="h-9 w-9 p-0 rounded-md"
                   >
                     {isDriveConnected ? <Cloud className="h-5 w-5" /> : <DatabaseZap className="h-5 w-5" />}
                   </Button>
@@ -160,9 +158,6 @@ export function AppSidebar() {
           </div>
         </div>
       
-        <SidebarMenu>
-          {secondaryNavItems.map(renderNavItem)}
-        </SidebarMenu>
         <div className="mt-auto p-2 group-data-[collapsible=icon]:hidden">
             <Button variant="outline" className="w-full rounded-none" asChild>
               <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
@@ -175,4 +170,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
