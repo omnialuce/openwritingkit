@@ -5,8 +5,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Added CardHeader, Title, Description
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2 } from 'lucide-react'; // Added Sparkles, Loader2
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2 } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
 import {
   DropdownMenu,
@@ -16,14 +16,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"; // Added Dialog components
-import { ScrollArea } from '@/components/ui/scroll-area'; // Added ScrollArea
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback'; // AI Import
+import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 
 type Theme = 'light' | 'dark';
 const EDITOR_CONTENT_KEY = 'openwritingkit-active-document-content';
+const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 export function WritingArea() {
   const [content, setContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(EDITOR_CONTENT_KEY, '');
@@ -35,13 +37,33 @@ export function WritingArea() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const [sessionTime, setSessionTime] = useState(0); // in seconds
+  const [sessionTime, setSessionTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isFeedbackDialogOpen, setIsFeedbackDialogOpen] = useState(false);
   const [feedbackResult, setFeedbackResult] = useState<GetWritingFeedbackOutput | null>(null);
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
+  const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    if (typeof window !== 'undefined') {
+      const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
+      setAiFeaturesEnabled(storedAIPref === 'true');
+
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === AI_OPT_IN_KEY) {
+          setAiFeaturesEnabled(event.newValue === 'true');
+        }
+      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     const words = content.trim() ? content.trim().split(/\s+/).filter(word => word.length > 0) : [];
@@ -133,6 +155,10 @@ export function WritingArea() {
   const toggleFocusMode = () => setIsFocusMode(!isFocusMode);
 
   const handleGetFeedback = async () => {
+    if (!aiFeaturesEnabled) {
+      toast({ title: "AI Features Disabled", description: "Please enable AI features in settings to use this."});
+      return;
+    }
     if (!content.trim()) {
       toast({ title: "Empty Content", description: "Please write some text before requesting feedback.", variant: "default" });
       return;
@@ -180,7 +206,7 @@ export function WritingArea() {
   }
 
   return (
-    <>
+    <TooltipProvider>
       <div className={cn("flex flex-col h-full p-4 md:p-6 rounded-none shadow-lg", themeClasses[theme], isFocusMode ? 'fixed inset-0 z-50' : '')}>
         <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", themeClasses[theme])}>
           {!isFocusMode && (
@@ -207,9 +233,16 @@ export function WritingArea() {
                 <Button variant="ghost" size="icon" onClick={() => { if(confirm('Are you sure you want to clear all content and history? This cannot be undone.')) clearSavedContent();}} title="Clear Content & History">
                   <Trash2 className="h-5 w-5 text-destructive" />
                 </Button>
-                 <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={isFetchingFeedback} title="Get Writing Feedback">
-                  {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-muted-foreground" />}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-disabled={!aiFeaturesEnabled || !isMounted}>
+                      {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className={cn("h-5 w-5", aiFeaturesEnabled && isMounted ? "text-muted-foreground" : "text-muted-foreground/50")} />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{aiFeaturesEnabled && isMounted ? "Get Writing Feedback" : "AI features disabled in Settings"}</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                 <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"}>
@@ -334,6 +367,6 @@ export function WritingArea() {
           </DialogContent>
         </Dialog>
       )}
-    </>
+    </TooltipProvider>
   );
 }
