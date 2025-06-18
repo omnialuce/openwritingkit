@@ -19,7 +19,7 @@ export type GetWritingFeedbackInput = z.infer<typeof GetWritingFeedbackInputSche
 const GrammarSpellingSuggestionSchema = z.object({
   originalText: z.string().describe('The original segment of text with an issue.'),
   suggestedCorrection: z.string().describe('The suggested correction for the segment.'),
-  explanation: z.string().optional().describe('A brief explanation of the issue or suggestion.'),
+  explanation: z.string().optional().describe('A very brief explanation of the issue or suggestion (ideally 1-3 lines or a short paragraph).'),
   issueType: z.string().describe('Type of issue (e.g., "grammar", "spelling", "punctuation").')
 });
 
@@ -47,7 +47,7 @@ Text to analyze:
 {{{text}}}
 
 Provide an overall assessment of the writing quality.
-List specific grammar and spelling suggestions, including the original text, the suggested correction, an explanation if helpful, and the type of issue (grammar, spelling, punctuation).
+List specific grammar and spelling suggestions, including the original text, the suggested correction, a very brief explanation (ideally 1-3 lines, or a short paragraph at most) if helpful, and the type of issue (grammar, spelling, punctuation).
 Provide a readability score (e.g., Flesch-Kincaid grade level, or a descriptive term like 'Easy to Read') and a brief assessment of its readability with any suggestions for improvement.
 
 Format your response according to the output schema.
@@ -74,3 +74,4 @@ const getWritingFeedbackFlow = ai.defineFlow(
     return output!;
   }
 );
+
