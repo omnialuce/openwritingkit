@@ -1,8 +1,9 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { TypeSquare } from 'lucide-react'; // Changed Icon
+import { Square } from 'lucide-react'; // Changed Icon
 import {
   Sidebar,
   SidebarHeader,
@@ -45,7 +46,7 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
           {/* Simple geometric shape or letter for Bauhaus style */}
-          <TypeSquare className="h-8 w-8 text-primary group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
+          <Square className="h-8 w-8 text-primary group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
           <span className="font-headline text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
             LinguaFlow
           </span>
