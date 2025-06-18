@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Image from 'next/image'; // Added this import
 import {
   AlertDialog,
   AlertDialogAction,
@@ -241,3 +242,4 @@ export default function OutlineBuilderPage() {
     </div>
   );
 }
+
