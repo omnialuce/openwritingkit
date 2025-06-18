@@ -3,9 +3,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast'; // Keep for toast notifications
+import { useToast } from '@/hooks/use-toast'; 
 
-const MAX_HISTORY_LENGTH = 20; // Max number of versions to keep in history
+const MAX_HISTORY_LENGTH = 20; 
+const EDITOR_CONTENT_KEY = 'openwritingkit-active-document-content';
+const ACTIVITY_LOG_KEY = 'openwritingkit-activity-log'; // New key for activity logging
 
 interface DocumentData<T> {
   current: T;
@@ -13,12 +15,17 @@ interface DocumentData<T> {
   lastSaved: string | null;
 }
 
-function useAutosave<T extends string>( // Ensure T is a string for text content
-  key: string, // e.g., 'openwriting-kit-active-document-content'
+interface ActivityLogEntry {
+  timestamp: string;
+  wordCount: number;
+}
+
+function useAutosave<T extends string>( 
+  key: string, 
   initialValue: T,
   saveInterval: number = 2000
 ): [T, (value: T) => void, boolean, () => void, Date | null] {
-  const { toast } = useToast(); // For notifications
+  const { toast } = useToast(); 
 
   const [currentText, setCurrentTextInternal] = useState<T>(() => {
     if (typeof window === 'undefined') {
@@ -52,6 +59,26 @@ function useAutosave<T extends string>( // Ensure T is a string for text content
     }
   });
 
+  const logActivity = useCallback((textToSave: T) => {
+    if (typeof window !== 'undefined') {
+      const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
+      const wordCount = words.length;
+      const newLogEntry: ActivityLogEntry = { timestamp: new Date().toISOString(), wordCount };
+
+      try {
+        const existingLog = window.localStorage.getItem(ACTIVITY_LOG_KEY);
+        let activityLog: ActivityLogEntry[] = existingLog ? JSON.parse(existingLog) : [];
+        activityLog.push(newLogEntry);
+        // Optional: Prune old log entries if it gets too large
+        // if (activityLog.length > 1000) activityLog = activityLog.slice(-1000); 
+        window.localStorage.setItem(ACTIVITY_LOG_KEY, JSON.stringify(activityLog));
+      } catch (error) {
+        console.warn(`Error updating activity log:`, error);
+      }
+    }
+  }, []);
+
+
   const saveDocument = useCallback(
     (textToSave: T) => {
       if (typeof window !== 'undefined') {
@@ -68,7 +95,6 @@ function useAutosave<T extends string>( // Ensure T is a string for text content
             documentData = { current: initialValue, history: [], lastSaved: null };
           }
 
-          // Add to history if different from latest history entry
           const latestHistoryEntry = documentData.history[0]?.text;
           if (textToSave !== latestHistoryEntry) {
             const newHistoryEntry = { timestamp, text: textToSave };
@@ -83,16 +109,16 @@ function useAutosave<T extends string>( // Ensure T is a string for text content
 
           window.localStorage.setItem(key, JSON.stringify(documentData));
           setLastSavedTime(now);
+          logActivity(textToSave); // Log activity on successful save
 
-          // Streak counter logic with new keys
           const today = now.toISOString().split('T')[0];
-          const lastActiveDateKey = 'openwriting-kit-last-active-date';
-          const streakKey = 'openwriting-kit-writing-streak';
-          const lastStreakDateKey = 'openwriting-kit-last-streak-date';
+          const lastActiveDateKey = 'openwritingkit-last-active-date';
+          const streakKey = 'openwritingkit-writing-streak';
+          const lastStreakDateKey = 'openwritingkit-last-streak-date';
 
           const lastActiveDate = localStorage.getItem(lastActiveDateKey);
           
-          if (lastActiveDate !== today) { // First save of a new day
+          if (lastActiveDate !== today) { 
             localStorage.setItem(lastActiveDateKey, today);
             let currentStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
             const lastStreakUpdateDate = localStorage.getItem(lastStreakDateKey);
@@ -101,24 +127,24 @@ function useAutosave<T extends string>( // Ensure T is a string for text content
             yesterday.setDate(now.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-            if (lastStreakUpdateDate === yesterdayStr) { // Continued from yesterday
+            if (lastStreakUpdateDate === yesterdayStr) { 
               currentStreak++;
-            } else { // New streak or first day
+            } else { 
               currentStreak = 1;
             }
             localStorage.setItem(streakKey, currentStreak.toString());
             localStorage.setItem(lastStreakDateKey, today);
-            window.dispatchEvent(new Event('storage')); // Notify other tabs/components
+            window.dispatchEvent(new Event('storage')); 
           }
         } catch (error) {
           console.error(`Error saving to localStorage key "${key}":`, error);
           toast({ title: "Save Error", description: "Could not save changes.", variant: "destructive" });
         } finally {
-          setTimeout(() => setIsSaving(false), 500); // UI feedback for saving
+          setTimeout(() => setIsSaving(false), 500); 
         }
       }
     },
-    [key, initialValue, toast]
+    [key, initialValue, toast, logActivity]
   );
   
   useEffect(() => {
@@ -147,7 +173,6 @@ function useAutosave<T extends string>( // Ensure T is a string for text content
         window.localStorage.removeItem(key);
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
-        // Optionally clear streak if all content is removed - for now, streak is independent of specific doc clear
         toast({ title: "Content Cleared", description: "The document content and its history have been cleared." });
       } catch (error) {
         console.error(`Error clearing localStorage key "${key}":`, error);
@@ -158,8 +183,6 @@ function useAutosave<T extends string>( // Ensure T is a string for text content
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);
-    // Immediate save on explicit set can be considered, or rely on autosave interval
-    // For now, rely on autosave interval to pick up the change.
   };
 
   return [currentText, setAndSaveCurrentText, isSaving, clearSavedDocument, lastSavedTime];
