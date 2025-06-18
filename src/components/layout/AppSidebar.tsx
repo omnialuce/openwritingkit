@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Square } from 'lucide-react'; // Changed Icon
+import { Square } from 'lucide-react';
 import {
   Sidebar,
   SidebarHeader,
@@ -23,21 +23,19 @@ export function AppSidebar() {
 
   const renderNavItem = (item: NavItem) => (
     <SidebarMenuItem key={item.href}>
-      <Link href={item.href}>
-        <SidebarMenuButton
-          asChild
-          isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
-          disabled={item.disabled}
-          aria-disabled={item.disabled}
-          tooltip={{ children: item.label, side: 'right', align: 'center' }}
-          className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
-        >
-          <>
-            <item.icon />
-            <span>{item.label}</span>
-          </>
-        </SidebarMenuButton>
-      </Link>
+      <SidebarMenuButton
+        asChild
+        isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+        disabled={item.disabled}
+        aria-disabled={item.disabled}
+        tooltip={{ children: item.label, side: 'right', align: 'center' }}
+        className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
+      >
+        <Link href={item.href}>
+          <item.icon />
+          <span>{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
     </SidebarMenuItem>
   );
 
@@ -45,7 +43,6 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-          {/* Simple geometric shape or letter for Bauhaus style */}
           <Square className="h-8 w-8 text-primary group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" />
           <span className="font-headline text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
             LinguaFlow
