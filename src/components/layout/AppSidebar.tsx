@@ -85,7 +85,7 @@ export function AppSidebar() {
           {secondaryNavItems.map(renderNavItem)}
         </SidebarMenu>
         
-        <div className="p-2 mt-2"> {/* Added mt-2 for spacing */}
+        <div className="p-2 mt-2"> {/* Google Drive UI Container */}
           <div className="group-data-[collapsible=icon]:hidden">
             <TooltipProvider delayDuration={100}>
               <Tooltip>
@@ -158,14 +158,20 @@ export function AppSidebar() {
           </div>
         </div>
       
-        <div className="mt-auto p-2 group-data-[collapsible=icon]:hidden">
-            <Button variant="outline" className="w-full rounded-none" asChild>
-              <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
-                <Coffee className="mr-2 h-4 w-4" />
-                Buy Me a Coffee
-              </Link>
-            </Button>
-        </div>
+        <SidebarMenu className="mt-auto">
+           <SidebarMenuItem>
+             <SidebarMenuButton 
+                asChild 
+                className="w-full justify-start rounded-none"
+                tooltip={{ children: "Support the Developer", side: 'right', align: 'center' }}
+             >
+               <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
+                 <Coffee />
+                 <span className="group-data-[collapsible=icon]:hidden">Buy Me a Coffee</span>
+               </Link>
+             </SidebarMenuButton>
+           </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
