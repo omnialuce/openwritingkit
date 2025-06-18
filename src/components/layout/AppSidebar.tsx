@@ -32,10 +32,10 @@ export function AppSidebar() {
           tooltip={{ children: item.label, side: 'right', align: 'center' }}
           className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
         >
-          <a>
+          <>
             <item.icon />
             <span>{item.label}</span>
-          </a>
+          </>
         </SidebarMenuButton>
       </Link>
     </SidebarMenuItem>
