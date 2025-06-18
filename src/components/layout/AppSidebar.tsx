@@ -13,32 +13,22 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarSeparator,
-  useSidebar, // Import useSidebar to access state if needed for tooltip logic
+  useSidebar, 
 } from '@/components/ui/sidebar';
 import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider, // TooltipProvider is already in SidebarProvider
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state: sidebarState, isMobile } = useSidebar(); // Get sidebar state and mobile status
+  const { state: sidebarState, isMobile, open: isDesktopSidebarExpanded } = useSidebar(); 
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
   const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
 
   const handleConnectDriveClick = () => {
     alert("Connecting to Google Drive requires server-side authentication (OAuth 2.0) and Google Drive API integration. This functionality needs to be implemented separately. This is a UI placeholder.");
-    // To simulate connection for UI testing (uncomment to test UI):
-    // setIsDriveConnected(true);
-    // setDriveStorageInfo({ used: '1.5 GB', total: '15 GB' });
   };
 
   const handleDisconnectDriveClick = (e: React.MouseEvent) => {
@@ -59,14 +49,15 @@ export function AppSidebar() {
             children: item.label, 
             side: 'right', 
             align: 'center',
-            // hidden: sidebarState === 'expanded' && !isMobile // Hide tooltip if expanded on desktop
+            // Tooltip hidden if sidebar is expanded on desktop, OR if it's mobile (mobile shows text directly)
+            hidden: isDesktopSidebarExpanded && !isMobile 
           }}
           className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
         >
           <Link href={item.href}>
             <item.icon />
-            {/* Apply specific group selector for hiding text */}
-            <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">{item.label}</span>
+            {/* Text hidden if sidebar is collapsed AND collapsible type is 'icon' */}
+            <span className={cn("group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden")}>{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -78,12 +69,11 @@ export function AppSidebar() {
       <SidebarHeader className="p-4">
         <Link href="/" className={cn(
             "flex items-center gap-2",
-            "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" // Center logo when collapsed
+            "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>
-           {/* You can add a smaller icon-only logo here for collapsed state if desired */}
           <span className={cn(
               "font-headline text-xl font-semibold text-primary",
-              "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" // Hide text when collapsed
+              "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" 
             )}>
             OpenWritingKit
           </span>
@@ -124,7 +114,7 @@ export function AppSidebar() {
                     </>,
                     side: 'right',
                     align: 'center',
-                    // hidden: sidebarState === 'expanded' && !isMobile // Hide tooltip if expanded on desktop
+                    hidden: isDesktopSidebarExpanded && !isMobile
                 }}
                 className="w-full rounded-none"
               >
@@ -146,7 +136,7 @@ export function AppSidebar() {
              <SidebarMenuButton 
                 asChild 
                 className="w-full rounded-none"
-                tooltip={{ children: "Support the Developer", side: 'right', align: 'center' /*, hidden: sidebarState === 'expanded' && !isMobile */}}
+                tooltip={{ children: "Support the Developer", side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
              >
                <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
                  <Coffee />
@@ -159,3 +149,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
