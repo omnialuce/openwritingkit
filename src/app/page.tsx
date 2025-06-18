@@ -14,27 +14,27 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <section className="bg-card p-8 rounded-lg shadow-lg">
+      <section className="bg-card p-6 md:p-8 rounded-none border">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-primary">Welcome to LinguaFlow!</h1>
+            <h1 className="text-4xl font-bold mb-4 text-primary">Welcome to LinguaFlow</h1>
             <p className="text-lg text-foreground mb-6">
-              Your intelligent writing companion. Unleash your creativity, refine your prose, and stay focused on what matters most - your story.
+              Your intelligent writing companion. Unleash creativity, refine prose, and stay focused.
             </p>
             <Link href="/editor" passHref>
-              <Button size="lg">
-                Start Writing Now <ArrowRight className="ml-2 h-5 w-5" />
+              <Button size="lg" className="rounded-none">
+                Start Writing <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
           <div className="hidden md:block">
             <Image 
-              src="https://placehold.co/600x400.png" 
+              src="https://placehold.co/500x300.png" 
               alt="LinguaFlow illustrative banner" 
-              width={600} 
-              height={400}
-              className="rounded-lg shadow-md"
-              data-ai-hint="creative writing abstract"
+              width={500} 
+              height={300}
+              className="rounded-none"
+              data-ai-hint="geometric abstract composition"
             />
           </div>
         </div>
@@ -44,17 +44,19 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {quickActions.map((action) => (
-            <Card key={action.title} className="hover:shadow-xl transition-shadow duration-300">
+            <Card key={action.title} className="hover:shadow-md transition-shadow duration-300 rounded-none border">
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <action.icon className="h-8 w-8 text-primary" />
-                  <CardTitle className="text-xl">{action.title}</CardTitle>
+                <div className="flex items-start gap-3 mb-2">
+                  <action.icon className="h-7 w-7 text-primary mt-1" />
+                  <div>
+                    <CardTitle className="text-xl">{action.title}</CardTitle>
+                    <CardDescription>{action.description}</CardDescription>
+                  </div>
                 </div>
-                <CardDescription>{action.description}</CardDescription>
               </CardHeader>
               <CardFooter>
                 <Link href={action.href} passHref className="w-full">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full rounded-none">
                     {action.cta} <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -65,17 +67,16 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="rounded-none border">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
             <CardDescription>Your latest documents and writing sessions.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">No recent activity yet. Start writing to see your progress here!</p>
-            {/* Placeholder for recent documents list */}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-none border">
           <CardHeader>
             <CardTitle>Writing Streak</CardTitle>
             <CardDescription>Keep your momentum going!</CardDescription>
@@ -85,7 +86,6 @@ export default function DashboardPage() {
               <p className="text-4xl font-bold text-primary">0</p>
               <p className="text-muted-foreground">days</p>
             </div>
-             {/* Placeholder for streak visual */}
           </CardContent>
         </Card>
       </section>
