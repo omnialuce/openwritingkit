@@ -2,7 +2,7 @@
 // src/app/outline/page.tsx
 'use client';
 
-import React, { useState, useEffect, FormEvent, useRef, useCallback } from 'react';
+import React, { useState, useEffect, FormEvent, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
 type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
 
@@ -34,34 +35,40 @@ interface OutlineItem {
   title: string;
   notes?: string;
   type: OutlineItemType;
-  children?: OutlineItem[];
+  children: OutlineItem[]; // Always has children array, even if empty
 }
 
-const OUTLINE_STORAGE_KEY = 'openwritingkit-outline-items-v2'; // New key for nested structure
+const OUTLINE_STORAGE_KEY = 'openwritingkit-outline-items-v3'; // Incremented key for new structure
 const itemTypes: OutlineItemType[] = ['Chapter', 'Scene', 'Plot Point/Notes'];
 
+const createNewItem = (title: string, notes: string | undefined, type: OutlineItemType): OutlineItem => ({
+  id: Date.now().toString(),
+  title,
+  notes,
+  type,
+  children: [],
+});
 
 // Recursive helper to delete an item
 const deleteItemRecursive = (items: OutlineItem[], itemId: string): OutlineItem[] => {
-  return items.filter(item => {
+  return items.reduce((acc, item) => {
     if (item.id === itemId) {
-      return false;
+      return acc; // Skip this item
     }
-    if (item.children) {
-      item.children = deleteItemRecursive(item.children, itemId);
-    }
-    return true;
-  });
+    const newChildren = item.children ? deleteItemRecursive(item.children, itemId) : [];
+    acc.push({ ...item, children: newChildren });
+    return acc;
+  }, [] as OutlineItem[]);
 };
 
 // Recursive helper to update an item
-const updateItemRecursive = (items: OutlineItem[], updatedItem: OutlineItem): OutlineItem[] => {
+const updateItemRecursive = (items: OutlineItem[], updatedItemData: Partial<OutlineItem> & { id: string }): OutlineItem[] => {
   return items.map(item => {
-    if (item.id === updatedItem.id) {
-      return { ...item, ...updatedItem, children: item.children ? updateItemRecursive(item.children, updatedItem) : undefined };
+    if (item.id === updatedItemData.id) {
+      return { ...item, ...updatedItemData, children: item.children || [] };
     }
     if (item.children) {
-      return { ...item, children: updateItemRecursive(item.children, updatedItem) };
+      return { ...item, children: updateItemRecursive(item.children, updatedItemData) };
     }
     return item;
   });
@@ -70,20 +77,15 @@ const updateItemRecursive = (items: OutlineItem[], updatedItem: OutlineItem): Ou
 
 interface OutlineItemDisplayProps {
   item: OutlineItem;
+  index: number; // Required by react-beautiful-dnd
   level: number;
   onEdit: (item: OutlineItem) => void;
   onDelete: (id: string) => void;
-  onDragStart: (event: React.DragEvent<HTMLLIElement>, item: OutlineItem) => void;
-  onDragOver: (event: React.DragEvent<HTMLLIElement>, item: OutlineItem) => void;
-  onDragEnd: (event: React.DragEvent<HTMLLIElement>) => void;
-  onDrop: (event: React.DragEvent<HTMLLIElement>, targetItem: OutlineItem) => void;
-  isDraggedOver: boolean;
+  // D&D props are now handled by the library wrappers
 }
 
 function OutlineItemDisplay({ 
-  item, level, onEdit, onDelete, 
-  onDragStart, onDragOver, onDragEnd, onDrop, 
-  isDraggedOver 
+  item, index, level, onEdit, onDelete 
 }: OutlineItemDisplayProps) {
   const getTypeBadgeVariant = (type: OutlineItemType) => {
     switch (type) {
@@ -94,77 +96,108 @@ function OutlineItemDisplay({
     }
   };
 
+  const canHaveChildren = item.type === 'Chapter'; // Example: Only chapters can have children
+
   return (
-    <li
-      draggable
-      onDragStart={(e) => onDragStart(e, item)}
-      onDragOver={(e) => onDragOver(e, item)}
-      onDragEnd={onDragEnd}
-      onDrop={(e) => onDrop(e, item)}
-      className={cn(
-        "p-3 border rounded-md hover:shadow-sm transition-shadow bg-card",
-        isDraggedOver && "outline outline-2 outline-primary",
-        level > 0 && "ml-6" // Indentation for nested items
-      )}
-      style={{ marginLeft: `${level * 1.5}rem`}}
-    >
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center gap-2">
-          <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-          <Badge variant={getTypeBadgeVariant(item.type)} className="text-xs">{item.type}</Badge>
-        </div>
-        <div className="flex gap-1 shrink-0">
-          <Button variant="ghost" size="icon" onClick={() => onEdit(item)} title="Edit Item">
-            <Edit3 className="h-4 w-4" />
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Delete Item">
-                <Trash2 className="h-4 w-4 text-destructive" />
+    <Draggable draggableId={item.id} index={index}>
+      {(provided, snapshot) => (
+        <li
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          className={cn(
+            "p-3 border rounded-md hover:shadow-sm transition-shadow bg-card mb-2",
+            snapshot.isDragging && "shadow-lg bg-primary/10",
+            level > 0 && "ml-6" 
+          )}
+          style={{ 
+            ...provided.draggableProps.style,
+            marginLeft: `${level * 1.5}rem`
+          }}
+        >
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex items-center gap-2">
+              <div {...provided.dragHandleProps} title="Drag to reorder/nest">
+                <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+              </div>
+              <Badge variant={getTypeBadgeVariant(item.type)} className="text-xs">{item.type}</Badge>
+            </div>
+            <div className="flex gap-1 shrink-0">
+              <Button variant="ghost" size="icon" onClick={() => onEdit(item)} title="Edit Item">
+                <Edit3 className="h-4 w-4" />
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the outline item: "{item.title}" and all its sub-items.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(item.id)} className="bg-destructive hover:bg-destructive/90">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold">{item.title}</h3>
-        {item.notes && (
-          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.notes}</p>
-        )}
-      </div>
-      {item.children && item.children.length > 0 && (
-        <ul className="mt-3 space-y-3 pl-4 border-l">
-          {item.children.map(child => (
-            <OutlineItemDisplay
-              key={child.id}
-              item={child}
-              level={level + 1}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onDragStart={onDragStart}
-              onDragOver={onDragOver}
-              onDragEnd={onDragEnd}
-              onDrop={onDrop}
-              isDraggedOver={false} // Placeholder, real drag over state needed if deep nesting drag is implemented
-            />
-          ))}
-        </ul>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" title="Delete Item">
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the outline item: "{item.title}" and all its sub-items.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onDelete(item.id)} className="bg-destructive hover:bg-destructive/90">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold">{item.title}</h3>
+            {item.notes && (
+              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.notes}</p>
+            )}
+          </div>
+          {canHaveChildren && (
+            <Droppable droppableId={item.id} type="outline-item">
+              {(dropProvided, dropSnapshot) => (
+                <ul
+                  ref={dropProvided.innerRef}
+                  {...dropProvided.droppableProps}
+                  className={cn(
+                    "mt-3 space-y-2 pl-4 border-l min-h-[20px]", // min-h for empty drop target
+                    dropSnapshot.isDraggingOver && "bg-accent/50 rounded"
+                  )}
+                >
+                  {item.children.map((child, childIndex) => (
+                    <OutlineItemDisplay
+                      key={child.id}
+                      item={child}
+                      index={childIndex}
+                      level={level + 1}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  ))}
+                  {dropProvided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          )}
+           {!canHaveChildren && item.children && item.children.length > 0 && (
+             // If not supposed to have children but has them (e.g. old data), render them non-droppably
+              <ul className="mt-3 space-y-3 pl-4 border-l">
+                  {item.children.map((child, childIndex) => (
+                    <OutlineItemDisplay
+                      key={child.id}
+                      item={child}
+                      index={childIndex} // This index isn't used for dnd here but good practice
+                      level={level + 1}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  ))}
+              </ul>
+           )}
+        </li>
       )}
-    </li>
+    </Draggable>
   );
 }
 
@@ -181,22 +214,17 @@ export default function OutlineBuilderPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editNotes, setEditNotes] = useState('');
 
-  // Drag and Drop State
-  const draggedItemRef = useRef<OutlineItem | null>(null);
-  const [draggedOverItemId, setDraggedOverItemId] = useState<string | null>(null);
-
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedItems = localStorage.getItem(OUTLINE_STORAGE_KEY);
       if (storedItems) {
         try {
-          const parsedItems = JSON.parse(storedItems).map((item: any) => ({
+          const parsedItems = JSON.parse(storedItems).map((item: any): OutlineItem => ({
             ...item,
             type: item.type || 'Plot Point/Notes',
-            children: item.children || [] // Ensure children array exists
+            children: item.children || [] 
           }));
-          setItems(parsedItems as OutlineItem[]);
+          setItems(parsedItems);
         } catch (e) {
           console.error("Failed to parse outline items from localStorage", e);
           setItems([]);
@@ -219,21 +247,15 @@ export default function OutlineBuilderPage() {
 
   const handleOpenAddDialog = () => {
     resetAddForm();
-    setEditingItem(null); // Ensure not in edit mode
+    setEditingItem(null); 
     setIsAddDialogOpen(true);
   };
 
   const handleAddItem = (e: FormEvent) => {
     e.preventDefault();
     if (!newItemTitle.trim()) return;
-    const newItem: OutlineItem = {
-      id: Date.now().toString(),
-      title: newItemTitle.trim(),
-      notes: newItemNotes.trim() || undefined,
-      type: newItemType,
-      children: [],
-    };
-    setItems(prevItems => [...prevItems, newItem]); // Add to top level
+    const newItem = createNewItem(newItemTitle.trim(), newItemNotes.trim() || undefined, newItemType);
+    setItems(prevItems => [...prevItems, newItem]);
     setIsAddDialogOpen(false);
     resetAddForm();
   };
@@ -246,7 +268,8 @@ export default function OutlineBuilderPage() {
     setEditingItem(item);
     setEditTitle(item.title);
     setEditNotes(item.notes || '');
-    setIsAddDialogOpen(false); // Close add dialog if open
+    // Type editing could be added here if needed
+    setIsAddDialogOpen(false); 
   }, []);
 
   const handleCancelEdit = () => {
@@ -258,211 +281,287 @@ export default function OutlineBuilderPage() {
   const handleSaveEdit = (e: FormEvent) => {
     e.preventDefault();
     if (!editingItem || !editTitle.trim()) return;
-    const updatedDetails = { title: editTitle.trim(), notes: editNotes.trim() || undefined };
-    setItems(prevItems => updateItemRecursive(prevItems, { ...editingItem, ...updatedDetails }));
+    const updatedDetails: Partial<OutlineItem> & { id: string } = { 
+      id: editingItem.id,
+      title: editTitle.trim(), 
+      notes: editNotes.trim() || undefined 
+      // type: editingItem.type (type not editable in this form for simplicity)
+    };
+    setItems(prevItems => updateItemRecursive(prevItems, updatedDetails));
     handleCancelEdit();
   };
 
-  // Drag and Drop Handlers
-  const handleDragStart = (event: React.DragEvent<HTMLLIElement>, item: OutlineItem) => {
-    draggedItemRef.current = item;
-    event.dataTransfer.effectAllowed = "move";
-    event.currentTarget.style.opacity = '0.5';
-  };
-
-  const handleDragOver = (event: React.DragEvent<HTMLLIElement>, item: OutlineItem) => {
-    event.preventDefault();
-    if (draggedItemRef.current?.id !== item.id) {
-      setDraggedOverItemId(item.id);
-    }
-  };
+  // --- @hello-pangea/dnd Logic ---
   
-  const handleDragLeave = () => {
-    setDraggedOverItemId(null);
+  // Helper to find an item and its parent list, and its index in that list
+  const findItemAndParentList = (
+    itemId: string,
+    currentItems: OutlineItem[]
+  ): { item: OutlineItem; list: OutlineItem[]; index: number } | null => {
+    for (let i = 0; i < currentItems.length; i++) {
+      if (currentItems[i].id === itemId) {
+        return { item: currentItems[i], list: currentItems, index: i };
+      }
+      if (currentItems[i].children) {
+        const foundInChildren = findItemAndParentList(itemId, currentItems[i].children);
+        if (foundInChildren) {
+          return foundInChildren;
+        }
+      }
+    }
+    return null;
   };
 
-  const handleDragEnd = (event: React.DragEvent<HTMLLIElement>) => {
-    event.currentTarget.style.opacity = '1';
-    draggedItemRef.current = null;
-    setDraggedOverItemId(null);
-  };
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result;
 
-  const handleDrop = (event: React.DragEvent<HTMLLIElement>, targetItem: OutlineItem) => {
-    event.preventDefault();
-    const sourceItem = draggedItemRef.current;
-    if (!sourceItem || sourceItem.id === targetItem.id) {
-      setDraggedOverItemId(null);
-      return;
+    if (!destination) return; // Dropped outside a valid droppable
+
+    // Create a deep clone to modify
+    let newItems = JSON.parse(JSON.stringify(items)) as OutlineItem[];
+
+    // Find the source item and its original list
+    const findAndRemove = (
+      currentList: OutlineItem[],
+      sDroppableId: string,
+      sIndex: number,
+      dId: string
+    ): { updatedList: OutlineItem[]; removed: OutlineItem | null } => {
+      let removedItem: OutlineItem | null = null;
+      if (sDroppableId === "root") {
+        if (currentList[sIndex]?.id === dId) {
+          [removedItem] = currentList.splice(sIndex, 1);
+        }
+        return { updatedList: currentList, removed: removedItem };
+      }
+
+      for (let i = 0; i < currentList.length; i++) {
+        if (currentList[i].id === sDroppableId) {
+          if (currentList[i].children[sIndex]?.id === dId) {
+            [removedItem] = currentList[i].children.splice(sIndex, 1);
+          }
+          return { updatedList: currentList, removed: removedItem };
+        }
+        if (currentList[i].children) {
+          const recursionResult = findAndRemove(currentList[i].children, sDroppableId, sIndex, dId);
+          if (recursionResult.removed) { // If item was found and removed in children
+            return { updatedList: currentList, removed: recursionResult.removed };
+          }
+        }
+      }
+      return { updatedList: currentList, removed: null }; // Item not found in this path
+    };
+    
+    const { updatedList: listAfterRemoval, removed: draggedItem } = findAndRemove(
+      newItems,
+      source.droppableId,
+      source.index,
+      draggableId
+    );
+
+    if (!draggedItem) {
+      console.error("Dragged item not found for removal");
+      return; // Should not happen if draggableId is correct
     }
+    newItems = listAfterRemoval; // Update newItems with the list after removal
 
-    // For now, only allow reordering at the top level
-    // More complex nesting/moving between levels is deferred
-    const sourceIndex = items.findIndex(item => item.id === sourceItem.id);
-    const targetIndex = items.findIndex(item => item.id === targetItem.id);
 
-    if (sourceIndex !== -1 && targetIndex !== -1) {
-      const newItems = [...items];
-      const [removed] = newItems.splice(sourceIndex, 1);
-      newItems.splice(targetIndex, 0, removed);
-      setItems(newItems);
-    }
-    setDraggedOverItemId(null);
+    // Insert into destination
+    const insertIntoList = (
+      currentList: OutlineItem[],
+      dDroppableId: string,
+      dIndex: number,
+      itemToInsert: OutlineItem
+    ): boolean => {
+      if (dDroppableId === "root") {
+        currentList.splice(dIndex, 0, itemToInsert);
+        return true;
+      }
+      for (let i = 0; i < currentList.length; i++) {
+        if (currentList[i].id === dDroppableId) {
+          // Ensure children array exists
+          currentList[i].children = currentList[i].children || [];
+          currentList[i].children.splice(dIndex, 0, itemToInsert);
+          return true;
+        }
+        if (currentList[i].children) {
+          if (insertIntoList(currentList[i].children, dDroppableId, dIndex, itemToInsert)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+
+    insertIntoList(newItems, destination.droppableId, destination.index, draggedItem);
+    setItems(newItems);
   };
 
 
   return (
-    <div className="space-y-8" onDragLeave={handleDragLeave}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <ListTree className="mr-3 h-8 w-8 text-primary" /> Outline Builder
-          </h1>
-          <p className="text-muted-foreground">Structure your story. Drag top-level items to reorder. Full nesting drag-and-drop coming soon.</p>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 flex items-center">
+              <ListTree className="mr-3 h-8 w-8 text-primary" /> Outline Builder
+            </h1>
+            <p className="text-muted-foreground">Structure your story. Drag items to reorder or nest them within 'Chapter' type items.</p>
+          </div>
+          <Button onClick={handleOpenAddDialog}>
+            <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
+          </Button>
         </div>
-        <Button onClick={handleOpenAddDialog}>
-          <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
-        </Button>
-      </div>
 
-      <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
-          setIsAddDialogOpen(isOpen);
-          if (!isOpen) resetAddForm();
-      }}>
-        <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>Add New Outline Item</DialogTitle>
-              <DialogDescription>
-                Choose a type, add a title, and optional notes. New items are added to the top level.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddItem} className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="itemType" className="text-right">Type</Label>
-                <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select item type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {itemTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="newItemTitleDialog" className="text-right">Title</Label>
-                <Input 
-                  id="newItemTitleDialog" 
-                  value={newItemTitle} 
-                  onChange={(e) => setNewItemTitle(e.target.value)} 
-                  className="col-span-3" 
-                  placeholder="e.g., The Discovery"
-                  required 
-                />
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="newItemNotesDialog" className="text-right pt-2">Notes</Label>
-                <Textarea 
-                  id="newItemNotesDialog" 
-                  value={newItemNotes} 
-                  onChange={(e) => setNewItemNotes(e.target.value)} 
-                  className="col-span-3" 
-                  rows={4}
-                  placeholder="Add brief notes or a summary..."
-                />
-              </div>
-              <DialogFooter className="mt-4">
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">Cancel</Button>
-                </DialogClose>
-                <Button type="submit">Add Item</Button>
-              </DialogFooter>
-            </form>
-        </DialogContent>
-      </Dialog>
-
-      {editingItem && (
-        <Card className="mt-6 border-primary border-2">
-          <CardHeader>
-            <CardTitle>Edit Item: <span className="font-normal">{editingItem.title}</span></CardTitle>
-            <CardDescription>Modifying <Badge variant="outline">{editingItem.type}</Badge></CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSaveEdit}>
-            <CardContent className="space-y-4">
-              <div>
-                <label htmlFor="editItemTitle" className="block text-sm font-medium mb-1">Title</label>
-                <Input
-                  id="editItemTitle"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  required
-                  className="text-base"
-                />
-              </div>
-              <div>
-                <label htmlFor="editItemNotes" className="block text-sm font-medium mb-1">Notes (Optional)</label>
-                <Textarea
-                  id="editItemNotes"
-                  value={editNotes}
-                  onChange={(e) => setEditNotes(e.target.value)}
-                  rows={3}
-                  className="text-base"
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={handleCancelEdit}>
-                <XCircle className="mr-2 h-5 w-5" /> Cancel Edit
-              </Button>
-              <Button type="submit">
-                <Save className="mr-2 h-5 w-5" /> Save Changes
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      )}
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Your Outline Structure</CardTitle>
-          <CardDescription>
-            {items.length > 0 ? "Manage and reorder your top-level outline items below." : "Your outline is empty."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {items.length > 0 ? (
-            <ScrollArea className="h-auto max-h-[60vh] pr-4">
-              <ul className="space-y-3">
-                {items.map((item) => (
-                  <OutlineItemDisplay
-                    key={item.id}
-                    item={item}
-                    level={0}
-                    onEdit={handleStartEdit}
-                    onDelete={handleDeleteItem}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDragEnd={handleDragEnd}
-                    onDrop={handleDrop}
-                    isDraggedOver={draggedOverItemId === item.id}
+        <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
+            setIsAddDialogOpen(isOpen);
+            if (!isOpen) resetAddForm();
+        }}>
+          <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>Add New Outline Item</DialogTitle>
+                <DialogDescription>
+                  Choose a type, add a title, and optional notes. New items are added to the top level.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddItem} className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="itemType" className="text-right">Type</Label>
+                  <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select item type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {itemTypes.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="newItemTitleDialog" className="text-right">Title</Label>
+                  <Input 
+                    id="newItemTitleDialog" 
+                    value={newItemTitle} 
+                    onChange={(e) => setNewItemTitle(e.target.value)} 
+                    className="col-span-3" 
+                    placeholder="e.g., The Discovery"
+                    required 
                   />
-                ))}
-              </ul>
-            </ScrollArea>
-          ) : (
-            <p className="text-muted-foreground text-center py-6">No outline items yet. Click "Add New Outline Item" to begin.</p>
-          )}
-        </CardContent>
-      </Card>
-      
-      <div className="text-center mt-12 p-6 bg-card border rounded-md">
-        <Image src="https://placehold.co/300x150.png" data-ai-hint="abstract structure blueprint" alt="Outline structure illustration" width={300} height={150} className="mx-auto mb-4 rounded-md" />
-        <h3 className="text-xl font-semibold mb-2">Advanced Outlining</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Full drag-and-drop nesting and moving items between different levels are planned for future updates.
-        </p>
-      </div>
+                </div>
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="newItemNotesDialog" className="text-right pt-2">Notes</Label>
+                  <Textarea 
+                    id="newItemNotesDialog" 
+                    value={newItemNotes} 
+                    onChange={(e) => setNewItemNotes(e.target.value)} 
+                    className="col-span-3" 
+                    rows={4}
+                    placeholder="Add brief notes or a summary..."
+                  />
+                </div>
+                <DialogFooter className="mt-4">
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button type="submit">Add Item</Button>
+                </DialogFooter>
+              </form>
+          </DialogContent>
+        </Dialog>
 
-    </div>
+        {editingItem && (
+          <Card className="mt-6 border-primary border-2">
+            <CardHeader>
+              <CardTitle>Edit Item: <span className="font-normal">{editingItem.title}</span></CardTitle>
+              <CardDescription>Modifying <Badge variant="outline">{editingItem.type}</Badge></CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSaveEdit}>
+              <CardContent className="space-y-4">
+                <div>
+                  <label htmlFor="editItemTitle" className="block text-sm font-medium mb-1">Title</label>
+                  <Input
+                    id="editItemTitle"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    required
+                    className="text-base"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="editItemNotes" className="block text-sm font-medium mb-1">Notes (Optional)</label>
+                  <Textarea
+                    id="editItemNotes"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    rows={3}
+                    className="text-base"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={handleCancelEdit}>
+                  <XCircle className="mr-2 h-5 w-5" /> Cancel Edit
+                </Button>
+                <Button type="submit">
+                  <Save className="mr-2 h-5 w-5" /> Save Changes
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+        )}
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Your Outline Structure</CardTitle>
+            <CardDescription>
+              {items.length > 0 ? "Drag and drop to reorder items or nest them under 'Chapter' type items." : "Your outline is empty."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {items.length > 0 ? (
+              <ScrollArea className="h-auto max-h-[60vh] pr-4">
+                <Droppable droppableId="root" type="outline-item">
+                  {(provided, snapshot) => (
+                    <ul 
+                      ref={provided.innerRef} 
+                      {...provided.droppableProps}
+                      className={cn(
+                        "space-y-0", // No space between items from UL, handled by LI margin
+                        snapshot.isDraggingOver && "bg-accent/30 rounded"
+                      )}
+                    >
+                      {items.map((item, index) => (
+                        <OutlineItemDisplay
+                          key={item.id}
+                          item={item}
+                          index={index}
+                          level={0}
+                          onEdit={handleStartEdit}
+                          onDelete={handleDeleteItem}
+                        />
+                      ))}
+                      {provided.placeholder}
+                    </ul>
+                  )}
+                </Droppable>
+              </ScrollArea>
+            ) : (
+              <p className="text-muted-foreground text-center py-6">No outline items yet. Click "Add New Outline Item" to begin.</p>
+            )}
+          </CardContent>
+        </Card>
+        
+        <div className="text-center mt-12 p-6 bg-card border rounded-md">
+          <Image src="https://placehold.co/300x150.png" data-ai-hint="abstract structure blueprint" alt="Outline structure illustration" width={300} height={150} className="mx-auto mb-4 rounded-md" />
+          <h3 className="text-xl font-semibold mb-2">Advanced Outlining</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            You can now drag items to reorder them or nest them inside 'Chapter' type items.
+          </p>
+        </div>
+
+      </div>
+    </DragDropContext>
   );
 }
+
