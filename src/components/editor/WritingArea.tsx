@@ -2,13 +2,13 @@
 // src/components/editor/WritingArea.tsx
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle } from 'lucide-react'; // Added AlertTriangle
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -26,12 +26,14 @@ import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 import { useSidebar } from '@/components/ui/sidebar';
 import { formatDistanceToNow } from 'date-fns';
-import { useStoryContext, getEditorContentKey } from '@/contexts/StoryContext'; // Import StoryContext and key generator
+import { useStoryContext, getEditorContentKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 
 type EditorTheme = 'light' | 'dark';
-// EDITOR_CONTENT_KEY is now generated dynamically by getEditorContentKey(activeStoryId)
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
+const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
+type EditorFontSize = "sm" | "base" | "lg";
+
 
 export function WritingArea() {
   const { activeStoryId } = useStoryContext();
@@ -56,6 +58,18 @@ export function WritingArea() {
   const [feedbackTimestamp, setFeedbackTimestamp] = useState<number | null>(null);
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>("base");
+
+  const getEditorClassNames = useCallback((size: EditorFontSize) => {
+    const baseClasses = 'prose dark:prose-invert focus:outline-none w-full h-full p-6 leading-relaxed';
+    const sizeMap: Record<EditorFontSize, string> = {
+      sm: 'prose-sm',
+      base: 'prose-base',
+      lg: 'prose-lg',
+    };
+    return cn(baseClasses, sizeMap[size]);
+  }, []);
+
 
   const editor = useEditor({
     extensions: [
@@ -65,16 +79,16 @@ export function WritingArea() {
         },
       }),
     ],
-    content: savedContent, // Initial content from autosave
+    content: savedContent,
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
-      if (activeStoryId) { // Only save if a story is active
+      if (activeStoryId) {
         setSavedContent(currentEditor.getHTML());
       }
     },
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none w-full h-full p-6 leading-relaxed',
+        class: getEditorClassNames(editorFontSize),
       },
     },
   });
@@ -84,26 +98,53 @@ export function WritingArea() {
     if (typeof window !== 'undefined') {
       const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
       setAiFeaturesEnabled(storedAIPref === 'true');
+      
+      const storedFontSize = localStorage.getItem(EDITOR_FONT_SIZE_KEY) as EditorFontSize | null;
+      if (storedFontSize) {
+        setEditorFontSize(storedFontSize);
+      }
 
       const handleStorageChange = (event: StorageEvent) => {
         if (event.key === AI_OPT_IN_KEY) {
           setAiFeaturesEnabled(event.newValue === 'true');
         }
+        if (event.key === EDITOR_FONT_SIZE_KEY) {
+          setEditorFontSize((event.newValue as EditorFontSize) || "base");
+        }
       };
       window.addEventListener('storage', handleStorageChange);
+      
+      // Listen for custom event from settings page
+      const handleEditorSettingsChange = (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        if (detail.fontSize) {
+          setEditorFontSize(detail.fontSize);
+        }
+      };
+      window.addEventListener('editorSettingsChanged', handleEditorSettingsChange);
+
       return () => {
         window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('editorSettingsChanged', handleEditorSettingsChange);
       };
     }
   }, []);
 
-  // This effect ensures that when the story (and thus editorStorageKey) changes,
-  // or when savedContent from useAutosave changes (due to loading from new key),
-  // the editor's content is updated.
+  useEffect(() => {
+    if (editor) {
+      editor.setOptions({
+        editorProps: {
+          attributes: {
+            class: getEditorClassNames(editorFontSize),
+          },
+        },
+      });
+    }
+  }, [editorFontSize, editor, getEditorClassNames]);
+
+
   useEffect(() => {
     if (editor && activeStoryId) {
-      // `savedContent` is already updated by useAutosave's internal useEffect when key changes.
-      // So, we just need to ensure editor gets this new `savedContent`.
       if (savedContent !== editor.getHTML()) {
         editor.commands.setContent(savedContent, false);
       }
@@ -196,7 +237,6 @@ export function WritingArea() {
         reader.onload = (e) => {
           const fileContent = e.target?.result as string;
           editor.commands.setContent(fileContent); 
-          // setSavedContent will be called by onUpdate, triggering autosave
           toast({ title: "Success", description: "File content imported." });
         };
         reader.onerror = () => {
@@ -263,7 +303,7 @@ export function WritingArea() {
     }
   };
   
-  if (!isMounted) { // Delay rendering until client-side checks are complete
+  if (!isMounted) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -272,7 +312,7 @@ export function WritingArea() {
     );
   }
 
-  if (!activeStoryId && isMounted) { // Check isMounted here too
+  if (!activeStoryId && isMounted) {
     return (
       <Card className="m-auto">
         <CardHeader>
@@ -288,7 +328,7 @@ export function WritingArea() {
     );
   }
   
-  if (!editor) { // This should ideally not be hit if activeStoryId and isMounted are handled
+  if (!editor) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -312,7 +352,7 @@ export function WritingArea() {
         >
           <Minimize className="h-5 w-5" />
         </Button>
-        <EditorContent editor={editor} className={cn("flex-grow overflow-y-auto", editorContainerClasses[editorTheme])} />
+        <EditorContent editor={editor} className={cn("flex-grow overflow-y-auto", editorContainerClasses[editorTheme], getEditorClassNames(editorFontSize))} />
       </div>
     );
   }
@@ -393,7 +433,7 @@ export function WritingArea() {
           )}
           <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
             <ScrollArea className="h-full w-full">
-              <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
+              <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme], getEditorClassNames(editorFontSize))}/>
             </ScrollArea>
           </CardContent>
           {!isFocusMode && (

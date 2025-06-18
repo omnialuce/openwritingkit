@@ -4,6 +4,7 @@ import './globals.css';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 import { StoryProvider } from '@/contexts/StoryContext';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
   title: 'OpenWritingKit - Your Creative Writing Companion',
@@ -24,11 +25,18 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body antialiased min-h-screen bg-background flex flex-col")}>
-        <StoryProvider>
-          <MainLayout>
-            {children}
-          </MainLayout>
-        </StoryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <StoryProvider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </StoryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
