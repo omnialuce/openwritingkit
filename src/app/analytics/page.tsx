@@ -3,7 +3,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, CalendarClock, AlertTriangle } from "lucide-react"; // Added TrendingUp, CalendarClock
+import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, CalendarClock, AlertTriangle, AlignLeft, SpellCheck2, GitMerge } from "lucide-react"; 
 import Image from "next/image";
 import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ interface InsightCardProps {
   value?: string;
   unit?: string;
   children?: React.ReactNode;
+  comingSoon?: boolean;
 }
 
 interface ActivityLogEntry {
@@ -24,11 +25,9 @@ interface ActivityLogEntry {
   wordCount: number;
 }
 
-// ACTIVITY_LOG_KEY is now dynamic: getActivityLogKey(activeStoryId)
-
-function InsightCard({ title, description, icon: Icon, value, unit, children }: InsightCardProps) {
+function InsightCard({ title, description, icon: Icon, value, unit, children, comingSoon }: InsightCardProps) {
   return (
-    <Card>
+    <Card className={cn(comingSoon && "opacity-70")}>
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
@@ -45,8 +44,11 @@ function InsightCard({ title, description, icon: Icon, value, unit, children }: 
           </p>
         )}
         {children && <div>{children}</div>}
-        {!value && !children && (
+        {!value && !children && !comingSoon && (
           <p className="text-muted-foreground">Data will appear here once you start writing in the selected story.</p>
+        )}
+        {comingSoon && (
+          <p className="text-sm text-primary font-semibold">Coming Soon</p>
         )}
       </CardContent>
     </Card>
@@ -96,7 +98,7 @@ export default function AnalyticsPage() {
     const savesByHour: Record<string, number> = {};
     todayEntries.forEach(entry => {
       const hour = new Date(entry.timestamp).getHours();
-      savesByHour[hour] = (savesByHour[hour] || 0) + 1; // Counting saves/entries per hour
+      savesByHour[hour] = (savesByHour[hour] || 0) + 1; 
     });
 
     let mostActiveHour = -1;
@@ -113,14 +115,20 @@ export default function AnalyticsPage() {
   };
 
 
-  const insights = [
-    { title: "Vocabulary Richness", description: "Assess the diversity of your word usage.", icon: BookOpen, value: "N/A", unit: "analysis pending" },
+  const advancedInsights = [
+    { title: "Writing Pattern Analysis", description: "Analyze sentence length, common phrases, and writing habits.", icon: AlignLeft, comingSoon: true },
+    { title: "Vocabulary Richness Analysis", description: "Assess the diversity and complexity of your word usage.", icon: SpellCheck2, comingSoon: true },
+    { title: "Narrative Pacing & Structure Deep Dive", description: "Get detailed insights into your story's structural flow and tension.", icon: GitMerge, comingSoon: true },
+  ];
+  
+  const generalInsights = [
     { title: "Dialogue Ratio", description: "Analyze dialogue vs. narrative balance.", icon: Users, value: "N/A", unit: "analysis pending" },
     { title: "Chapter Length Consistency", description: "Monitor the consistency of your chapter lengths.", icon: FileText, value: "N/A", unit: "analysis pending" },
     { title: "Reading Difficulty", description: "Gauge the readability of your text.", icon: Percent, value: "N/A", unit: "analysis pending" },
   ];
 
-  if (!isMounted) return null; // Or a loading skeleton
+
+  if (!isMounted) return null; 
 
   if (!activeStoryId && isMounted) {
     return (
@@ -139,7 +147,7 @@ export default function AnalyticsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Writing Analytics & Insights</h1>
-        <p className="text-muted-foreground">Understand your writing patterns for the current story.</p>
+        <p className="text-muted-foreground">Understand your writing patterns for the current story: <span className="font-semibold text-primary">{useStoryContext().activeStoryName || ''}</span></p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -154,10 +162,19 @@ export default function AnalyticsPage() {
         </InsightCard>
       </div>
       
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">General Writing Statistics (Coming Soon)</h2>
+      <div className="mt-10">
+        <h2 className="text-2xl font-semibold mb-6">Advanced Writing Insights (Coming Soon)</h2>
          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {insights.map((insight) => (
+            {advancedInsights.map((insight) => (
+            <InsightCard key={insight.title} {...insight} />
+            ))}
+        </div>
+      </div>
+      
+      <div className="mt-10">
+        <h2 className="text-2xl font-semibold mb-6">General Writing Statistics (Coming Soon)</h2>
+         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {generalInsights.map((insight) => (
             <InsightCard key={insight.title} {...insight} />
             ))}
         </div>
