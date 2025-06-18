@@ -183,7 +183,7 @@ const Sidebar = React.forwardRef<
       collapsible = "offcanvas",
       className,
       children,
-      ...props
+      ...props // Props are applied to the inner fixed visual sidebar
     },
     ref
   ) => {
@@ -193,11 +193,12 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
-            className
+            "flex h-full flex-col bg-sidebar text-sidebar-foreground",
+            "w-[var(--sidebar-width)]", 
+            className // User-provided class for the non-collapsible sidebar container
           )}
           ref={ref}
-          {...props}
+          {...props} // Apply props here as it's the main container
         >
           {children}
         </div>
@@ -206,17 +207,18 @@ const Sidebar = React.forwardRef<
 
     if (isMobile) {
       return (
-        <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
             data-sidebar="sidebar"
             data-mobile="true"
-            className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[var(--sidebar-width)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
               } as React.CSSProperties
             }
             side={side}
+            {...props} // Pass props to SheetContent for mobile
           >
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
@@ -224,43 +226,48 @@ const Sidebar = React.forwardRef<
       )
     }
 
+    // Desktop sidebar (peer) - This div's job is to occupy space in the flex layout.
     return (
-      <div // Outer PEER div. Should not have intrinsic size in the flex flow.
+      <div
         ref={ref}
-        className="group peer hidden md:block text-sidebar-foreground"
+        className={cn(
+            "group peer hidden md:block text-sidebar-foreground shrink-0 transition-[width] duration-200 ease-linear", // shrink-0 is important
+            // Set width for the peer itself to occupy space in the flex layout
+            state === "expanded" && "w-[var(--sidebar-width)]",
+            state === "collapsed" && collapsible === "icon" && "w-[var(--sidebar-width-icon)]",
+            // If offcanvas and collapsed, it should not take up space in the flow
+            state === "collapsed" && collapsible === "offcanvas" && "w-0",
+            variant === "floating" && state === "expanded" && "w-[var(--sidebar-width)]", // Floating needs a placeholder width
+            variant === "floating" && state === "collapsed" && collapsible === "icon" && "w-[var(--sidebar-width-icon)]",
+            variant === "inset" && state === "expanded" && "w-[calc(var(--sidebar-width)_+_theme(spacing.4))]", // Inset is wider due to its own margins
+            variant === "inset" && state === "collapsed" && collapsible === "icon" && "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]",
+            className // User-provided classes for the peer/spacer
+        )}
         data-state={state}
         data-collapsible={(state === "collapsed" && collapsible === "icon") ? "icon" : collapsible}
         data-variant={variant}
         data-side={side}
       >
-        {/* Actual Sidebar content, fixed position */}
+        {/* Actual Visual Sidebar (fixed position) */}
         <div
           className={cn(
-            "fixed inset-y-0 z-10 flex h-svh transition-[width,transform] duration-200 ease-linear",
+            "fixed inset-y-0 z-10 flex h-svh flex-col transition-[width,transform] duration-200 ease-linear",
             side === "left" ? "left-0" : "right-0",
-            // Width classes
-            (state === "expanded" || (collapsible !== "icon" && collapsible !== "offcanvas")) && "w-[var(--sidebar-width)]",
-            (state === "collapsed" && collapsible === "icon") && "w-[var(--sidebar-width-icon)]",
-            (state === "collapsed" && collapsible === "offcanvas") && "w-[var(--sidebar-width)]", // Offcanvas keeps full width but translates
+            // Visual width of the fixed element
+            state === "expanded" && "w-[var(--sidebar-width)]",
+            state === "collapsed" && collapsible === "icon" && "w-[var(--sidebar-width-icon)]",
+            state === "collapsed" && collapsible === "offcanvas" && "w-[var(--sidebar-width)]", // Offcanvas keeps visual width
             // Transform for offcanvas
             (collapsible === "offcanvas" && state === "collapsed") && (side === "left" ? "!-translate-x-full" : "!translate-x-full"),
-            // User-provided classes for this fixed container
-            className 
+            // Styling for the visual container
+            "bg-sidebar",
+            variant === "sidebar" && (side === "left" ? "border-r border-sidebar-border" : "border-l border-sidebar-border"),
+            variant === "floating" && "m-2 rounded-lg border border-sidebar-border shadow",
+            variant === "inset" && "m-2 rounded-lg"
           )}
-          {...props} // User-provided props for this fixed container
+          {...props} // User-provided props like style for the fixed visual sidebar
         >
-          {/* Inner wrapper for styling like background, border, rounded corners */}
-          <div
-            data-sidebar="sidebar"
-            className={cn(
-              "flex h-full w-full flex-col bg-sidebar",
-              variant === "sidebar" && (side === "left" ? "border-r border-sidebar-border" : "border-l border-sidebar-border"),
-              variant === "floating" && "m-2 rounded-lg border border-sidebar-border shadow",
-              variant === "inset" && "m-2 rounded-lg" 
-            )}
-          >
-            {children}
-          </div>
+          {children}
         </div>
       </div>
     )
@@ -331,20 +338,10 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background transition-[margin-left] duration-200 ease-linear",
-        // Default sidebar variant, left side
-        "md:peer-data-[variant=sidebar][data-side=left][data-state=expanded]:ml-[var(--sidebar-width)]",
-        "md:peer-data-[variant=sidebar][data-side=left][data-state=collapsed][data-collapsible=icon]:ml-[var(--sidebar-width-icon)]",
-        "md:peer-data-[variant=sidebar][data-side=left][data-state=collapsed][data-collapsible=offcanvas]:ml-0",
-        
-        // Inset variant (main content is also inset)
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))]",
+        "relative flex flex-1 flex-col bg-background min-h-svh", // Key: flex-1. Removed transitions, relies on peer width now.
+        // Specific styling for 'inset' variant for the main content area itself.
+        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))]", 
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
-        "md:peer-data-[variant=inset][data-side=left][data-state=expanded]:ml-[calc(var(--sidebar-width)_+_theme(spacing.2))]", // Adjust for sidebar's own m-2
-        "md:peer-data-[variant=inset][data-side=left][data-state=collapsed][data-collapsible=icon]:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.2))]",
-        // Floating variant (main content fills space, sidebar overlays)
-        "md:peer-data-[variant=floating]:ml-0", // If sidebar truly floats and does not push content
-
         className
       )}
       {...props}
@@ -582,7 +579,7 @@ const SidebarMenuButton = React.forwardRef<
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size, className }))}
         {...props}
       />
     )
@@ -779,3 +776,5 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
+    
