@@ -2,12 +2,14 @@
 // src/components/editor/WritingArea.tsx
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2 } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
+import { EditorToolbar } from './EditorToolbar'; // New Toolbar
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,22 +20,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 
-type Theme = 'light' | 'dark';
+type EditorTheme = 'light' | 'dark';
 const EDITOR_CONTENT_KEY = 'openwritingkit-active-document-content';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 export function WritingArea() {
-  const [content, setContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(EDITOR_CONTENT_KEY, '');
+  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(EDITOR_CONTENT_KEY, '<p></p>');
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
-  const [theme, setTheme] = useState<Theme>('light');
+  const [editorTheme, setEditorTheme] = useState<EditorTheme>('light');
   const [isFocusMode, setIsFocusMode] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -46,6 +47,25 @@ export function WritingArea() {
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
+    ],
+    content: savedContent,
+    onUpdate: ({ editor: currentEditor }) => {
+      setSavedContent(currentEditor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-xl focus:outline-none w-full h-full p-6 leading-relaxed',
+      },
+    },
+  });
 
   useEffect(() => {
     setIsMounted(true);
@@ -66,10 +86,20 @@ export function WritingArea() {
   }, []);
 
   useEffect(() => {
-    const words = content.trim() ? content.trim().split(/\s+/).filter(word => word.length > 0) : [];
-    setWordCount(words.length);
-    setCharCount(content.length);
-  }, [content]);
+    if (editor && savedContent !== editor.getHTML()) {
+      editor.commands.setContent(savedContent, false);
+    }
+  }, [savedContent, editor]);
+
+
+  useEffect(() => {
+    if (editor) {
+      const textContent = editor.getText();
+      const words = textContent.trim() ? textContent.trim().split(/\s+/).filter(word => word.length > 0) : [];
+      setWordCount(words.length);
+      setCharCount(textContent.length);
+    }
+  }, [savedContent, editor]); // Re-calculate on savedContent change (which happens on editor update)
 
   useEffect(() => {
     if (isTimerRunning) {
@@ -95,21 +125,16 @@ export function WritingArea() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handleTimerToggle = () => {
-    setIsTimerRunning(!isTimerRunning);
-  };
-
+  const handleTimerToggle = () => setIsTimerRunning(!isTimerRunning);
   const handleTimerReset = () => {
     setIsTimerRunning(false);
     setSessionTime(0);
   };
 
-  const handleContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(event.target.value);
-  };
-
   const handleExportTXT = () => {
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    if (!editor) return;
+    const textContent = editor.getText();
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'document.txt';
@@ -117,19 +142,31 @@ export function WritingArea() {
     link.click();
     document.body.removeChild(link);
   };
+  
+  const handleExportHTML = () => {
+    if (!editor) return;
+    const htmlContent = editor.getHTML();
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'document.html';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleImportClick = () => fileInputRef.current?.click();
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      if (file.type === "text/plain") {
+    if (file && editor) {
+      if (file.type === "text/plain" || file.type === "text/html" || file.type === "text/markdown") {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const text = e.target?.result as string;
-          setContent(text); 
+          const fileContent = e.target?.result as string;
+          // For TXT, it's fine. For HTML/MD, TipTap might need specific extensions
+          // or a conversion step for perfect import. For now, setting as HTML.
+          editor.commands.setContent(fileContent); 
           toast({ title: "Success", description: "File content imported." });
         };
         reader.onerror = () => {
@@ -137,36 +174,44 @@ export function WritingArea() {
         }
         reader.readAsText(file);
       } else {
-        toast({ title: "Error", description: "Please select a .txt file.", variant: "destructive" });
+        toast({ title: "Error", description: "Please select a .txt, .html, or .md file.", variant: "destructive" });
       }
       event.target.value = ''; 
     }
   };
-
-  const applyTheme = (selectedTheme: Theme) => {
-    setTheme(selectedTheme);
-  };
   
   const themeClasses = {
     light: 'bg-background text-foreground',
-    dark: 'bg-neutral-900 text-neutral-100', 
+    dark: 'bg-neutral-900 text-neutral-100',
+  };
+  
+  const editorContainerClasses = {
+    light: 'bg-background',
+    dark: 'dark bg-neutral-900', // Apply 'dark' class for ProseMirror dark theme
+  }
+
+  const applyEditorTheme = (selectedTheme: EditorTheme) => {
+    setEditorTheme(selectedTheme);
+    // The .prose-dark class is handled by globals.css via Tailwind typography plugin
   };
 
   const toggleFocusMode = () => setIsFocusMode(!isFocusMode);
 
   const handleGetFeedback = async () => {
+    if (!editor) return;
     if (!aiFeaturesEnabled) {
       toast({ title: "AI Features Disabled", description: "Please enable AI features in settings to use this."});
       return;
     }
-    if (!content.trim()) {
-      toast({ title: "Empty Content", description: "Please write some text before requesting feedback.", variant: "default" });
+    const textContent = editor.getText();
+    if (!textContent.trim()) {
+      toast({ title: "Empty Content", description: "Please write some text before requesting feedback." });
       return;
     }
     setIsFetchingFeedback(true);
     setFeedbackResult(null);
     try {
-      const result = await getWritingFeedback({ text: content });
+      const result = await getWritingFeedback({ text: textContent });
       setFeedbackResult(result);
       setIsFeedbackDialogOpen(true);
     } catch (error) {
@@ -177,10 +222,21 @@ export function WritingArea() {
     }
   };
 
+  if (!editor) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Loading editor...</p>
+      </div>
+    );
+  }
+  
+  const currentOverallTheme = editorTheme === 'dark' ? 'dark' : '';
+
 
   if (isFocusMode) {
     return (
-      <div className={cn("fixed inset-0 z-50 flex flex-col p-2 md:p-4", themeClasses[theme])}>
+      <div className={cn("fixed inset-0 z-50 flex flex-col p-2 md:p-4", currentOverallTheme, themeClasses[editorTheme])}>
         <Button
           variant="ghost"
           size="icon"
@@ -190,106 +246,92 @@ export function WritingArea() {
         >
           <Minimize className="h-5 w-5" />
         </Button>
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={handleContentChange}
-          placeholder="Let your story flow..."
-          className={cn(
-            "w-full h-full flex-grow resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-lg p-6 leading-relaxed shadow-none",
-            themeClasses[theme]
-          )}
-          aria-label="Writing area in focus mode"
-        />
+        <EditorContent editor={editor} className={cn("flex-grow overflow-y-auto", editorContainerClasses[editorTheme])} />
       </div>
     );
   }
 
   return (
     <TooltipProvider>
-      <div className={cn("flex flex-col h-full p-4 md:p-6 rounded-none shadow-lg", themeClasses[theme], isFocusMode ? 'fixed inset-0 z-50' : '')}>
-        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", themeClasses[theme])}>
+      <div className={cn("flex flex-col h-full rounded-none shadow-lg", currentOverallTheme, themeClasses[editorTheme], isFocusMode ? 'fixed inset-0 z-50' : '')}>
+        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", themeClasses[editorTheme])}>
           {!isFocusMode && (
-            <div className="flex items-center justify-between p-3 border-b border-border">
-              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
-                <Button variant="ghost" size="icon" title="Save (auto-saved)">
-                  <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
-                </Button>
-                <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt" style={{ display: 'none' }} />
-                <Button variant="ghost" size="icon" onClick={handleImportClick} title="Import TXT">
-                  <Upload className="h-5 w-5 text-muted-foreground" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" title="Export">
-                      <Download className="h-5 w-5 text-muted-foreground" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="rounded-none">
-                    <DropdownMenuItem onClick={handleExportTXT}>Export as TXT</DropdownMenuItem>
-                    <DropdownMenuItem disabled>Export as PDF (soon)</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button variant="ghost" size="icon" onClick={() => { if(confirm('Are you sure you want to clear all content and history? This cannot be undone.')) clearSavedContent();}} title="Clear Content & History">
-                  <Trash2 className="h-5 w-5 text-destructive" />
-                </Button>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-disabled={!aiFeaturesEnabled || !isMounted}>
-                      {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className={cn("h-5 w-5", aiFeaturesEnabled && isMounted ? "text-muted-foreground" : "text-muted-foreground/50")} />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{aiFeaturesEnabled && isMounted ? "Get Writing Feedback" : "AI features disabled in Settings"}</p>
-                  </TooltipContent>
-                </Tooltip>
+            <>
+              <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
+                <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
+                  <Button variant="ghost" size="icon" title="Save (auto-saved)">
+                    <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
+                  </Button>
+                  <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md" style={{ display: 'none' }} />
+                  <Button variant="ghost" size="icon" onClick={handleImportClick} title="Import File">
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" title="Export">
+                        <Download className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="rounded-none">
+                      <DropdownMenuItem onClick={handleExportTXT}>Export as TXT</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportHTML}>Export as HTML</DropdownMenuItem>
+                      <DropdownMenuItem disabled>Export as PDF (soon)</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button variant="ghost" size="icon" onClick={() => { if(confirm('Are you sure you want to clear all content and history? This cannot be undone.')) { editor.commands.clearContent(true); clearSavedContent();} }} title="Clear Content & History">
+                    <Trash2 className="h-5 w-5 text-destructive" />
+                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                       <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-disabled={!aiFeaturesEnabled || !isMounted}>
+                        {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className={cn("h-5 w-5", aiFeaturesEnabled && isMounted ? "text-muted-foreground" : "text-muted-foreground/50")} />}
+                      </Button>
+                    </TooltipTrigger>
+                     <TooltipContent>
+                      <p>{aiFeaturesEnabled && isMounted ? "Get Writing Feedback" : "AI features disabled in Settings"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
+                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"}>
+                    {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title="Reset Session Timer" disabled={sessionTime === 0 && !isTimerRunning}>
+                    <RotateCcw className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                  <span className="text-xs md:text-sm text-muted-foreground min-w-[60px] md:min-w-[70px] text-center px-1"><TimerIcon className="inline h-4 w-4 mr-0.5 md:mr-1" />{formatTime(sessionTime)}</span>
+                  <Button variant="ghost" size="icon" onClick={toggleFocusMode} title="Focus Mode">
+                    <Expand className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" title="Customize Theme">
+                        <Palette className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-none">
+                      <DropdownMenuLabel>Editor Theme</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => applyEditorTheme('light')}>
+                        <Sun className="mr-2 h-4 w-4" /> Light
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => applyEditorTheme('dark')}>
+                        <Moon className="mr-2 h-4 w-4" /> Dark
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
-                <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"}>
-                  {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={handleTimerReset} title="Reset Session Timer" disabled={sessionTime === 0 && !isTimerRunning}>
-                  <RotateCcw className="h-5 w-5 text-muted-foreground" />
-                </Button>
-                <span className="text-sm text-muted-foreground min-w-[70px] text-center"><TimerIcon className="inline h-4 w-4 mr-1" />{formatTime(sessionTime)}</span>
-                <Button variant="ghost" size="icon" onClick={toggleFocusMode} title="Focus Mode">
-                  <Expand className="h-5 w-5 text-muted-foreground" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" title="Customize Theme">
-                      <Palette className="h-5 w-5 text-muted-foreground" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-none">
-                    <DropdownMenuLabel>Editor Theme</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => applyTheme('light')}>
-                      <Sun className="mr-2 h-4 w-4" /> Light
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => applyTheme('dark')}>
-                      <Moon className="mr-2 h-4 w-4" /> Dark
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+              <EditorToolbar editor={editor} />
+            </>
           )}
-          <CardContent className="flex-grow p-0">
-            <Textarea
-              ref={textareaRef}
-              value={content}
-              onChange={handleContentChange}
-              placeholder="Let your story flow..."
-              className={cn(
-                "w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-lg p-6 leading-relaxed shadow-none rounded-none",
-                themeClasses[theme]
-              )}
-              aria-label="Writing area"
-            />
+          <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
+            <ScrollArea className="h-full w-full"> {/* Added ScrollArea */}
+              <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
+            </ScrollArea>
           </CardContent>
           {!isFocusMode && (
-            <div className="p-3 border-t border-border text-sm text-muted-foreground flex justify-between items-center">
+            <div className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <span>Words: {wordCount}</span>
               <span>Chars: {charCount}</span>
               <span>{isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved"}</span>
@@ -299,7 +341,7 @@ export function WritingArea() {
       </div>
 
       {isFeedbackDialogOpen && feedbackResult && (
-        <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
+         <Dialog open={isFeedbackDialogOpen} onOpenChange={setIsFeedbackDialogOpen}>
           <DialogContent className="sm:max-w-2xl max-h-[80vh]">
             <DialogHeader>
               <DialogTitle>AI Writing Feedback</DialogTitle>
