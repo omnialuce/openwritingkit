@@ -61,6 +61,7 @@ export function WritingArea() {
       }),
     ],
     content: savedContent,
+    immediatelyRender: false, // Add this line to fix SSR hydration issue
     onUpdate: ({ editor: currentEditor }) => {
       setSavedContent(currentEditor.getHTML());
     },
