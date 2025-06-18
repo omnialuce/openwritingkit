@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 97%; /* Very Light Gray / Almost White */
+    --background: 0 0% 100%; /* White */
     --foreground: 0 0% 7%; /* Very Dark Gray / Near Black */
 
     --card: 0 0% 100%; /* White */
@@ -13,82 +13,82 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 7%;
 
-    --primary: 0 70% 50%; /* Bauhaus Red */
-    --primary-foreground: 0 0% 100%; /* White */
+    --primary: 0 0% 10%; /* Near Black */
+    --primary-foreground: 0 0% 98%; /* Near White */
 
-    --secondary: 210 15% 90%; /* Light Gray-Blue */
-    --secondary-foreground: 210 10% 25%; /* Dark Gray-Blue */
+    --secondary: 0 0% 95%; /* Very Light Gray */
+    --secondary-foreground: 0 0% 10%; /* Near Black */
 
-    --muted: 210 15% 90%;
+    --muted: 0 0% 95%; /* Very Light Gray */
     --muted-foreground: 0 0% 40%; /* Medium Gray */
 
-    --accent: 45 100% 50%; /* Bauhaus Yellow */
-    --accent-foreground: 0 0% 7%; /* Black/Dark Gray text on Yellow */
+    --accent: 0 0% 90%; /* Light Gray - subtle accent */
+    --accent-foreground: 0 0% 7%; /* Near Black text on accent */
 
-    --destructive: 0 70% 50%; /* Using Primary Red for Destructive */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%; /* A muted red for errors */
+    --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 88%; /* Light Gray Border */
-    --input: 0 0% 100%; /* White input with border */
-    --ring: 0 70% 60%; /* Ring color based on primary red */
+    --input: 0 0% 93%; /* Slightly off-white input with border */
+    --ring: 0 0% 50%; /* Neutral ring color */
 
-    --chart-1: 0 70% 55%;
-    --chart-2: 45 100% 55%;
-    --chart-3: 210 70% 55%;
-    --chart-4: 120 50% 60%;
-    --chart-5: 280 60% 70%;
+    --chart-1: 0 0% 20%;
+    --chart-2: 0 0% 40%;
+    --chart-3: 0 0% 60%;
+    --chart-4: 0 0% 70%;
+    --chart-5: 0 0% 80%;
 
-    --radius: 0rem; /* Sharp corners */
+    --radius: 0rem; /* Sharp corners for Swiss style */
 
     /* Sidebar specific colors */
-    --sidebar-background: 0 0% 97%; /* Match app background */
+    --sidebar-background: 0 0% 97%; /* Light gray for sidebar */
     --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 0 70% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 100% 50%;
+    --sidebar-primary: 0 0% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 90%;
     --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 0 70% 60%;
+    --sidebar-ring: 0 0% 50%;
   }
 
   .dark {
-    --background: 0 0% 10%; /* Very Dark Gray / Near Black */
-    --foreground: 0 0% 95%; /* Light Gray / Off-White */
+    --background: 0 0% 7%; /* Very Dark Gray / Near Black */
+    --foreground: 0 0% 98%; /* Near White */
 
-    --card: 0 0% 13%; /* Slightly Lighter Dark Gray */
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 10%; /* Slightly Lighter Dark Gray */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 0 70% 55%; /* Slightly lighter Red for dark mode */
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 90%; /* Light Gray for primary in dark mode */
+    --primary-foreground: 0 0% 7%; /* Dark text on light gray */
 
-    --secondary: 210 10% 25%; /* Darker Gray-Blue */
-    --secondary-foreground: 210 15% 85%; /* Lighter Gray-Blue text */
+    --secondary: 0 0% 15%; /* Dark Gray */
+    --secondary-foreground: 0 0% 90%; /* Light Gray text */
 
-    --muted: 210 10% 25%;
+    --muted: 0 0% 15%;
     --muted-foreground: 0 0% 60%; /* Lighter Medium Gray */
 
-    --accent: 45 100% 55%; /* Slightly lighter Yellow for dark mode */
-    --accent-foreground: 0 0% 7%;
+    --accent: 0 0% 20%; /* Darker Gray accent */
+    --accent-foreground: 0 0% 98%; /* Light text on accent */
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 70% 50%; /* Maintain a red for destructive actions */
+    --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 20%; /* Dark Gray Border for Dark Mode */
-    --input: 0 0% 18%; /* Dark input background */
-    --ring: 0 70% 65%;
+    --input: 0 0% 12%; /* Dark input background */
+    --ring: 0 0% 60%;
     
     /* Sidebar specific colors for dark theme */
     --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 70% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 45 100% 55%;
-    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 90%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 20%;
+    --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 70% 65%;
+    --sidebar-ring: 0 0% 60%;
   }
 }
 
@@ -103,15 +103,12 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline;
   }
-  /* Remove default button rounding if not overridden by components */
   .btn, button, [role="button"] {
     @apply rounded-none;
   }
-  /* Ensure inputs also have sharp corners if not overridden by components */
   input, textarea, select {
      @apply rounded-none;
   }
-  /* Remove default card rounding if not overridden by components */
   .card {
     @apply rounded-none;
   }

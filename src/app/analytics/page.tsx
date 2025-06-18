@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Clock, BookOpen, Users, FileText, Percent } from "lucide-react";
 import Image from "next/image";
+import { WordGoalCard } from "@/components/analytics/WordGoalCard"; // Import the new component
 
 interface InsightCardProps {
   title: string;
@@ -30,7 +31,6 @@ function InsightCard({ title, description, icon: Icon, value, unit }: InsightCar
         ) : (
           <p className="text-muted-foreground">Data will appear here once you start writing.</p>
         )}
-         {/* Placeholder for a small chart or more details */}
       </CardContent>
     </Card>
   );
@@ -53,11 +53,20 @@ export default function AnalyticsPage() {
         <p className="text-muted-foreground">Understand your writing patterns and improve your craft.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {insights.map((insight) => (
-          <InsightCard key={insight.title} {...insight} />
-        ))}
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+        <WordGoalCard /> 
+        {/* Add more specific analytics cards or integrate WordGoalCard better */}
       </div>
+      
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">General Writing Statistics</h2>
+         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {insights.map((insight) => (
+            <InsightCard key={insight.title} {...insight} />
+            ))}
+        </div>
+      </div>
+
 
       <Card className="mt-12">
         <CardHeader>
@@ -65,7 +74,7 @@ export default function AnalyticsPage() {
           <CardDescription>A visual summary of your writing journey.</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-           <Image src="https://placehold.co/800x300.png" data-ai-hint="data chart graph" alt="Progress chart placeholder" width={800} height={300} className="mx-auto rounded-md" />
+           <Image src="https://placehold.co/800x300.png" data-ai-hint="monochrome data chart graph" alt="Progress chart placeholder" width={800} height={300} className="mx-auto rounded-md" />
           <p className="text-muted-foreground mt-4">Detailed charts and graphs are coming soon to help you visualize your progress.</p>
         </CardContent>
       </Card>
