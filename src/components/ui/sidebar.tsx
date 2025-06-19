@@ -180,7 +180,7 @@ const Sidebar = React.forwardRef<
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "offcanvas", // Default to offcanvas
+      collapsible = "offcanvas", 
       className,
       children,
       ...props 
@@ -243,28 +243,26 @@ const Sidebar = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-            "group/sidebar", // Group for children selectors
-            "hidden md:flex flex-col shrink-0", // Basic layout for flex item
-            "bg-sidebar text-sidebar-foreground", // Background and text color
-            "transition-[width] duration-200 ease-linear", // Width animation
-            // Width classes based on state and collapsible type
+            "group/sidebar", 
+            "hidden md:flex flex-col shrink-0", 
+            "bg-sidebar text-sidebar-foreground", 
+            "transition-[width] duration-200 ease-linear", 
             state === "expanded"
               ? "w-[var(--sidebar-width)]"
               : (collapsible === "icon"
                   ? "w-[var(--sidebar-width-icon)]"
-                  : "w-0"), // Offcanvas collapsed width is 0
-            // Border styles
+                  : "w-0"), 
             (collapsible === "offcanvas" && state === "collapsed")
-              ? "!border-none" // No border if offcanvas and collapsed
-              : (variant === "sidebar" // Apply border for "sidebar" variant unless offcanvas collapsed
+              ? "!border-none" 
+              : (variant === "sidebar" 
                   ? (side === "left" ? "border-r border-sidebar-border" : "border-l border-sidebar-border")
                   : ""), 
             variant === "floating" && "m-2 rounded-lg border border-sidebar-border shadow",
             variant === "inset" && "m-2 rounded-lg",
             className
         )}
-        data-state={state} // "expanded" or "collapsed"
-        data-collapsible={collapsible} // "icon", "offcanvas", or "none"
+        data-state={state} 
+        data-collapsible={collapsible} 
         data-variant={variant}
         data-side={side}
         {...props}
@@ -340,7 +338,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex flex-1 flex-col bg-background min-h-svh", 
+        "relative flex flex-1 flex-col bg-background", 
         "peer-data-[variant=inset]/sidebar:min-h-[calc(100svh-theme(spacing.4))]", 
         "md:peer-data-[variant=inset]/sidebar:m-2 md:peer-data-[variant=inset]/sidebar:rounded-xl md:peer-data-[variant=inset]/sidebar:shadow",
         className
@@ -424,7 +422,6 @@ const SidebarContent = React.forwardRef<
       data-sidebar="content"
       className={cn(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto",
-        // Hide content scrollbar when icon-collapsed to prevent visual glitches with tooltips
         "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:overflow-hidden",
         className
       )}
@@ -533,7 +530,6 @@ SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
   "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground",
-  // Styles for icon-only collapsed state, targeting the parent .group/sidebar with data-collapsible="icon"
   "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:gap-0 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:!size-8 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:!p-2 [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
@@ -576,7 +572,7 @@ const SidebarMenuButton = React.forwardRef<
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state, open } = useSidebar() // Get 'open' which reflects desktop expanded/collapsed
+    const { isMobile, open: isDesktopSidebarExpanded } = useSidebar() 
 
     const button = (
       <Comp
@@ -599,10 +595,7 @@ const SidebarMenuButton = React.forwardRef<
       }
     }
     
-    // Tooltip should be visible when sidebar is collapsed (icon-only) on desktop,
-    // or always on mobile if it's provided (mobile sheet always shows icons with text if space allows).
-    // The `open` state from context refers to desktop sidebar being expanded.
-    const tooltipHidden = isMobile ? false : open;
+    const tooltipHidden = isDesktopSidebarExpanded && !isMobile;
 
 
     return (
@@ -787,4 +780,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-

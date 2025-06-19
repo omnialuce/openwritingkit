@@ -49,14 +49,12 @@ export function AppSidebar() {
             children: item.label, 
             side: 'right', 
             align: 'center',
-            // Tooltip hidden if sidebar is expanded on desktop, OR if it's mobile (mobile shows text directly)
             hidden: isDesktopSidebarExpanded && !isMobile 
           }}
           className={cn(item.disabled && "cursor-not-allowed opacity-50", "rounded-none")}
         >
           <Link href={item.href}>
             <item.icon />
-            {/* Text hidden if sidebar is collapsed AND collapsible type is 'icon' */}
             <span className={cn("group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden")}>{item.label}</span>
           </Link>
         </SidebarMenuButton>
@@ -131,7 +129,7 @@ export function AppSidebar() {
            </SidebarMenuItem>
         </SidebarMenu>
       
-        <SidebarMenu className="mt-auto">
+        <SidebarMenu className="mt-2">
            <SidebarMenuItem>
              <SidebarMenuButton 
                 asChild 
@@ -149,4 +147,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-
