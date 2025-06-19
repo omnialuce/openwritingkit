@@ -9,6 +9,7 @@ import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 import { useEffect, useState } from "react";
 import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface InsightCardProps {
   title: string;
@@ -56,17 +57,22 @@ function InsightCard({ title, description, icon: Icon, value, unit, children, co
 }
 
 export default function AnalyticsPage() {
-  const { activeStoryId } = useStoryContext();
-  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
+  const { activeStoryId, activeStoryName } = useStoryContext(); // HOOK 1: Call once at the top
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]); // HOOK 2
+  const [isMounted, setIsMounted] = useState(false); // HOOK 3
 
-  useEffect(() => {
+  useEffect(() => { // HOOK 4
     setIsMounted(true);
     if (typeof window !== 'undefined' && activeStoryId) {
       const activityLogStorageKey = getActivityLogKey(activeStoryId);
       const storedLog = localStorage.getItem(activityLogStorageKey);
       if (storedLog) {
-        setActivityLog(JSON.parse(storedLog));
+        try {
+          setActivityLog(JSON.parse(storedLog));
+        } catch(e) {
+          console.error("Failed to parse activity log:", e);
+          setActivityLog([]);
+        }
       } else {
         setActivityLog([]);
       }
@@ -147,7 +153,7 @@ export default function AnalyticsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold mb-2">Writing Analytics & Insights</h1>
-        <p className="text-muted-foreground">Understand your writing patterns for the current story: <span className="font-semibold text-primary">{useStoryContext().activeStoryName || ''}</span></p>
+        <p className="text-muted-foreground">Understand your writing patterns for the current story: <span className="font-semibold text-primary">{activeStoryName || ''}</span></p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -193,3 +199,4 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+
