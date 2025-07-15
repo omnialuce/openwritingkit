@@ -7,8 +7,11 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -26,7 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 import { useSidebar } from '@/components/ui/sidebar';
 import { formatDistanceToNow } from 'date-fns';
-import { useStoryContext, getEditorContentKey } from '@/contexts/StoryContext';
+import { useStoryContext, getEditorContentKey, getDocumentsStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 
 type EditorTheme = 'light' | 'dark';
@@ -34,10 +37,29 @@ const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
 type EditorFontSize = "sm" | "base" | "lg";
 
+type DocumentType = "folder" | "chapter" | "scene" | "file";
+type DocumentStatus = "Draft" | "Revised" | "Complete";
+type DocumentTag = "Draft" | "WIP" | "Review" | "Published" | "Idea" | "Research" | "Key Scene" | "Needs Work" | "Outline" | "Character";
+
+interface DocumentItem {
+  id: string;
+  name: string;
+  type: DocumentType;
+  lastModified?: string;
+  words?: number;
+  itemCount?: number;
+  status?: DocumentStatus;
+  tags?: DocumentTag[];
+  notes?: string; 
+  content?: string;
+  children?: DocumentItem[];
+}
+
 
 export function WritingArea() {
   const { activeStoryId } = useStoryContext();
   const editorStorageKey = getEditorContentKey(activeStoryId);
+  const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
 
   const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(editorStorageKey, '<p></p>');
   const [wordCount, setWordCount] = useState(0);
@@ -59,6 +81,10 @@ export function WritingArea() {
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>("base");
+  
+  const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
+  const [newDocFilename, setNewDocFilename] = useState('');
+
 
   const getEditorClassNames = useCallback((size: EditorFontSize) => {
     const baseClasses = 'prose dark:prose-invert focus:outline-none w-full h-full p-6 leading-relaxed';
@@ -114,7 +140,6 @@ export function WritingArea() {
       };
       window.addEventListener('storage', handleStorageChange);
       
-      // Listen for custom event from settings page
       const handleEditorSettingsChange = (event: Event) => {
         const detail = (event as CustomEvent).detail;
         if (detail.fontSize) {
@@ -303,6 +328,41 @@ export function WritingArea() {
     }
   };
   
+  const handleSaveToDocuments = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!editor || !activeStoryId || !newDocFilename.trim()) return;
+
+      const contentToSave = editor.getHTML();
+      const textContent = editor.getText();
+      const wordCount = textContent.trim() ? textContent.trim().split(/\s+/).length : 0;
+      
+      const newFile: DocumentItem = {
+          id: Date.now().toString(),
+          name: newDocFilename,
+          type: 'file',
+          content: contentToSave,
+          words: wordCount,
+          lastModified: new Date().toISOString(),
+          status: 'Draft',
+          tags: ['Draft'],
+      };
+
+      try {
+        const storedData = localStorage.getItem(documentsStorageKey);
+        const documents: DocumentItem[] = storedData ? JSON.parse(storedData) : [];
+        documents.push(newFile);
+        localStorage.setItem(documentsStorageKey, JSON.stringify(documents));
+        
+        toast({ title: 'Document Saved', description: `"${newDocFilename}" has been saved to your documents.` });
+        setIsSaveToDocDialogOpen(false);
+        setNewDocFilename('');
+      } catch (error) {
+        console.error("Failed to save to documents:", error);
+        toast({ title: "Save Error", description: "Could not save file to documents.", variant: "destructive" });
+      }
+  }
+
+
   if (!isMounted) {
     return (
       <div className="flex justify-center items-center h-full">
@@ -367,6 +427,9 @@ export function WritingArea() {
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
                   <Button variant="ghost" size="icon" title="Save (auto-saved)" disabled={!activeStoryId}>
                     <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title="Save as Document" disabled={!activeStoryId}>
+                    <FileUp className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md" style={{ display: 'none' }} />
                   <Button variant="ghost" size="icon" onClick={handleImportClick} title="Import File" disabled={!activeStoryId}>
@@ -437,11 +500,11 @@ export function WritingArea() {
             </ScrollArea>
           </CardContent>
           {!isFocusMode && (
-            <div className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
+            <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <span>Words: {activeStoryId ? wordCount : '-'}</span>
               <span>Chars: {activeStoryId ? charCount : '-'}</span>
               <span>{activeStoryId ? (isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved") : "No active story"}</span>
-            </div>
+            </CardFooter>
           )}
         </Card>
 
@@ -517,6 +580,38 @@ export function WritingArea() {
           </Card>
         )}
       </div>
+
+       <Dialog open={isSaveToDocDialogOpen} onOpenChange={setIsSaveToDocDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Save to Documents</DialogTitle>
+                <DialogDescription>
+                    Enter a filename to save the current editor content as a new file in your documents.
+                </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSaveToDocuments}>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="doc-filename" className="text-right">Filename</Label>
+                        <Input 
+                            id="doc-filename" 
+                            value={newDocFilename} 
+                            onChange={(e) => setNewDocFilename(e.target.value)} 
+                            className="col-span-3" 
+                            required 
+                            placeholder="e.g., Chapter 1 Draft"
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+                    <Button type="submit">Save Document</Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }
+
+    

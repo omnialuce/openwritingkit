@@ -158,3 +158,7 @@ export const getWordGoalKey = (storyId: string | null): string =>
 export const getActivityLogKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-activity-log` : 'openwritingkit-activity-log-noactive';
 
+export const getDocumentsStorageKey = (storyId: string | null): string =>
+  storyId ? `openwritingkit-story-${storyId}-documents` : 'openwritingkit-documents-noactive';
+
+    
