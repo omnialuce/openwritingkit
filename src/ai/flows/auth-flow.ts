@@ -6,8 +6,8 @@ import { z } from 'zod';
 import {
   generateCodeVerifier,
   generateState,
+  Google as GoogleOAuthProvider,
 } from 'oslo/oauth2';
-import { google } from 'oslo/providers/google';
 import { TimeSpan, createDate } from 'oslo';
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
@@ -24,7 +24,10 @@ if (!clientId || !clientSecret) {
   throw new Error('Missing Google OAuth credentials in environment variables');
 }
 
-const auth = google(clientId, clientSecret, redirectUri);
+const auth = new GoogleOAuthProvider(clientId, clientSecret, {
+    redirectURI: redirectUri,
+    scope: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.appdata'],
+});
 const secret = new TextEncoder().encode(process.env.AUTH_SECRET || 'default-secret-string-that-is-long-enough');
 
 interface UserSession {
@@ -62,7 +65,7 @@ export const getGoogleAuthUrl = ai.defineFlow(
   },
   async () => {
     const state = generateState();
-    const codeVerifier = generateCodeVerifier();
+    const codeVerifier = generateCodeifier();
 
     cookies().set(STATE_COOKIE_NAME, state, {
       httpOnly: true,
@@ -73,8 +76,10 @@ export const getGoogleAuthUrl = ai.defineFlow(
       secure: process.env.NODE_ENV === 'production',
     });
 
-    const url = await auth.createAuthorizationURL(state, codeVerifier, {
+    const url = await auth.createAuthorizationURL(state, {
       scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.appdata'],
+      codeChallengeMethod: 'S256',
+      codeChallenge: codeVerifier,
     });
 
     return url.toString();
