@@ -596,7 +596,7 @@ export default function OutlineBuilderPage() {
         </Card>
         
         <div className="text-center mt-12 p-6 bg-card border rounded-md">
-          <Image src="https://placehold.co/300x150.png" data-ai-hint="abstract structure blueprint" alt="Outline structure illustration" width={300} height={150} className="mx-auto mb-4 rounded-md" />
+          <Image src="newfeature.svg" alt="New feature illustration" width={300} height={150} className="mx-auto mb-4 rounded-md" />
           <h3 className="text-xl font-semibold mb-2">Advanced Outlining</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
             You can now drag items to reorder them or nest them inside 'Chapter' type items.
