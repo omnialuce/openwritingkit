@@ -2,6 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { storage } from '@/lib/storage';
 import type { CharacterProfile } from '@/app/characters/page';
 
 interface Story {
@@ -33,114 +34,92 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const [activeStoryName, setActiveStoryName] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const loadStories = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      const storedStories = localStorage.getItem(STORIES_STORAGE_KEY);
-      const loadedStories = storedStories ? JSON.parse(storedStories) : [];
-      setStories(loadedStories);
-      return loadedStories;
-    }
-    return [];
+  const loadStories = useCallback(async () => {
+    const loadedStories = await storage.getItem<Story[]>(STORIES_STORAGE_KEY) || [];
+    setStories(loadedStories);
+    return loadedStories;
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const loadedStories = loadStories();
-      const storedActiveId = localStorage.getItem(ACTIVE_STORY_ID_KEY);
+    const initialize = async () => {
+      const loadedStories = await loadStories();
+      const storedActiveId = await storage.getItem<string>(ACTIVE_STORY_ID_KEY);
       if (storedActiveId) {
         const foundActiveStory = loadedStories.find(s => s.id === storedActiveId);
         if (foundActiveStory) {
           setActiveStoryIdState(storedActiveId);
           setActiveStoryName(foundActiveStory.title);
         } else {
-          // Active ID points to a non-existent story, clear it
-          localStorage.removeItem(ACTIVE_STORY_ID_KEY);
+          await storage.removeItem(ACTIVE_STORY_ID_KEY);
           setActiveStoryIdState(null);
           setActiveStoryName(null);
         }
       }
       setIsLoaded(true);
-    }
+    };
+    initialize();
   }, [loadStories]);
 
-  const setActiveStory = useCallback((storyId: string | null) => {
-    if (typeof window !== 'undefined') {
-      if (storyId) {
-        localStorage.setItem(ACTIVE_STORY_ID_KEY, storyId);
-        const story = stories.find(s => s.id === storyId);
-        setActiveStoryName(story ? story.title : null);
-      } else {
-        localStorage.removeItem(ACTIVE_STORY_ID_KEY);
-        setActiveStoryName(null);
-      }
-      setActiveStoryIdState(storyId);
+  const setActiveStory = useCallback(async (storyId: string | null) => {
+    if (storyId) {
+      await storage.setItem(ACTIVE_STORY_ID_KEY, storyId);
+      const story = stories.find(s => s.id === storyId);
+      setActiveStoryName(story ? story.title : null);
+    } else {
+      await storage.removeItem(ACTIVE_STORY_ID_KEY);
+      setActiveStoryName(null);
     }
+    setActiveStoryIdState(storyId);
   }, [stories]);
 
-  const addStory = useCallback((newStory: Story) => {
-    setStories(prevStories => {
-      const updatedStories = [...prevStories, newStory];
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORIES_STORAGE_KEY, JSON.stringify(updatedStories));
-      }
-      return updatedStories;
-    });
-  }, []);
+  const addStory = useCallback(async (newStory: Story) => {
+    const updatedStories = [...stories, newStory];
+    setStories(updatedStories);
+    await storage.setItem(STORIES_STORAGE_KEY, updatedStories);
+  }, [stories]);
 
-  const updateStory = useCallback((updatedStoryData: Story) => {
-    setStories(prevStories => {
-      const updatedStories = prevStories.map(s => s.id === updatedStoryData.id ? updatedStoryData : s);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORIES_STORAGE_KEY, JSON.stringify(updatedStories));
-      }
-      if (activeStoryId === updatedStoryData.id) {
-        setActiveStoryName(updatedStoryData.title);
-      }
-      return updatedStories;
-    });
-  }, [activeStoryId]);
-
-  const deleteStory = useCallback((storyId: string) => {
-    // Also clean up associated character data
-    if (typeof window !== 'undefined') {
-        const charactersKey = getCharactersStorageKey(storyId);
-        const storedCharacters = localStorage.getItem(charactersKey);
-        if(storedCharacters) {
-            const characters: CharacterProfile[] = JSON.parse(storedCharacters);
-            characters.forEach(char => {
-                const sheetKey = getCharacterSheetStorageKey(storyId, char.id);
-                localStorage.removeItem(sheetKey);
-            });
-        }
-        localStorage.removeItem(charactersKey);
-        localStorage.removeItem(getOutlineStorageKey(storyId));
-        localStorage.removeItem(getPlotPointsStorageKey(storyId));
-        localStorage.removeItem(getTimelineEventsStorageKey(storyId));
-        localStorage.removeItem(getEditorContentKey(storyId));
-        localStorage.removeItem(getWordGoalKey(storyId));
-        localStorage.removeItem(getActivityLogKey(storyId));
-        localStorage.removeItem(getDocumentsStorageKey(storyId));
+  const updateStory = useCallback(async (updatedStoryData: Story) => {
+    const updatedStories = stories.map(s => s.id === updatedStoryData.id ? updatedStoryData : s);
+    setStories(updatedStories);
+    await storage.setItem(STORIES_STORAGE_KEY, updatedStories);
+    if (activeStoryId === updatedStoryData.id) {
+      setActiveStoryName(updatedStoryData.title);
     }
-    
-    setStories(prevStories => {
-      const updatedStories = prevStories.filter(s => s.id !== storyId);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(STORIES_STORAGE_KEY, JSON.stringify(updatedStories));
-        if (activeStoryId === storyId) {
-          setActiveStory(null); // Clear active story if it's deleted
-        }
-      }
-      return updatedStories;
-    });
-  }, [activeStoryId, setActiveStory]);
+  }, [stories, activeStoryId]);
 
-  const refreshStories = useCallback(() => {
-    loadStories();
+  const deleteStory = useCallback(async (storyId: string) => {
+    const charactersKey = getCharactersStorageKey(storyId);
+    const storedCharacters = await storage.getItem<CharacterProfile[]>(charactersKey);
+    if (storedCharacters) {
+      for (const char of storedCharacters) {
+        const sheetKey = getCharacterSheetStorageKey(storyId, char.id);
+        await storage.removeItem(sheetKey);
+      }
+    }
+    await storage.removeItem(charactersKey);
+    await storage.removeItem(getOutlineStorageKey(storyId));
+    await storage.removeItem(getPlotPointsStorageKey(storyId));
+    await storage.removeItem(getTimelineEventsStorageKey(storyId));
+    await storage.removeItem(getEditorContentKey(storyId));
+    await storage.removeItem(getWordGoalKey(storyId));
+    await storage.removeItem(getActivityLogKey(storyId));
+    await storage.removeItem(getDocumentsStorageKey(storyId));
+    
+    const updatedStories = stories.filter(s => s.id !== storyId);
+    setStories(updatedStories);
+    await storage.setItem(STORIES_STORAGE_KEY, updatedStories);
+    if (activeStoryId === storyId) {
+      await setActiveStory(null);
+    }
+  }, [activeStoryId, setActiveStory, stories]);
+
+  const refreshStories = useCallback(async () => {
+    await loadStories();
   }, [loadStories]);
 
 
-  if (!isLoaded && typeof window !== 'undefined') { // Check for window to avoid SSR issues with isLoaded
-    return null; // Or a loading indicator
+  if (!isLoaded) {
+    return null;
   }
 
   return (
@@ -158,7 +137,6 @@ export function useStoryContext() {
   return context;
 }
 
-// Helper functions for dynamic localStorage keys
 export const getCharactersStorageKey = (storyId: string | null): string => 
   storyId ? `openwritingkit-story-${storyId}-characters` : 'openwritingkit-characters-noactive';
 

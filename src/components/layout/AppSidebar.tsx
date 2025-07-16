@@ -19,23 +19,23 @@ import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation'
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
-import { useLocale } from '@/contexts/LocaleContext';
 import Image from 'next/image';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { t } = useLocale();
   const { state: sidebarState, isMobile, open: isDesktopSidebarExpanded } = useSidebar(); 
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
   const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
 
   const handleConnectDriveClick = () => {
-    alert("Connecting to Google Drive requires server-side authentication (OAuth 2.0) and Google Drive API integration. This functionality needs to be implemented separately. This is a UI placeholder.");
+    window.location.href = '/api/auth/google';
   };
 
   const handleDisconnectDriveClick = (e: React.MouseEvent) => {
     e.stopPropagation(); 
+    // This would involve clearing cookies/session on the backend.
+    // For now, it's a UI simulation.
     setIsDriveConnected(false);
     setDriveStorageInfo({ used: '0 MB', total: 'Not Connected' });
     alert("Disconnected from Google Drive (UI simulation).");
@@ -49,7 +49,7 @@ export function AppSidebar() {
           disabled={item.disabled}
           aria-disabled={item.disabled}
           tooltip={{ 
-            children: t(item.label), 
+            children: item.label, 
             side: 'right', 
             align: 'center',
             hidden: isDesktopSidebarExpanded && !isMobile 
@@ -58,7 +58,7 @@ export function AppSidebar() {
         >
           <Link href={item.href}>
             <item.icon />
-            <span className={cn("group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden")}>{t(item.label)}</span>
+            <span className={cn("group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden")}>{item.label}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -72,7 +72,7 @@ export function AppSidebar() {
             "flex items-center gap-2",
             "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>
-          <Image src="/logo.svg" alt="OpenWritingKit Logo" width={32} height={32} className={cn("group-data-[state=expanded]/sidebar:hidden")} />
+          <Image src="/logo.svg" alt="OpenWritingKit Logo" width={32} height={32} />
           <span className={cn(
               "font-headline text-xl font-semibold text-primary",
               "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" 
@@ -96,14 +96,14 @@ export function AppSidebar() {
               onClick={isDriveConnected ? () => alert("Open Google Drive settings (placeholder).") : handleConnectDriveClick}
               tooltip={{
                   children: <>
-                    <p className="font-semibold mb-1">{isDriveConnected ? t('cloud_storage_connected') : t('cloud_storage')}</p>
+                    <p className="font-semibold mb-1">{isDriveConnected ? "Cloud Storage Connected" : "Cloud Storage"}</p>
                     {isDriveConnected ? (
-                      <p>{t('storage_usage', { used: driveStorageInfo.used, total: driveStorageInfo.total })}</p>
+                      <p>Storage: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
                     ) : (
                       <>
-                      <p>{t('cloud_storage_connect_tooltip')}</p>
+                      <p>Connect to Google Drive to back up your stories, outlines, and characters, and access them across your devices.</p>
                       <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                        <strong>{t('important_note')}:</strong> {t('cloud_storage_local_warning')}
+                        <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only. This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
                       </p>
                       </>
                     )}
@@ -116,10 +116,10 @@ export function AppSidebar() {
             >
               {isDriveConnected ? <Cloud /> : <DatabaseZap />}
               <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
-                {isDriveConnected ? `${t('drive_label')}: ${driveStorageInfo.used}` : t('connect_to_drive')}
+                {isDriveConnected ? `Drive: ${driveStorageInfo.used}` : "Connect to Drive"}
                 {isDriveConnected && (
                   <Button variant="link" size="sm" className="p-0 h-auto text-xs ml-auto text-primary hover:text-primary/80 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" onClick={handleDisconnectDriveClick}>
-                    {t('disconnect_button')}
+                    Disconnect
                   </Button>
                 )}
               </span>
@@ -130,11 +130,11 @@ export function AppSidebar() {
             <SidebarMenuButton 
               asChild 
               className="w-full rounded-none"
-              tooltip={{ children: t('buy_me_a_coffee'), side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
+              tooltip={{ children: "Buy Me a Coffee", side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
             >
               <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
                 <Coffee />
-                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">{t('buy_me_a_coffee')}</span>
+                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">Buy Me a Coffee</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

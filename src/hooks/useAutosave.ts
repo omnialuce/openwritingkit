@@ -1,10 +1,10 @@
 
-// src/hooks/useAutosave.ts
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast'; 
 import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext'; 
+import { storage } from '@/lib/storage';
 
 const MAX_HISTORY_LENGTH = 20; 
 
@@ -32,79 +32,73 @@ function useAutosave<T extends string>(
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && dynamicStorageKey) {
-      try {
-        const item = window.localStorage.getItem(dynamicStorageKey);
-        if (item) {
-          // This check ensures we handle both simple strings and the DocumentData object
-          let loadedValue: T;
-          let lastSaved: string | null = null;
-          try {
-            const data: DocumentData<T> = JSON.parse(item);
-            loadedValue = data.current || initialValue;
-            lastSaved = data.lastSaved;
-          } catch(e) {
-            // It might be a simple string from a previous version
-            loadedValue = item as T;
+    const loadData = async () => {
+      if (dynamicStorageKey) {
+        try {
+          const item = await storage.getItem<string | DocumentData<T>>(dynamicStorageKey);
+          if (item) {
+            let loadedValue: T;
+            let lastSaved: string | null = null;
+            if (typeof item === 'string') {
+              loadedValue = item as T;
+            } else {
+              loadedValue = item.current || initialValue;
+              lastSaved = item.lastSaved;
+            }
+            setCurrentTextInternal(loadedValue);
+            setLastSavedTime(lastSaved ? new Date(lastSaved) : null);
+          } else {
+            setCurrentTextInternal(initialValue);
+            setLastSavedTime(null);
           }
-          setCurrentTextInternal(loadedValue);
-          setLastSavedTime(lastSaved ? new Date(lastSaved) : null);
-        } else {
-          // No item found for this key, ensure state is reset to initial if key changed
+        } catch (error) {
+          console.warn(`Error reading storage key "${dynamicStorageKey}":`, error);
           setCurrentTextInternal(initialValue);
           setLastSavedTime(null);
         }
-      } catch (error) {
-        console.warn(`Error reading localStorage key "${dynamicStorageKey}" on mount/key change:`, error);
-        setCurrentTextInternal(initialValue);
-        setLastSavedTime(null);
-      }
-    } else if (!dynamicStorageKey) {
-        // Reset if no key (e.g. no active story)
+      } else {
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
-    }
+      }
+    };
+    loadData();
   }, [dynamicStorageKey, initialValue]);
 
-
-  const logActivity = useCallback((textToSave: T) => {
-    if (typeof window !== 'undefined' && activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{')) {
+  const logActivity = useCallback(async (textToSave: T) => {
+    if (activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{')) {
       const activityLogStorageKey = getActivityLogKey(activeStoryId);
       const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
       const wordCount = words.length;
       const newLogEntry: ActivityLogEntry = { timestamp: new Date().toISOString(), wordCount };
 
       try {
-        const existingLog = window.localStorage.getItem(activityLogStorageKey);
-        let activityLog: ActivityLogEntry[] = existingLog ? JSON.parse(existingLog) : [];
+        let activityLog = await storage.getItem<ActivityLogEntry[]>(activityLogStorageKey) || [];
         activityLog.push(newLogEntry);
-        window.localStorage.setItem(activityLogStorageKey, JSON.stringify(activityLog));
+        await storage.setItem(activityLogStorageKey, activityLog);
       } catch (error) {
         console.warn(`Error updating activity log:`, error);
       }
     }
   }, [activeStoryId]);
 
-
   const saveDocument = useCallback(
-    (textToSave: T) => {
-      if (typeof window !== 'undefined' && dynamicStorageKey) { 
+    async (textToSave: T) => {
+      if (dynamicStorageKey) { 
         setIsSaving(true);
         try {
           const now = new Date();
           const timestamp = now.toISOString();
           
           let documentData: DocumentData<T>;
-          const existingItem = window.localStorage.getItem(dynamicStorageKey);
+          const existingItem = await storage.getItem<string | DocumentData<T>>(dynamicStorageKey);
+          
           if (existingItem) {
-            try {
-              documentData = JSON.parse(existingItem);
-              if(typeof documentData.current === 'undefined') { // Handle legacy string format
-                documentData = { current: existingItem as T, history: [], lastSaved: null };
-              }
-            } catch (e) {
-              // Legacy format, was just a string.
-              documentData = { current: existingItem as T, history: [], lastSaved: null };
+            if (typeof existingItem === 'string') {
+              documentData = { current: existingItem, history: [], lastSaved: null };
+            } else if (typeof existingItem.current !== 'undefined') {
+              documentData = existingItem;
+            } else {
+               documentData = { current: initialValue, history: [], lastSaved: null };
             }
           } else {
             documentData = { current: initialValue, history: [], lastSaved: null };
@@ -123,9 +117,9 @@ function useAutosave<T extends string>(
           documentData.current = textToSave;
           documentData.lastSaved = timestamp;
 
-          window.localStorage.setItem(dynamicStorageKey, JSON.stringify(documentData));
+          await storage.setItem(dynamicStorageKey, documentData);
           setLastSavedTime(now);
-          logActivity(textToSave);
+          await logActivity(textToSave);
           
           if(activeStoryId){
             const today = now.toISOString().split('T')[0];
@@ -133,12 +127,12 @@ function useAutosave<T extends string>(
             const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`; 
             const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
 
-            const lastActiveDate = localStorage.getItem(lastActiveDateKey);
+            const lastActiveDate = await storage.getItem<string>(lastActiveDateKey);
             
             if (lastActiveDate !== today) { 
-              localStorage.setItem(lastActiveDateKey, today);
-              let currentStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
-              const lastStreakUpdateDate = localStorage.getItem(lastStreakDateKey);
+              await storage.setItem(lastActiveDateKey, today);
+              let currentStreak = await storage.getItem<number>(streakKey) || 0;
+              const lastStreakUpdateDate = await storage.getItem<string>(lastStreakDateKey);
               
               const yesterday = new Date(now);
               yesterday.setDate(now.getDate() - 1);
@@ -149,14 +143,14 @@ function useAutosave<T extends string>(
               } else { 
                 currentStreak = 1;
               }
-              localStorage.setItem(streakKey, currentStreak.toString());
-              localStorage.setItem(lastStreakDateKey, today);
+              await storage.setItem(streakKey, currentStreak);
+              await storage.setItem(lastStreakDateKey, today);
               window.dispatchEvent(new Event('storage')); 
             }
           }
 
         } catch (error) {
-          console.error(`Error saving to localStorage key "${dynamicStorageKey}":`, error);
+          console.error(`Error saving to storage key "${dynamicStorageKey}":`, error);
           toast({ title: "Save Error", description: "Could not save changes.", variant: "destructive" });
         } finally {
           setTimeout(() => setIsSaving(false), 500); 
@@ -169,40 +163,35 @@ function useAutosave<T extends string>(
   useEffect(() => {
     if (!dynamicStorageKey) return; 
 
-    const handler = setTimeout(() => {
-      if (typeof window !== 'undefined') {
-         const item = window.localStorage.getItem(dynamicStorageKey);
-         let storedCurrent = initialValue;
-         if (item) {
-           try {
-             storedCurrent = JSON.parse(item).current;
-           } catch {
-             // It could be a simple string
-             try {
-                if (JSON.parse(item)) storedCurrent = item as T;
-             } catch {
-                 storedCurrent = item as T;
-             }
-           }
-         }
-         if (currentText !== storedCurrent) {
-           saveDocument(currentText);
-         }
+    const handler = setTimeout(async () => {
+      let storedCurrent: T | undefined = initialValue;
+      const item = await storage.getItem<string | DocumentData<T>>(dynamicStorageKey);
+      if (item) {
+        try {
+          if (typeof item === 'string') {
+            storedCurrent = item as T;
+          } else {
+            storedCurrent = item.current;
+          }
+        } catch {}
+      }
+      if (currentText !== storedCurrent) {
+        await saveDocument(currentText);
       }
     }, saveInterval);
 
     return () => clearTimeout(handler);
   }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue]);
 
-  const clearSavedDocument = useCallback(() => {
-    if (typeof window !== 'undefined' && dynamicStorageKey) { 
+  const clearSavedDocument = useCallback(async () => {
+    if (dynamicStorageKey) { 
       try {
-        window.localStorage.removeItem(dynamicStorageKey);
+        await storage.removeItem(dynamicStorageKey);
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
-        toast({ title: "Content Cleared", description: "The document content and its history have been cleared for this story." });
+        toast({ title: "Content Cleared", description: "The document content and its history have been cleared." });
       } catch (error) {
-        console.error(`Error clearing localStorage key "${dynamicStorageKey}":`, error);
+        console.error(`Error clearing storage key "${dynamicStorageKey}":`, error);
         toast({ title: "Error", description: "Could not clear content.", variant: "destructive" });
       }
     }
