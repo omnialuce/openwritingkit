@@ -33,7 +33,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col flex-1">
-      <section className="grid lg:grid-cols-2 gap-12 items-center py-12 md:py-24">
+      <section className="grid md:grid-cols-2 gap-12 items-center py-12 lg:py-24">
         <div className="space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">Your Intelligent Writing Companion.</h1>
           <p className="text-lg text-muted-foreground">
@@ -45,7 +45,7 @@ export default function LandingPage() {
             </Button>
           </div>
         </div>
-        <div className="hidden lg:block">
+        <div className="hidden md:block">
           <Image
             src="/typewriter.svg"
             alt="Illustrative typewriter"
@@ -56,14 +56,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="py-12 md:py-24 bg-muted/50 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
+      <section id="features" className="py-12 lg:py-24 bg-muted/50 -mx-6 sm:-mx-8 px-6 sm:px-8">
          <div className="container mx-auto max-w-3xl text-center space-y-4">
               <h2 className="text-3xl font-bold">Everything a Writer Needs</h2>
               <p className="text-muted-foreground">
                   From the first idea to the final draft, OpenWritingKit provides the tools to support your creative process.
               </p>
           </div>
-          <div className="container mx-auto mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="container mx-auto mt-12 grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {features.map((feature) => (
                   <Card key={feature.title} className="text-center">
                       <CardHeader>
@@ -80,7 +80,7 @@ export default function LandingPage() {
           </div>
       </section>
 
-      <section id="apply" className="py-12 md:py-24">
+      <section id="apply" className="py-12 lg:py-24">
          <Card className="max-w-2xl mx-auto">
            <CardHeader className="text-center">
              <CardTitle>Request Access</CardTitle>
