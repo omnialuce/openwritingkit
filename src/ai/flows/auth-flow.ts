@@ -73,10 +73,8 @@ export const getGoogleAuthUrl = ai.defineFlow(
       secure: process.env.NODE_ENV === 'production',
     });
 
-    const url = await googleAuth.createAuthorizationURL(state, {
+    const url = await googleAuth.createAuthorizationURL(state, codeVerifier, {
       scopes: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.appdata'],
-      codeChallengeMethod: 'S256',
-      codeChallenge: codeVerifier,
     });
 
     return url.toString();
@@ -114,7 +112,7 @@ export const handleGoogleCallback = ai.defineFlow(
       sub: userId,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      expiresAt: new Date(Date.now() + tokens.accessTokenExpiresIn * 1000),
+      expiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
     };
 
     return createSessionCookie(session);
