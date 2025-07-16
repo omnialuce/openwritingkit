@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
 import { useLocale } from '@/contexts/LocaleContext';
+import Image from 'next/image';
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -71,6 +72,7 @@ export function AppSidebar() {
             "flex items-center gap-2",
             "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>
+          <Image src="/logo.svg" alt="OpenWritingKit Logo" width={32} height={32} className={cn("group-data-[state=expanded]/sidebar:hidden")} />
           <span className={cn(
               "font-headline text-xl font-semibold text-primary",
               "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" 

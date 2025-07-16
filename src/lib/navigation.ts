@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import { Home, BookText, Cpu, BarChart3, FolderOpen, Settings, ListTree, Users, Network, BookOpenCheck, Bookmark } from 'lucide-react';
+import { Home, BookText, Cpu, BarChart3, FolderOpen, Settings, ListTree, Users, Network, BookOpenCheck, Bookmark, MessageSquare } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -23,5 +23,6 @@ export const mainNavItems: NavItem[] = [
 ];
 
 export const secondaryNavItems: NavItem[] = [
+  { href: '/feedback', label: 'nav_feedback', icon: MessageSquare },
   { href: '/settings', label: 'nav_settings', icon: Settings },
 ];
