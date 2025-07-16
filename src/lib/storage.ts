@@ -5,14 +5,18 @@ class StorageService {
   private isDriveConnected = false; 
 
   constructor() {
-    this.checkConnectionStatus();
+    // Defer the initial check to avoid running on the server
+    if (typeof document !== 'undefined') {
+      this.checkConnectionStatus();
+    }
   }
 
   private checkConnectionStatus() {
-    // In a real app, this would check for a valid session cookie or token
-    // For this example, we'll simulate it.
-    this.isDriveConnected = document.cookie.includes('auth_session');
-    console.log("Drive connected status:", this.isDriveConnected);
+    // This check is now safe because the constructor ensures it only runs client-side
+    if (typeof document !== 'undefined') {
+        this.isDriveConnected = document.cookie.includes('auth_session');
+        console.log("Drive connected status:", this.isDriveConnected);
+    }
   }
 
   async setItem<T>(key: string, value: T): Promise<void> {

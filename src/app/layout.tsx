@@ -1,11 +1,10 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 import { StoryProvider } from '@/contexts/StoryContext';
 import { ThemeProvider } from '@/components/theme-provider';
-import { LocaleProvider } from '@/contexts/LocaleContext';
+
 
 export const metadata: Metadata = {
   title: 'OpenWritingKit',
@@ -32,13 +31,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LocaleProvider>
-            <StoryProvider>
-              <MainLayout>
-                {children}
-              </MainLayout>
-            </StoryProvider>
-          </LocaleProvider>
+          <StoryProvider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </StoryProvider>
         </ThemeProvider>
       </body>
     </html>

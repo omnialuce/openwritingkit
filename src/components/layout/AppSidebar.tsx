@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -23,7 +22,7 @@ import Image from 'next/image';
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { state: sidebarState, isMobile, open: isDesktopSidebarExpanded } = useSidebar(); 
+  const { open: isDesktopSidebarExpanded, isMobile } = useSidebar(); 
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
   const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
