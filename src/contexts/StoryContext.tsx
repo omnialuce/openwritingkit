@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useAuth } from './AuthContext'; // Import useAuth
+import { useAuth } from './AuthContext'; // Import useAuth from our updated AuthContext
 import type { CharacterProfile } from '@/app/(app)/characters/page';
 
 interface Story {
@@ -26,18 +26,18 @@ interface StoryContextType {
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
 
 // Helper function to get the storage key for stories, now namespaced by user ID
-const getStoriesStorageKey = (userId: string | null) => 
+const getStoriesStorageKey = (userId: string | undefined | null) => 
   userId ? `openwritingkit-user-${userId}-stories` : 'openwritingkit-stories-anonymous';
 
 export function StoryProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth(); // Get the current user
+  const { user } = useAuth(); // Get the current user from next-auth session
   const [stories, setStories] = useState<Story[]>([]);
   const [activeStoryId, setActiveStoryIdState] = useState<string | null>(null);
   const [activeStoryName, setActiveStoryName] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const storiesStorageKey = getStoriesStorageKey(user?.uid);
-  const activeStoryIdKey = user ? `openwritingkit-user-${user.uid}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
+  const storiesStorageKey = getStoriesStorageKey(user?.email); // Use email or another stable ID
+  const activeStoryIdKey = user?.email ? `openwritingkit-user-${user.email}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
 
   const loadDataForUser = useCallback(async () => {
     if (!user) {

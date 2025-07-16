@@ -1,4 +1,4 @@
-
+// src/components/layout/AppHeader.tsx
 'use client';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -28,12 +28,20 @@ export function AppHeader() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    // The callbackUrl in the logout function will handle the redirect
   };
 
-  const getInitials = (email: string | undefined) => {
-    if (!email) return 'U';
-    return email.charAt(0).toUpperCase();
+  const getInitials = (nameOrEmail: string | undefined | null) => {
+    if (!nameOrEmail) return 'U';
+    
+    // Try to get initials from name first
+    const nameParts = nameOrEmail.split(' ');
+    if (nameParts.length > 1 && nameParts[0] && nameParts[1]) {
+      return `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase();
+    }
+    
+    // Fallback to email
+    return nameOrEmail.charAt(0).toUpperCase();
   };
 
   return (
@@ -89,15 +97,15 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.photoURL || ''} alt="User Avatar" />
-                  <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                  <AvatarImage src={user.image || ''} alt={user.name || 'User Avatar'} />
+                  <AvatarFallback>{getInitials(user.name || user.email)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 rounded-none" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                  <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user.email}
                   </p>

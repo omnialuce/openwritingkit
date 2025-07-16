@@ -27,8 +27,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // This check is important to prevent a flash of the app layout before redirecting
   if (!user) {
-    return null; // or a login redirect, though the effect handles this
+    return null;
   }
 
   return (

@@ -1,54 +1,32 @@
 // src/contexts/AuthContext.tsx
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import React, { ReactNode } from 'react';
+import { SessionProvider, useSession, signIn, signOut } from 'next-auth/react';
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
-  logout: () => Promise<void>;
+// This is the inner context provider that will be wrapped by SessionProvider
+function AuthProviderContent({ children }: { children: ReactNode }) {
+  // You can add more app-specific auth logic here if needed in the future
+  return <>{children}</>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
+// The main export is the wrapper that includes NextAuth's SessionProvider
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const login = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(auth, email, pass);
-  };
-
-  const logout = async () => {
-    await signOut(auth);
-  };
-
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <SessionProvider>
+      <AuthProviderContent>{children}</AuthProviderContent>
+    </SessionProvider>
+  );
 }
 
+// Custom hook to easily access auth state and functions
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const { data: session, status } = useSession();
+
+  return {
+    user: session?.user ?? null, // Provide a consistent user object or null
+    loading: status === 'loading',
+    login: () => signIn('google', { callbackUrl: '/dashboard' }), // Simplified login
+    logout: () => signOut({ callbackUrl: '/' }),
+  };
 }

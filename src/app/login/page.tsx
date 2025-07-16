@@ -1,32 +1,30 @@
-// src/app/(public)/login/page.tsx
+// src/app/login/page.tsx
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const router = useRouter();
   const { toast } = useToast();
+  const router = useRouter();
 
-  const handleLogin = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await login(email, password);
-      toast({ title: "Login Successful", description: "Welcome back!" });
-      router.push('/dashboard'); 
+      // The sign-in process is now handled by the useAuth hook
+      await login();
+      // On successful login, the user will be redirected via the callbackUrl
+      // so we don't need to push the router here.
+      toast({ title: "Redirecting...", description: "Successfully initiated login with Google." });
     } catch (error: any) {
       console.error(error);
       toast({
@@ -34,8 +32,7 @@ export default function LoginPage() {
         description: error.message || "An unknown error occurred.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Only set loading to false on error
     }
   };
 
@@ -43,39 +40,18 @@ export default function LoginPage() {
     <div className="flex items-center justify-center">
        <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your writing dashboard.</CardDescription>
+          <CardTitle>Welcome to OpenWritingKit</CardTitle>
+          <CardDescription>Sign in with your Google account to continue.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password or Secret Key</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log In
+        <CardContent className="space-y-4">
+           <Button onClick={handleGoogleLogin} className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Image src="/google-logo.svg" alt="Google logo" width={16} height={16} className="mr-2" />
+              )}
+              Sign in with Google
             </Button>
-          </form>
         </CardContent>
          <CardContent className="text-center text-sm text-muted-foreground">
              <Link href="/" className="hover:text-primary underline">
