@@ -13,6 +13,9 @@ import {z} from 'genkit';
 const GenerateWritingPromptsInputSchema = z.object({
   genre: z.string().describe('The genre of the writing prompt.'),
   style: z.string().describe('The style of the writing prompt.'),
+  notes: z.string().optional().describe('Optional user notes for additional context.'),
+  documentContext: z.string().optional().describe('Optional content of a linked document, scene, or chapter for context.'),
+  characterContext: z.string().optional().describe('Optional profile of a linked character for context.'),
 });
 export type GenerateWritingPromptsInput = z.infer<typeof GenerateWritingPromptsInputSchema>;
 
@@ -29,10 +32,27 @@ const prompt = ai.definePrompt({
   name: 'generateWritingPromptsPrompt',
   input: {schema: GenerateWritingPromptsInputSchema},
   output: {schema: GenerateWritingPromptsOutputSchema},
-  prompt: `You are a creative writing assistant. Generate a writing prompt based on the specified genre and style.
+  prompt: `You are a creative writing assistant. Generate a writing prompt based on the specified genre, style, and any provided context.
 
 Genre: {{{genre}}}
 Style: {{{style}}}
+
+{{#if notes}}
+User Notes:
+{{{notes}}}
+{{/if}}
+
+{{#if documentContext}}
+Linked Document Context:
+{{{documentContext}}}
+{{/if}}
+
+{{#if characterContext}}
+Linked Character Context:
+{{{characterContext}}}
+{{/if}}
+
+Based on all the provided information, generate a compelling and relevant writing prompt.
 
 Prompt:`,
 });
