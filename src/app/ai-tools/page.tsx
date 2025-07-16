@@ -8,7 +8,7 @@ import { PromptGeneratorCard } from '@/components/ai/PromptGeneratorCard';
 import { PacingAnalyzerCard } from '@/components/ai/PacingAnalyzerCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Lightbulb, BarChartHorizontalBig, Users, Settings, AlertTriangle } from 'lucide-react';
+import { Lightbulb, Users, Settings, AlertTriangle } from 'lucide-react';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
@@ -35,7 +35,6 @@ export default function AiToolsPage() {
   const comingSoonTools = [
     { title: "Plot Hole Detector", description: "Identifies potential inconsistencies in your plot.", icon: Lightbulb },
     { title: "Character Voice Consistency", description: "Checks if your characters speak in a consistent voice.", icon: Users },
-    { title: "Genre-specific Writing Tips", description: "Tailored advice for your chosen genre.", icon: BarChartHorizontalBig },
   ];
 
   if (!isMounted) {
