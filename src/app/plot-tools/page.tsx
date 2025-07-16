@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey } from '@/contexts/StoryContext';
+import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 
 // --- Plot Point Tracker ---
@@ -42,6 +42,17 @@ interface TimelineEvent {
   description: string;
 }
 
+// --- Outline Integration ---
+type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
+interface OutlineItem {
+  id: string;
+  title: string;
+  notes?: string;
+  type: OutlineItemType;
+  children: OutlineItem[];
+}
+
+
 export default function PlotToolsPage() {
   const { activeStoryId } = useStoryContext();
 
@@ -55,6 +66,9 @@ export default function PlotToolsPage() {
   const [eventTitle, setEventTitle] = useState('');
   const [eventDateTime, setEventDateTime] = useState('');
   const [eventDescription, setEventDescription] = useState('');
+  
+  // Scene Summaries State
+  const [sceneSummaries, setSceneSummaries] = useState<OutlineItem[]>([]);
 
   // Load Plot Points
   useEffect(() => {
@@ -87,6 +101,41 @@ export default function PlotToolsPage() {
       setTimelineEvents([]); // Clear if no active story
     }
   }, [activeStoryId]);
+  
+  // Load Outline Items for Scene Summaries
+  useEffect(() => {
+      if (typeof window !== 'undefined' && activeStoryId) {
+          const outlineStorageKey = getOutlineStorageKey(activeStoryId);
+          const storedOutline = localStorage.getItem(outlineStorageKey);
+          if (storedOutline) {
+              try {
+                  const allItems: OutlineItem[] = JSON.parse(storedOutline);
+                  const scenes = extractScenesRecursive(allItems);
+                  setSceneSummaries(scenes);
+              } catch (e) {
+                  console.error("Failed to parse outline for scenes", e);
+                  setSceneSummaries([]);
+              }
+          } else {
+              setSceneSummaries([]);
+          }
+      } else if (!activeStoryId) {
+          setSceneSummaries([]);
+      }
+  }, [activeStoryId]);
+
+  const extractScenesRecursive = (items: OutlineItem[]): OutlineItem[] => {
+    let scenes: OutlineItem[] = [];
+    for (const item of items) {
+      if (item.type === 'Scene') {
+        scenes.push(item);
+      }
+      if (item.children && item.children.length > 0) {
+        scenes = scenes.concat(extractScenesRecursive(item.children));
+      }
+    }
+    return scenes;
+  };
 
 
   // Save Plot Points
@@ -283,26 +332,38 @@ export default function PlotToolsPage() {
         </CardContent>
       </Card>
 
-      {/* Scene Summaries Section (Placeholder) */}
+      {/* Scene Summaries Section (Integrated) */}
       <Card>
         <CardHeader>
           <CardTitle>Scene Summaries</CardTitle>
-          <CardDescription>Review and manage summaries of individual scenes from your outline.</CardDescription>
+          <CardDescription>Review summaries of individual scenes from your Outline Builder.</CardDescription>
         </CardHeader>
-        <CardContent className="text-center py-8">
-          <AlignLeft className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">
-            This section will integrate with the Outline Builder to display your scene summaries for the active story.
-          </p>
-          <p className="text-sm text-primary mt-2">Coming Soon!</p>
-          <Image 
-            src="https://placehold.co/400x200.png" 
-            data-ai-hint="abstract scene cards" 
-            alt="Scene summaries placeholder" 
-            width={400} 
-            height={200} 
-            className="mx-auto mt-6 rounded-md opacity-70"
-          />
+        <CardContent>
+           {sceneSummaries.length === 0 ? (
+                <div className="text-center py-8">
+                  <AlignLeft className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    No scenes found in the Outline Builder for this story. Go to the <Link href="/outline" className="text-primary hover:underline">Outline Builder</Link> to add some.
+                  </p>
+                </div>
+            ) : (
+                <ScrollArea className="h-auto max-h-[60vh]">
+                    <div className="space-y-4 pr-3">
+                        {sceneSummaries.map(scene => (
+                            <Card key={scene.id} className="bg-muted/30">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-lg">{scene.title}</CardTitle>
+                                </CardHeader>
+                                {scene.notes && (
+                                    <CardContent>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{scene.notes}</p>
+                                    </CardContent>
+                                )}
+                            </Card>
+                        ))}
+                    </div>
+                </ScrollArea>
+            )}
         </CardContent>
       </Card>
 
