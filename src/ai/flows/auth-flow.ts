@@ -24,7 +24,7 @@ if (!clientId || !clientSecret) {
   throw new Error('Missing Google OAuth credentials in environment variables');
 }
 
-const auth = GoogleOAuthProvider(clientId, clientSecret, {
+const auth = new GoogleOAuthProvider(clientId, clientSecret, {
     redirectURI: redirectUri,
     scope: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.appdata'],
 });
