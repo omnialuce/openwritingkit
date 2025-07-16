@@ -1,4 +1,3 @@
-
 // src/app/outline/page.tsx
 'use client';
 
@@ -11,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle, GripVertical, AlertTriangle } from 'lucide-react';
+import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle, GripVertical, AlertTriangle, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -393,6 +392,36 @@ export default function OutlineBuilderPage() {
     insertIntoList(newItems, destination.droppableId, destination.index, draggedItem);
     setItems(newItems);
   };
+  
+  const formatItemsAsText = (itemsToFormat: OutlineItem[], indentLevel = 0): string => {
+    let text = '';
+    const indent = '  '.repeat(indentLevel);
+    for (const item of itemsToFormat) {
+      text += `${indent}- [${item.type}] ${item.title}\n`;
+      if (item.notes) {
+        text += `${indent}  Notes: ${item.notes.replace(/\n/g, `\n${indent}  `)}\n`;
+      }
+      if (item.children && item.children.length > 0) {
+        text += formatItemsAsText(item.children, indentLevel + 1);
+      }
+    }
+    return text;
+  };
+
+  const handleExport = () => {
+    if (!activeStoryId || items.length === 0) return;
+    const textContent = formatItemsAsText(items);
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'outline.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   if (!activeStoryId) {
     return (
@@ -417,9 +446,14 @@ export default function OutlineBuilderPage() {
             </h1>
             <p className="text-muted-foreground">Structure your story. Drag items to reorder or nest them within 'Chapter' type items.</p>
           </div>
-          <Button onClick={handleOpenAddDialog} disabled={!activeStoryId}>
-            <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport} disabled={!activeStoryId || items.length === 0}>
+                <Download className="mr-2 h-5 w-5" /> Export Outline
+            </Button>
+            <Button onClick={handleOpenAddDialog} disabled={!activeStoryId}>
+              <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
+            </Button>
+          </div>
         </div>
 
         <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
@@ -573,4 +607,3 @@ export default function OutlineBuilderPage() {
     </DragDropContext>
   );
 }
-

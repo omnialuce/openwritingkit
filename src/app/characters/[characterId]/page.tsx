@@ -1,4 +1,3 @@
-
 // src/app/characters/[characterId]/page.tsx
 'use client';
 
@@ -11,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ArrowLeft, User, Save, Loader2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, User, Save, Loader2, AlertTriangle, Download } from 'lucide-react';
 import { useStoryContext, getCharactersStorageKey, getCharacterSheetStorageKey, type CharacterProfile } from '@/contexts/StoryContext';
 import { useToast } from '@/hooks/use-toast';
 import useAutosave from '@/hooks/useAutosave';
@@ -183,6 +182,37 @@ export default function CharacterSheetPage() {
     setSheetData(newData);
     setSavedContent(JSON.stringify(newData));
   };
+  
+  const handleExportSheet = () => {
+    if (!character || !sheetData) return;
+
+    let textContent = `CHARACTER SHEET: ${character.name}\n`;
+    textContent += `ROLE: ${character.role || 'N/A'}\n`;
+    textContent += `DESCRIPTION: ${character.description || 'N/A'}\n`;
+    textContent += `BACKSTORY: ${character.backstory || 'N/A'}\n`;
+    textContent += '===================================\n\n';
+
+    Object.entries(characterSheetSections).forEach(([sectionKey, fields]) => {
+      const sectionName = sectionKey.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+      textContent += `--- ${sectionName.toUpperCase()} ---\n\n`;
+      fields.forEach(field => {
+        if (field.type !== 'display') {
+          textContent += `${field.label}:\n${sheetData[field.id] || 'N/A'}\n\n`;
+        }
+      });
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${character.name}_sheet.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   if (!isMounted) {
     return (
@@ -237,6 +267,9 @@ export default function CharacterSheetPage() {
             {isSaving && <Loader2 className="inline-block ml-2 h-4 w-4 animate-spin" />}
           </p>
         </div>
+         <Button variant="outline" onClick={handleExportSheet}>
+            <Download className="mr-2 h-4 w-4" /> Export Sheet
+          </Button>
       </div>
 
       <Accordion type="multiple" defaultValue={['demographics', 'physicalAppearance']} className="w-full space-y-4">
@@ -273,4 +306,3 @@ export default function CharacterSheetPage() {
     </div>
   );
 }
-

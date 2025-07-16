@@ -1,8 +1,7 @@
-
 // src/app/characters/page.tsx
 'use client';
 
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +10,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle, FileText, Network } from 'lucide-react';
+import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle, FileText, Network, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getCharactersStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export interface CharacterProfile {
   id: string;
@@ -39,6 +39,8 @@ export default function CharactersPage() {
   const [backstory, setBackstory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imageHint, setImageHint] = useState('');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
@@ -118,6 +120,40 @@ export default function CharactersPage() {
     const updatedCharacters = characters.filter(char => char.id !== id);
     saveCharacters(updatedCharacters);
   };
+  
+  const handleExport = (format: 'json' | 'txt') => {
+    if (!activeStoryId) return;
+
+    let data, filename, mimeType;
+
+    if (format === 'json') {
+      data = JSON.stringify(characters, null, 2);
+      filename = 'characters.json';
+      mimeType = 'application/json';
+    } else { // txt format
+      data = characters.map(c => 
+        `Name: ${c.name}\n` +
+        `Role: ${c.role || 'N/A'}\n` +
+        `Description: ${c.description || 'N/A'}\n` +
+        `Backstory: ${c.backstory || 'N/A'}\n` +
+        `Image URL: ${c.imageUrl || 'N/A'}\n` +
+        '-----------------------------------\n'
+      ).join('\n');
+      filename = 'characters.txt';
+      mimeType = 'text/plain';
+    }
+
+    const blob = new Blob([data], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   if (!activeStoryId) {
     return (
@@ -141,9 +177,20 @@ export default function CharactersPage() {
           </h1>
           <p className="text-muted-foreground">Create, manage, and explore your story's characters.</p>
         </div>
-        <Button onClick={handleOpenCreateDialog}>
-          <PlusCircle className="mr-2 h-5 w-5" /> Create New Profile
-        </Button>
+        <div className="flex gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline"><Download className="mr-2 h-5 w-5" /> Export</Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('json')}>Export as JSON</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('txt')}>Export as Text</DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={handleOpenCreateDialog}>
+              <PlusCircle className="mr-2 h-5 w-5" /> Create New Profile
+            </Button>
+        </div>
       </div>
 
       {characters.length === 0 ? (

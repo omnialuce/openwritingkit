@@ -1,11 +1,10 @@
-
 // src/app/documents/page.tsx
 'use client';
 
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +32,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from '@/components/ui/textarea';
 import { useStoryContext, getDocumentsStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import mammoth from 'mammoth';
+import JSZip from 'jszip';
 
 type DocumentType = "folder" | "chapter" | "scene" | "file";
 type DocumentStatus = "Draft" | "Revised" | "Complete";
@@ -125,8 +127,8 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete }: Document
             <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>Details</Button>
              <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                  <FileTextIcon className="h-4 w-4 text-destructive" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -196,6 +198,8 @@ export default function DocumentsPage() {
   const { activeStoryId } = useStoryContext();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   // For managing dialogs
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
@@ -302,6 +306,92 @@ export default function DocumentsPage() {
     setIsDetailDialogOpen(false);
     setSelectedItemForDialog(null);
   };
+  
+  const handleImportClick = () => {
+    if (!activeStoryId) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !activeStoryId) return;
+
+    if (file.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        toast({ title: "Invalid File Type", description: "Please select a .docx file to import.", variant: "destructive" });
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const arrayBuffer = e.target?.result as ArrayBuffer;
+      if (!arrayBuffer) {
+        toast({ title: "Error Reading File", variant: "destructive" });
+        return;
+      }
+      try {
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        const htmlContent = result.value;
+        const wordCount = htmlContent.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length;
+
+        const newDoc: DocumentItem = {
+          id: Date.now().toString(),
+          name: file.name.replace(/\.docx$/, ''),
+          type: 'file',
+          content: htmlContent,
+          words: wordCount,
+          lastModified: new Date().toISOString(),
+          status: 'Draft',
+          tags: ['Imported', 'Draft'],
+        };
+        
+        saveDocuments([...documents, newDoc]);
+        toast({ title: "Import Successful", description: `"${newDoc.name}" has been imported.` });
+
+      } catch (error) {
+        console.error("Mammoth conversion error:", error);
+        toast({ title: "Import Failed", description: "Could not convert the .docx file.", variant: "destructive" });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  };
+
+  const handleExportZip = async () => {
+    if (!activeStoryId || documents.length === 0) return;
+    const zip = new JSZip();
+
+    const addDocsToZip = (docs: DocumentItem[], currentPath: string) => {
+        docs.forEach(doc => {
+            const newPath = currentPath ? `${currentPath}/${doc.name}` : doc.name;
+            if ((doc.type === 'file' || doc.type === 'scene') && doc.content) {
+                zip.file(`${newPath}.html`, doc.content);
+            } else if ((doc.type === 'folder' || doc.type === 'chapter') && doc.children) {
+                zip.folder(newPath);
+                addDocsToZip(doc.children, newPath);
+            }
+        });
+    };
+
+    addDocsToZip(documents, '');
+
+    try {
+        const content = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `documents_export_${activeStoryId}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({ title: "Export Started", description: "Your documents are being zipped for download." });
+    } catch (error) {
+        console.error("ZIP generation error:", error);
+        toast({ title: "Export Failed", description: "Could not generate the zip file.", variant: "destructive" });
+    }
+  };
+
 
   if (!activeStoryId) {
     return (
@@ -328,6 +418,9 @@ export default function DocumentsPage() {
           <p className="text-muted-foreground">Organize, create, and manage all your writing projects.</p>
         </div>
         <div className="flex gap-2">
+           <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".docx" className="hidden" />
+           <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-5 w-5" /> Import DOCX</Button>
+           <Button variant="outline" onClick={handleExportZip} disabled={documents.length === 0}><Download className="mr-2 h-5 w-5" /> Export All as ZIP</Button>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <FilePlus2 className="mr-2 h-5 w-5" /> Create Item
           </Button>
@@ -474,5 +567,3 @@ export default function DocumentsPage() {
     </div>
   );
 }
-
-    

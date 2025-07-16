@@ -1,4 +1,3 @@
-
 // src/app/plot-tools/page.tsx
 'use client';
 
@@ -11,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle } from 'lucide-react';
+import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
@@ -212,6 +211,39 @@ export default function PlotToolsPage() {
     const updatedEvents = timelineEvents.filter(event => event.id !== id);
     saveTimelineEvents(updatedEvents);
   };
+  
+  const handleExport = () => {
+    if (!activeStoryId) return;
+    let textContent = '--- PLOT POINTS ---\n\n';
+    plotPoints.forEach(pp => {
+      textContent += `[${pp.name}]\n`;
+      textContent += `${pp.description || 'No description.'}\n\n`;
+    });
+
+    textContent += '\n--- TIMELINE EVENTS ---\n\n';
+    timelineEvents.forEach(event => {
+      textContent += `Event: ${event.title}\n`;
+      textContent += `Date/Time: ${event.dateTime || 'N/A'}\n`;
+      textContent += `Description: ${event.description || 'No description.'}\n\n`;
+    });
+    
+    textContent += '\n--- SCENE SUMMARIES ---\n\n';
+    sceneSummaries.forEach(scene => {
+        textContent += `Scene: ${scene.title}\n`;
+        textContent += `Notes: ${scene.notes || 'No notes.'}\n\n`;
+    });
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'plot_tools_export.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
 
   if (!activeStoryId) {
     return (
@@ -235,6 +267,9 @@ export default function PlotToolsPage() {
           </h1>
           <p className="text-muted-foreground">Structure your narrative, track key points, and build your timeline for the current story.</p>
         </div>
+        <Button variant="outline" onClick={handleExport} disabled={!activeStoryId}>
+          <Download className="mr-2 h-5 w-5" /> Export All
+        </Button>
       </div>
 
       {/* Plot Point Tracker Section */}
