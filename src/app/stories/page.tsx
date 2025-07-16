@@ -1,5 +1,4 @@
-
-// src/app/stories/page.tsx
+// src/app/(app)/stories/page.tsx
 'use client';
 
 import React, { useState, useEffect, FormEvent } from 'react';

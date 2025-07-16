@@ -1,4 +1,4 @@
-// src/app/characters/[characterId]/page.tsx
+// src/app/(app)/characters/[characterId]/page.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';

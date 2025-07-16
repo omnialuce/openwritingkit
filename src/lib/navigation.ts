@@ -10,7 +10,7 @@ export interface NavItem {
 }
 
 export const mainNavItems: NavItem[] = [
-  { href: '/', label: 'Dashboard', icon: Home },
+  { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/stories', label: 'Stories', icon: BookOpenCheck },
   { href: '/editor', label: 'Editor', icon: BookText },
   { href: '/documents', label: 'Documents', icon: FolderOpen },

@@ -1,4 +1,4 @@
-// src/app/outline/page.tsx
+// src/app/(app)/outline/page.tsx
 'use client';
 
 import React, { useState, useEffect, FormEvent, useCallback } from 'react';

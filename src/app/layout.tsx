@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
-import { StoryProvider } from '@/contexts/StoryContext';
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from '@/components/ui/toaster';
 
 
 export const metadata: Metadata = {
@@ -31,11 +31,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoryProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
-          </StoryProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

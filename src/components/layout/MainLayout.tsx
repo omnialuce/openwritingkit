@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { Toaster } from '@/components/ui/toaster';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -22,7 +21,6 @@ export function MainLayout({ children }: MainLayoutProps) {
           OpenWritingKit &copy; {new Date().getFullYear()}
         </footer>
       </SidebarInset>
-      <Toaster />
     </SidebarProvider>
   );
 }

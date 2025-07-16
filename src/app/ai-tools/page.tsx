@@ -1,5 +1,4 @@
-
-// src/app/ai-tools/page.tsx
+// src/app/(app)/ai-tools/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';

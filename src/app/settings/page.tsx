@@ -1,5 +1,4 @@
-
-// src/app/settings/page.tsx
+// src/app/(app)/settings/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings as SettingsIcon, Cloud, Brain, Palette as PaletteIcon, Type, User, Shield, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
@@ -18,6 +18,7 @@ const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
 type EditorFontSize = "sm" | "base" | "lg";
 
 export default function SettingsPage() {
+  const { user } = useAuth();
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>("base");
   const [isMounted, setIsMounted] = useState(false);
@@ -160,11 +161,11 @@ export default function SettingsPage() {
             <CardTitle>Account Management</CardTitle>
           </div>
           <CardDescription>
-            Manage your account details (placeholder).
+            Manage your account details.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm"><strong>Email:</strong> user@example.com (Mock)</p>
+          <p className="text-sm"><strong>Email:</strong> {user?.email || 'N/A'}</p>
           <div className="flex flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => handlePlaceholderClick("Change Password")}>
               <Shield className="mr-2 h-4 w-4" /> Change Password
@@ -174,7 +175,7 @@ export default function SettingsPage() {
             </Button>
           </div>
            <p className="text-xs text-muted-foreground mt-2">
-             Full account management features require backend integration and are not yet implemented.
+             More account management features coming soon.
           </p>
         </CardContent>
       </Card>
