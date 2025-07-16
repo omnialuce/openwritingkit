@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -71,7 +72,7 @@ export function AppSidebar() {
             "flex items-center gap-2",
             "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>
-          <Image src="/logo.svg" alt="OpenWritingKit Logo" width={32} height={32} />
+          <Image src="/logo.png" alt="OpenWritingKit Logo" width={32} height={32} className="rounded-full" />
           <span className={cn(
               "font-headline text-xl font-semibold text-primary",
               "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" 
