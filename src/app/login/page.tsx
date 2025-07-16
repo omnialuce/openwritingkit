@@ -40,7 +40,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40">
+    <div className="flex items-center justify-center">
        <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle>Welcome Back</CardTitle>

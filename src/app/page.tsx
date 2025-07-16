@@ -1,4 +1,3 @@
-
 // src/app/page.tsx
 'use client';
 
@@ -34,22 +33,8 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="OpenWritingKit Logo" width={32} height={32} className="rounded-md" />
-            <span className="font-headline text-xl font-semibold text-primary">OpenWritingKit</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Log In</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-
       <main className="flex-1">
-        <section className="container grid lg:grid-cols-2 gap-12 items-center py-12 md:py-24">
+        <section className="grid lg:grid-cols-2 gap-12 items-center py-12 md:py-24">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">Your Intelligent Writing Companion.</h1>
             <p className="text-lg text-muted-foreground">
@@ -72,14 +57,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="features" className="container py-12 md:py-24 bg-muted/50">
-           <div className="mx-auto max-w-3xl text-center space-y-4">
+        <section id="features" className="py-12 md:py-24 bg-muted/50 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8">
+           <div className="container mx-auto max-w-3xl text-center space-y-4">
                 <h2 className="text-3xl font-bold">Everything a Writer Needs</h2>
                 <p className="text-muted-foreground">
                     From the first idea to the final draft, OpenWritingKit provides the tools to support your creative process.
                 </p>
             </div>
-            <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="container mx-auto mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
                 {features.map((feature) => (
                     <Card key={feature.title} className="text-center">
                         <CardHeader>
@@ -96,7 +81,7 @@ export default function LandingPage() {
             </div>
         </section>
 
-        <section id="apply" className="container py-12 md:py-24">
+        <section id="apply" className="py-12 md:py-24">
            <Card className="max-w-2xl mx-auto">
              <CardHeader className="text-center">
                <CardTitle>Request Access</CardTitle>
@@ -106,7 +91,7 @@ export default function LandingPage() {
              </CardHeader>
              <CardContent className="text-center">
                 <Button asChild>
-                    <a href="mailto:youremail@example.com?subject=OpenWritingKit%20Access%20Request">
+                    <a href="mailto:openwritingkit@gmail.com?subject=OpenWritingKit%20Access%20Request">
                         <Mail className="mr-2 h-4 w-4" /> Apply for an Account
                     </a>
                 </Button>
@@ -115,12 +100,6 @@ export default function LandingPage() {
            </Card>
         </section>
       </main>
-
-      <footer className="border-t">
-        <div className="container py-6 text-center text-sm text-muted-foreground">
-          OpenWritingKit &copy; {new Date().getFullYear()}
-        </div>
-      </footer>
     </div>
   );
 }
