@@ -2,6 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import type { CharacterProfile } from '@/app/characters/page';
 
 interface Story {
   id: string;
@@ -100,6 +101,27 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   }, [activeStoryId]);
 
   const deleteStory = useCallback((storyId: string) => {
+    // Also clean up associated character data
+    if (typeof window !== 'undefined') {
+        const charactersKey = getCharactersStorageKey(storyId);
+        const storedCharacters = localStorage.getItem(charactersKey);
+        if(storedCharacters) {
+            const characters: CharacterProfile[] = JSON.parse(storedCharacters);
+            characters.forEach(char => {
+                const sheetKey = getCharacterSheetStorageKey(storyId, char.id);
+                localStorage.removeItem(sheetKey);
+            });
+        }
+        localStorage.removeItem(charactersKey);
+        localStorage.removeItem(getOutlineStorageKey(storyId));
+        localStorage.removeItem(getPlotPointsStorageKey(storyId));
+        localStorage.removeItem(getTimelineEventsStorageKey(storyId));
+        localStorage.removeItem(getEditorContentKey(storyId));
+        localStorage.removeItem(getWordGoalKey(storyId));
+        localStorage.removeItem(getActivityLogKey(storyId));
+        localStorage.removeItem(getDocumentsStorageKey(storyId));
+    }
+    
     setStories(prevStories => {
       const updatedStories = prevStories.filter(s => s.id !== storyId);
       if (typeof window !== 'undefined') {
@@ -140,6 +162,9 @@ export function useStoryContext() {
 export const getCharactersStorageKey = (storyId: string | null): string => 
   storyId ? `openwritingkit-story-${storyId}-characters` : 'openwritingkit-characters-noactive';
 
+export const getCharacterSheetStorageKey = (storyId: string | null, characterId: string | null): string =>
+  (storyId && characterId) ? `openwritingkit-story-${storyId}-character-${characterId}-sheet` : 'openwritingkit-sheet-noactive';
+
 export const getOutlineStorageKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-outline-items-v3` : 'openwritingkit-outline-items-v3-noactive';
 
@@ -161,4 +186,4 @@ export const getActivityLogKey = (storyId: string | null): string =>
 export const getDocumentsStorageKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-documents` : 'openwritingkit-documents-noactive';
 
-    
+export type { CharacterProfile };

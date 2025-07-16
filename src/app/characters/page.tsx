@@ -11,21 +11,21 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle } from 'lucide-react';
+import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle, FileText, Network } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getCharactersStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
-interface CharacterProfile {
+export interface CharacterProfile {
   id: string;
   name: string;
+  role?: string;
   description?: string;
   backstory?: string;
   imageUrl?: string;
-  imageHint?: string; // For data-ai-hint
+  imageHint?: string;
 }
-
-// Initial characters are removed, will be loaded per story or empty if new story.
 
 export default function CharactersPage() {
   const { activeStoryId } = useStoryContext();
@@ -34,6 +34,7 @@ export default function CharactersPage() {
   const [editingCharacter, setEditingCharacter] = useState<CharacterProfile | null>(null);
   
   const [name, setName] = useState('');
+  const [role, setRole] = useState('');
   const [description, setDescription] = useState('');
   const [backstory, setBackstory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -46,10 +47,10 @@ export default function CharactersPage() {
       if (storedCharacters) {
         setCharacters(JSON.parse(storedCharacters));
       } else {
-        setCharacters([]); // Start with empty array for a new story context
+        setCharacters([]);
       }
     } else if (!activeStoryId) {
-      setCharacters([]); // Clear characters if no story is active
+      setCharacters([]);
     }
   }, [activeStoryId]);
 
@@ -63,6 +64,7 @@ export default function CharactersPage() {
 
   const resetForm = () => {
     setName('');
+    setRole('');
     setDescription('');
     setBackstory('');
     setImageUrl('');
@@ -78,6 +80,7 @@ export default function CharactersPage() {
   const handleOpenEditDialog = (character: CharacterProfile) => {
     setEditingCharacter(character);
     setName(character.name);
+    setRole(character.role || '');
     setDescription(character.description || '');
     setBackstory(character.backstory || '');
     setImageUrl(character.imageUrl || '');
@@ -91,6 +94,7 @@ export default function CharactersPage() {
 
     const newCharacterData = {
       name: name.trim(),
+      role: role.trim() || undefined,
       description: description.trim() || undefined,
       backstory: backstory.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
@@ -159,44 +163,53 @@ export default function CharactersPage() {
                     <Image
                       src={character.imageUrl}
                       alt={`Image of ${character.name}`}
-                      layout="fill"
+                      fill
                       objectFit="cover"
                       data-ai-hint={character.imageHint || 'portrait character'}
                     />
                   </div>
                 )}
                 <CardTitle>{character.name}</CardTitle>
+                {character.role && <Badge variant="secondary">{character.role}</Badge>}
               </CardHeader>
               <CardContent className="flex-grow">
                 {character.description && (
                   <p className="text-sm text-muted-foreground line-clamp-3">{character.description}</p>
                 )}
               </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(character)} className="flex-1">
-                  <Edit className="mr-2 h-4 w-4" /> Edit
+              <CardFooter className="flex flex-col gap-2">
+                <Button asChild variant="default" className="w-full">
+                  <Link href={`/characters/${character.id}`}>
+                    <FileText className="mr-2 h-4 w-4" /> View Sheet
+                  </Link>
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="flex-1">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the character profile for {character.name}.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDeleteCharacter(character.id)}>
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex gap-2 w-full">
+                  <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(character)} className="flex-1">
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" className="flex-1">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the character profile for {character.name}.
+                          The detailed character sheet data will also be permanently deleted.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteCharacter(character.id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </CardFooter>
             </Card>
           ))}
@@ -220,6 +233,10 @@ export default function CharactersPage() {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="char-name" className="text-right">Name</Label>
                   <Input id="char-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="char-role" className="text-right">Role</Label>
+                  <Input id="char-role" value={role} onChange={(e) => setRole(e.target.value)} className="col-span-3" placeholder="e.g., Protagonist, Antagonist, Mentor"/>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="char-image-url" className="text-right">Image URL</Label>
@@ -261,14 +278,14 @@ export default function CharactersPage() {
         </DialogContent>
       </Dialog>
       
-      <div className="text-center mt-12 p-6 bg-card border rounded-md">
-        <FileImage className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-xl font-semibold mb-2">Visualize Your Characters</h3>
+      <Card className="text-center mt-12 p-6 border">
+        <Network className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-xl font-semibold mb-2">Relationship Mapping</h3>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Add image URLs (e.g., from <code className="text-xs p-1 bg-muted rounded-sm">https://placehold.co</code> or your own sources) to bring your characters to life.
-          Future updates will include richer profile fields and relationship mapping.
+          A visual tool to map connections, allegiances, and conflicts between your characters is coming soon!
         </p>
-      </div>
+         <p className="text-sm text-primary mt-2">Coming Soon!</p>
+      </Card>
     </div>
   );
 }
