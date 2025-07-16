@@ -1,4 +1,3 @@
-
 // src/app/(app)/analytics/page.tsx
 'use client';
 
@@ -199,4 +198,3 @@ export default function AnalyticsPage() {
     </div>
   );
 }
-
