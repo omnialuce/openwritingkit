@@ -192,7 +192,7 @@ export default function AnalyticsPage() {
           <CardDescription>A visual summary of your writing journey for this story.</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-           <Image src="https://placehold.co/800x300.png" data-ai-hint="monochrome data chart graph" alt="Progress chart placeholder" width={800} height={300} className="mx-auto rounded-md" />
+           <Image src="writer.svg" alt="Writer" width={800} height={300} className="mx-auto rounded-md" />
           <p className="text-muted-foreground mt-4">Detailed charts and graphs are coming soon to help you visualize your progress.</p>
         </CardContent>
       </Card>

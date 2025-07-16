@@ -8,8 +8,8 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { LocaleProvider } from '@/contexts/LocaleContext';
 
 export const metadata: Metadata = {
-  title: 'OpenWritingKit - Your Creative Writing Companion',
-  description: 'Enhance your writing with OpenWritingKit\'s AI-powered tools and focus-enhancing features.',
+  title: 'OpenWritingKit',
+  description: 'A complete, open-source, entirely free writing companion.',
 };
 
 export default function RootLayout({

@@ -122,12 +122,11 @@ export default function DashboardPage() {
           </div>
           <div className="hidden md:block">
             <Image 
-              src="https://placehold.co/500x300.png" 
-              alt="OpenWriting Kit illustrative banner" 
+              src="typewriter.svg" 
+              alt="OpenWritingKit illustrative banner" 
               width={500} 
               height={300}
               className="rounded-none"
-              data-ai-hint="minimalist abstract design"
             />
           </div>
         </div>
