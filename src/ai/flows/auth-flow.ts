@@ -104,8 +104,6 @@ export const handleGoogleCallback = ai.defineFlow(
     });
     const googleUser = await googleUserResponse.json();
 
-    // Here you would typically look up the user in your database or create a new one.
-    // For this demo, we'll use the Google user ID (sub) as our user ID.
     const userId = googleUser.sub;
 
     const session: UserSession = {
