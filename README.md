@@ -1,7 +1,7 @@
 
 # OpenWritingKit
 
-This is a NextJS app, "OpenWritingKit", created in Firebase Studio. It's designed to be an intelligent writing companion.
+This is a NextJS app. It's designed to be an intelligent writing companion.
 
 To get started, explore the different sections:
 - **Dashboard (`/`)**: Overview and quick actions.
@@ -30,4 +30,3 @@ To get started, explore the different sections:
 - Tailwind CSS
 - ShadCN UI Components
 - Genkit (for AI features)
-- Lucide Icons
