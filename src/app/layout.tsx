@@ -5,6 +5,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 import { StoryProvider } from '@/contexts/StoryContext';
 import { ThemeProvider } from '@/components/theme-provider';
+import { LocaleProvider } from '@/contexts/LocaleContext';
 
 export const metadata: Metadata = {
   title: 'OpenWritingKit - Your Creative Writing Companion',
@@ -31,11 +32,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoryProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
-          </StoryProvider>
+          <LocaleProvider>
+            <StoryProvider>
+              <MainLayout>
+                {children}
+              </MainLayout>
+            </StoryProvider>
+          </LocaleProvider>
         </ThemeProvider>
       </body>
     </html>

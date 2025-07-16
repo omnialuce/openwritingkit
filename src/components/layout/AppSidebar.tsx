@@ -19,9 +19,11 @@ import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation'
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useLocale();
   const { state: sidebarState, isMobile, open: isDesktopSidebarExpanded } = useSidebar(); 
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
@@ -46,7 +48,7 @@ export function AppSidebar() {
           disabled={item.disabled}
           aria-disabled={item.disabled}
           tooltip={{ 
-            children: item.label, 
+            children: t(item.label), 
             side: 'right', 
             align: 'center',
             hidden: isDesktopSidebarExpanded && !isMobile 
@@ -55,7 +57,7 @@ export function AppSidebar() {
         >
           <Link href={item.href}>
             <item.icon />
-            <span className={cn("group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden")}>{item.label}</span>
+            <span className={cn("group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden")}>{t(item.label)}</span>
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -88,61 +90,53 @@ export function AppSidebar() {
           {secondaryNavItems.map(renderNavItem)}
         </SidebarMenu>
         
-        <SidebarMenu className="mt-2">
-           <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={isDriveConnected ? () => alert("Open Google Drive settings (placeholder).") : handleConnectDriveClick}
-                tooltip={{
-                    children: <>
-                      <p className="font-semibold mb-1">{isDriveConnected ? "Cloud Storage Connected" : "Cloud Storage"}</p>
-                      {isDriveConnected ? (
-                        <p>Storage: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
-                      ) : (
-                        <>
-                        <p>
-                          Connect to Google Drive to back up your stories, outlines, and characters,
-                          and access them across your devices.
-                        </p>
-                        <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                          <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only.
-                          This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
-                        </p>
-                        </>
-                      )}
-                    </>,
-                    side: 'right',
-                    align: 'center',
-                    hidden: isDesktopSidebarExpanded && !isMobile
-                }}
-                className="w-full rounded-none"
-              >
-                {isDriveConnected ? <Cloud /> : <DatabaseZap />}
-                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
-                  {isDriveConnected ? `Drive: ${driveStorageInfo.used}` : "Connect to Drive"}
-                  {isDriveConnected && (
-                    <Button variant="link" size="sm" className="p-0 h-auto text-xs ml-auto text-primary hover:text-primary/80 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" onClick={handleDisconnectDriveClick}>
-                      Disconnect
-                    </Button>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            onClick={isDriveConnected ? () => alert("Open Google Drive settings (placeholder).") : handleConnectDriveClick}
+            tooltip={{
+                children: <>
+                  <p className="font-semibold mb-1">{isDriveConnected ? t('cloud_storage_connected') : t('cloud_storage')}</p>
+                  {isDriveConnected ? (
+                    <p>{t('storage_usage', { used: driveStorageInfo.used, total: driveStorageInfo.total })}</p>
+                  ) : (
+                    <>
+                    <p>{t('cloud_storage_connect_tooltip')}</p>
+                    <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
+                      <strong>{t('important_note')}:</strong> {t('cloud_storage_local_warning')}
+                    </p>
+                    </>
                   )}
-                </span>
-              </SidebarMenuButton>
-           </SidebarMenuItem>
-        </SidebarMenu>
+                </>,
+                side: 'right',
+                align: 'center',
+                hidden: isDesktopSidebarExpanded && !isMobile
+            }}
+            className="w-full rounded-none"
+          >
+            {isDriveConnected ? <Cloud /> : <DatabaseZap />}
+            <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
+              {isDriveConnected ? `${t('drive_label')}: ${driveStorageInfo.used}` : t('connect_to_drive')}
+              {isDriveConnected && (
+                <Button variant="link" size="sm" className="p-0 h-auto text-xs ml-auto text-primary hover:text-primary/80 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" onClick={handleDisconnectDriveClick}>
+                  {t('disconnect_button')}
+                </Button>
+              )}
+            </span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
       
-        <SidebarMenu className="mt-2">
-           <SidebarMenuItem>
-             <SidebarMenuButton 
-                asChild 
-                className="w-full rounded-none"
-                tooltip={{ children: "Support the Developer", side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
-             >
-               <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
-                 <Coffee />
-                 <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">Buy Me a Coffee</span>
-               </Link>
-             </SidebarMenuButton>
-           </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton 
+            asChild 
+            className="w-full rounded-none"
+            tooltip={{ children: t('buy_me_a_coffee'), side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
+          >
+            <Link href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener noreferrer">
+              <Coffee />
+              <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">{t('buy_me_a_coffee')}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
       </SidebarFooter>
     </Sidebar>
   );
