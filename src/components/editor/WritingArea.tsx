@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -21,6 +21,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -60,8 +64,13 @@ export function WritingArea() {
   const { activeStoryId } = useStoryContext();
   const editorStorageKey = getEditorContentKey(activeStoryId);
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
+  const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
 
-  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(editorStorageKey, '<p></p>');
+  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(
+    activeDocumentId ? `doc-${activeDocumentId}` : editorStorageKey,
+    '<p></p>'
+  );
+  
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [editorTheme, setEditorTheme] = useState<EditorTheme>('light');
@@ -84,6 +93,9 @@ export function WritingArea() {
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
   const [newDocFilename, setNewDocFilename] = useState('');
+  
+  const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([]);
+  const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
 
 
   const getEditorClassNames = useCallback((size: EditorFontSize) => {
@@ -96,7 +108,6 @@ export function WritingArea() {
     return cn(baseClasses, sizeMap[size]);
   }, []);
 
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -105,7 +116,7 @@ export function WritingArea() {
         },
       }),
     ],
-    content: savedContent,
+    content: '<p></p>',
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
       if (activeStoryId) {
@@ -118,6 +129,78 @@ export function WritingArea() {
       },
     },
   });
+
+  const loadAllDocuments = useCallback(() => {
+    if (activeStoryId) {
+        const stored = localStorage.getItem(documentsStorageKey);
+        setAllDocuments(stored ? JSON.parse(stored) : []);
+    } else {
+        setAllDocuments([]);
+    }
+  }, [activeStoryId, documentsStorageKey]);
+
+  useEffect(() => {
+      loadAllDocuments();
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === documentsStorageKey) {
+          loadAllDocuments();
+        }
+      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+      };
+  }, [loadAllDocuments, documentsStorageKey]);
+
+
+  const saveCurrentContentToDocument = useCallback((content: string, docId: string) => {
+    if (!activeStoryId) return;
+
+    const storedData = localStorage.getItem(documentsStorageKey);
+    let documents: DocumentItem[] = storedData ? JSON.parse(storedData) : [];
+    
+    const updateRecursive = (items: DocumentItem[]): DocumentItem[] => {
+        return items.map(item => {
+            if (item.id === docId) {
+                const textContent = content.replace(/<[^>]*>/g, '').trim();
+                const wordCount = textContent.split(/\s+/).filter(Boolean).length;
+                return { ...item, content, words: wordCount, lastModified: new Date().toISOString() };
+            }
+            if (item.children) {
+                return { ...item, children: updateRecursive(item.children) };
+            }
+            return item;
+        });
+    };
+
+    const updatedDocuments = updateRecursive(documents);
+    localStorage.setItem(documentsStorageKey, JSON.stringify(updatedDocuments));
+    
+  }, [activeStoryId, documentsStorageKey]);
+
+
+  useEffect(() => {
+    if(activeDocumentId && savedContent) {
+        saveCurrentContentToDocument(savedContent, activeDocumentId);
+    }
+  }, [savedContent, activeDocumentId, saveCurrentContentToDocument]);
+
+  const openDocument = (doc: DocumentItem) => {
+      if(editor) {
+        setActiveDocumentId(doc.id);
+        setActiveDocumentName(doc.name);
+        editor.commands.setContent(doc.content || '<p></p>');
+      }
+  };
+
+  const closeDocument = () => {
+    if(editor && activeDocumentId) {
+        saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
+        setActiveDocumentId(null);
+        setActiveDocumentName(null);
+        editor.commands.setContent('<p></p>');
+    }
+  }
 
   useEffect(() => {
     setIsMounted(true);
@@ -167,9 +250,8 @@ export function WritingArea() {
     }
   }, [editorFontSize, editor, getEditorClassNames]);
 
-
   useEffect(() => {
-    if (editor && activeStoryId) {
+    if (editor && !activeDocumentId) {
       if (savedContent !== editor.getHTML()) {
         editor.commands.setContent(savedContent, false);
       }
@@ -180,8 +262,7 @@ export function WritingArea() {
      if (editor && activeStoryId) {
       editor.setEditable(true);
     }
-  }, [savedContent, editor, activeStoryId]);
-
+  }, [savedContent, editor, activeStoryId, activeDocumentId]);
 
   useEffect(() => {
     if (editor) {
@@ -362,6 +443,34 @@ export function WritingArea() {
       }
   }
 
+    const renderDocumentMenuItems = (items: DocumentItem[]) => {
+      return items.map(item => {
+        if (item.type === 'folder' || item.type === 'chapter') {
+          return (
+            <DropdownMenuSub key={item.id}>
+              <DropdownMenuSubTrigger>{item.name}</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  {item.children && item.children.length > 0
+                    ? renderDocumentMenuItems(item.children)
+                    : <DropdownMenuItem disabled>No documents in this folder</DropdownMenuItem>
+                  }
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          );
+        }
+        if (item.type === 'file' || item.type === 'scene') {
+          return (
+            <DropdownMenuItem key={item.id} onClick={() => openDocument(item)}>
+              {item.name}
+            </DropdownMenuItem>
+          );
+        }
+        return null;
+      });
+    };
+
 
   if (!isMounted) {
     return (
@@ -425,10 +534,30 @@ export function WritingArea() {
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
+                  
+                   <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="px-2" title="Open Document" disabled={!activeStoryId}>
+                        <FolderOpen className="h-5 w-5 mr-2 text-muted-foreground" />
+                        <span className="text-muted-foreground">Open Document</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="rounded-none">
+                       {allDocuments.length > 0 ? renderDocumentMenuItems(allDocuments) : <DropdownMenuItem disabled>No documents found</DropdownMenuItem>}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {activeDocumentId && (
+                     <Button variant="ghost" size="sm" className="px-2" title="Close Document" onClick={closeDocument}>
+                       <XCircle className="h-5 w-5 mr-2 text-destructive" />
+                       <span className="text-destructive">Close</span>
+                     </Button>
+                  )}
+
                   <Button variant="ghost" size="icon" title="Save (auto-saved)" disabled={!activeStoryId}>
                     <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title="Save as Document" disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title="Save current content as New Document" disabled={!activeStoryId || activeDocumentId !== null}>
                     <FileUp className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md" style={{ display: 'none' }} />
@@ -447,7 +576,7 @@ export function WritingArea() {
                       <DropdownMenuItem disabled>Export as PDF (soon)</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm('Are you sure you want to clear all content and history for this story? This cannot be undone.')) { editor?.commands.clearContent(true); clearSavedContent();} }} title="Clear Content & History" disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm('Are you sure you want to clear all content? This cannot be undone.')) { editor?.commands.clearContent(true); if(!activeDocumentId) clearSavedContent();} }} title="Clear Content" disabled={!activeStoryId}>
                     <Trash2 className="h-5 w-5 text-destructive" />
                   </Button>
                   <Tooltip>
@@ -501,9 +630,15 @@ export function WritingArea() {
           </CardContent>
           {!isFocusMode && (
             <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
-              <span>Words: {activeStoryId ? wordCount : '-'}</span>
-              <span>Chars: {activeStoryId ? charCount : '-'}</span>
-              <span>{activeStoryId ? (isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved") : "No active story"}</span>
+              <div className="flex-1 truncate">
+                <span>{activeDocumentId ? `Editing: ${activeDocumentName}` : 'Editing Scratchpad'}</span>
+              </div>
+              <div className="flex-1 text-center">
+                <span>Words: {activeStoryId ? wordCount : '-'} | Chars: {activeStoryId ? charCount : '-'}</span>
+              </div>
+              <div className="flex-1 text-right">
+                <span>{activeStoryId ? (isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved") : "No active story"}</span>
+              </div>
             </CardFooter>
           )}
         </Card>
@@ -613,5 +748,3 @@ export function WritingArea() {
     </TooltipProvider>
   );
 }
-
-    
