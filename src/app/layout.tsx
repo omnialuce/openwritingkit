@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 import { StoryProvider } from '@/contexts/StoryContext';
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 
 export const metadata: Metadata = {
@@ -31,11 +32,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StoryProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
-          </StoryProvider>
+          <AuthProvider>
+            <StoryProvider>
+              <MainLayout>
+                {children}
+              </MainLayout>
+            </StoryProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

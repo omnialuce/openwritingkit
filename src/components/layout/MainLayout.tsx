@@ -1,15 +1,30 @@
 
+'use client';
+
 import type { ReactNode } from 'react';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
+import { usePathname } from 'next/navigation';
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
+
 export function MainLayout({ children }: MainLayoutProps) {
+  const pathname = usePathname();
+
+  if (pathname === '/login') {
+    return (
+       <>
+        {children}
+        <Toaster />
+       </>
+    )
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />

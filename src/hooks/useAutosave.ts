@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast'; 
 import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext'; 
 import { storage } from '@/lib/storage';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MAX_HISTORY_LENGTH = 20; 
 
@@ -26,16 +27,23 @@ function useAutosave<T extends string>(
 ): [T, (value: T) => void, boolean, () => void, Date | null] {
   const { toast } = useToast(); 
   const { activeStoryId } = useStoryContext();
+  const { user } = useAuth();
 
   const [currentText, setCurrentTextInternal] = useState<T>(initialValue);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
 
+  const getStorageKeyWithUser = useCallback((baseKey: string) => {
+    if (!user) return null;
+    return `${baseKey}-${user.uid}`;
+  }, [user]);
+
   useEffect(() => {
+    const key = getStorageKeyWithUser(dynamicStorageKey);
     const loadData = async () => {
-      if (dynamicStorageKey) {
+      if (key) {
         try {
-          const item = await storage.getItem<string | DocumentData<T>>(dynamicStorageKey);
+          const item = await storage.getItem<string | DocumentData<T>>(key);
           if (item) {
             let loadedValue: T;
             let lastSaved: string | null = null;
@@ -52,7 +60,7 @@ function useAutosave<T extends string>(
             setLastSavedTime(null);
           }
         } catch (error) {
-          console.warn(`Error reading storage key "${dynamicStorageKey}":`, error);
+          console.warn(`Error reading storage key "${key}":`, error);
           setCurrentTextInternal(initialValue);
           setLastSavedTime(null);
         }
@@ -62,35 +70,36 @@ function useAutosave<T extends string>(
       }
     };
     loadData();
-  }, [dynamicStorageKey, initialValue]);
+  }, [dynamicStorageKey, initialValue, getStorageKeyWithUser]);
 
   const logActivity = useCallback(async (textToSave: T) => {
-    if (activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{')) {
-      const activityLogStorageKey = getActivityLogKey(activeStoryId);
+    const activityKey = getStorageKeyWithUser(getActivityLogKey(activeStoryId));
+    if (activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{') && activityKey) {
       const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
       const wordCount = words.length;
       const newLogEntry: ActivityLogEntry = { timestamp: new Date().toISOString(), wordCount };
 
       try {
-        let activityLog = await storage.getItem<ActivityLogEntry[]>(activityLogStorageKey) || [];
+        let activityLog = await storage.getItem<ActivityLogEntry[]>(activityKey) || [];
         activityLog.push(newLogEntry);
-        await storage.setItem(activityLogStorageKey, activityLog);
+        await storage.setItem(activityKey, activityLog);
       } catch (error) {
         console.warn(`Error updating activity log:`, error);
       }
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, getStorageKeyWithUser]);
 
   const saveDocument = useCallback(
     async (textToSave: T) => {
-      if (dynamicStorageKey) { 
+      const key = getStorageKeyWithUser(dynamicStorageKey);
+      if (key) { 
         setIsSaving(true);
         try {
           const now = new Date();
           const timestamp = now.toISOString();
           
           let documentData: DocumentData<T>;
-          const existingItem = await storage.getItem<string | DocumentData<T>>(dynamicStorageKey);
+          const existingItem = await storage.getItem<string | DocumentData<T>>(key);
           
           if (existingItem) {
             if (typeof existingItem === 'string') {
@@ -117,15 +126,15 @@ function useAutosave<T extends string>(
           documentData.current = textToSave;
           documentData.lastSaved = timestamp;
 
-          await storage.setItem(dynamicStorageKey, documentData);
+          await storage.setItem(key, documentData);
           setLastSavedTime(now);
           await logActivity(textToSave);
           
-          if(activeStoryId){
+          if(activeStoryId && user){
             const today = now.toISOString().split('T')[0];
-            const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`; 
-            const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`; 
-            const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
+            const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`; 
+            const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`; 
+            const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date-${user.uid}`;
 
             const lastActiveDate = await storage.getItem<string>(lastActiveDateKey);
             
@@ -150,22 +159,23 @@ function useAutosave<T extends string>(
           }
 
         } catch (error) {
-          console.error(`Error saving to storage key "${dynamicStorageKey}":`, error);
+          console.error(`Error saving to storage key "${key}":`, error);
           toast({ title: "Save Error", description: "Could not save changes.", variant: "destructive" });
         } finally {
           setTimeout(() => setIsSaving(false), 500); 
         }
       }
     },
-    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId]
+    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId, getStorageKeyWithUser, user]
   );
   
   useEffect(() => {
-    if (!dynamicStorageKey) return; 
+    const key = getStorageKeyWithUser(dynamicStorageKey);
+    if (!key) return; 
 
     const handler = setTimeout(async () => {
       let storedCurrent: T | undefined = initialValue;
-      const item = await storage.getItem<string | DocumentData<T>>(dynamicStorageKey);
+      const item = await storage.getItem<string | DocumentData<T>>(key);
       if (item) {
         try {
           if (typeof item === 'string') {
@@ -181,21 +191,22 @@ function useAutosave<T extends string>(
     }, saveInterval);
 
     return () => clearTimeout(handler);
-  }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue]);
+  }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue, getStorageKeyWithUser]);
 
   const clearSavedDocument = useCallback(async () => {
-    if (dynamicStorageKey) { 
+    const key = getStorageKeyWithUser(dynamicStorageKey);
+    if (key) { 
       try {
-        await storage.removeItem(dynamicStorageKey);
+        await storage.removeItem(key);
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
         toast({ title: "Content Cleared", description: "The document content and its history have been cleared." });
       } catch (error) {
-        console.error(`Error clearing storage key "${dynamicStorageKey}":`, error);
+        console.error(`Error clearing storage key "${key}":`, error);
         toast({ title: "Error", description: "Could not clear content.", variant: "destructive" });
       }
     }
-  }, [dynamicStorageKey, initialValue, toast]);
+  }, [dynamicStorageKey, initialValue, toast, getStorageKeyWithUser]);
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);

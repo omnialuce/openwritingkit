@@ -1,4 +1,3 @@
-
 // src/app/settings/page.tsx
 'use client';
 
@@ -9,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings as SettingsIcon, Cloud, Brain, Palette as PaletteIcon, Type, User, Shield, AlertTriangle } from "lucide-react";
+import { Settings as SettingsIcon, Cloud, Brain, Palette as PaletteIcon, Type, Shield, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
@@ -23,46 +24,86 @@ export default function SettingsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     setIsMounted(true);
-    const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
+    if (!user) return;
+    
+    const aiKey = `${AI_OPT_IN_KEY}-${user.uid}`;
+    const fontKey = `${EDITOR_FONT_SIZE_KEY}-${user.uid}`;
+
+    const storedAIPref = localStorage.getItem(aiKey);
     setAiFeaturesEnabled(storedAIPref === 'true');
 
-    const storedFontSize = localStorage.getItem(EDITOR_FONT_SIZE_KEY) as EditorFontSize | null;
+    const storedFontSize = localStorage.getItem(fontKey) as EditorFontSize | null;
     if (storedFontSize && ["sm", "base", "lg"].includes(storedFontSize)) {
       setEditorFontSize(storedFontSize);
     }
-  }, []);
+  }, [user]);
 
   const handleAiToggle = (enabled: boolean) => {
+    if (!user) return;
+    const key = `${AI_OPT_IN_KEY}-${user.uid}`;
     setAiFeaturesEnabled(enabled);
     if (isMounted) {
-      localStorage.setItem(AI_OPT_IN_KEY, enabled ? 'true' : 'false');
+      localStorage.setItem(key, enabled ? 'true' : 'false');
     }
   };
 
   const handleEditorFontSizeChange = (value: string) => {
+    if (!user) return;
+    const key = `${EDITOR_FONT_SIZE_KEY}-${user.uid}`;
     const newSize = value as EditorFontSize;
     setEditorFontSize(newSize);
     if (isMounted) {
-      localStorage.setItem(EDITOR_FONT_SIZE_KEY, newSize);
-      // Dispatch a custom event to notify the editor immediately
+      localStorage.setItem(key, newSize);
       window.dispatchEvent(new CustomEvent('editorSettingsChanged', { detail: { fontSize: newSize } }));
     }
   };
   
-  const handlePlaceholderClick = (featureName: string) => {
-    toast({
-      title: "Feature Not Implemented",
-      description: `${featureName} functionality is not yet available.`,
-      variant: "default",
-    });
-  };
+  const handlePasswordReset = async () => {
+    if (!user || !user.email) {
+      toast({
+        title: "Error",
+        description: "You must be logged in with a valid email to reset your password.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, user.email);
+      toast({
+        title: "Password Reset Email Sent",
+        description: `An email has been sent to ${user.email} with instructions to reset your password.`,
+      });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      toast({
+        title: "Error Sending Reset Email",
+        description: "Could not send the password reset email. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!isMounted) {
     return null; // Avoid hydration mismatch
+  }
+  
+  if (!user) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> Access Denied</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">You must be logged in to view settings.</p>
+            </CardContent>
+        </Card>
+    )
   }
 
   return (
@@ -124,6 +165,27 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+      
+       <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <CardTitle>Security</CardTitle>
+          </div>
+          <CardDescription>
+            Manage your account password.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <p className="text-sm">Logged in as: <strong>{user.email}</strong></p>
+            <Button variant="outline" onClick={handlePasswordReset}>
+              <Shield className="mr-2 h-4 w-4" /> Change Password
+            </Button>
+           <p className="text-xs text-muted-foreground mt-2">
+             Clicking this will send a password reset link to your registered email address.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -156,32 +218,6 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <User className="h-6 w-6 text-primary" />
-            <CardTitle>Account Management</CardTitle>
-          </div>
-          <CardDescription>
-            Manage your account details (placeholder).
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm"><strong>Email:</strong> user@example.com (Mock)</p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => handlePlaceholderClick("Change Password")}>
-              <Shield className="mr-2 h-4 w-4" /> Change Password
-            </Button>
-            <Button variant="destructive" onClick={() => handlePlaceholderClick("Delete Account")}>
-              <AlertTriangle className="mr-2 h-4 w-4" /> Delete Account
-            </Button>
-          </div>
-           <p className="text-xs text-muted-foreground mt-2">
-             Full account management features require backend integration and are not yet implemented.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
             <Cloud className="h-6 w-6 text-primary" />
             <CardTitle>Cloud Backup & Sync</CardTitle>
           </div>
@@ -193,7 +229,7 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">
             Connect your account to enable cloud backup and synchronization features. This will allow you to access your writing projects from anywhere.
           </p>
-          <Button disabled className="w-full md:w-auto" onClick={() => handlePlaceholderClick("Connect to Cloud")}>
+          <Button disabled className="w-full md:w-auto">
             Connect to Cloud (Coming Soon)
           </Button>
         </CardContent>

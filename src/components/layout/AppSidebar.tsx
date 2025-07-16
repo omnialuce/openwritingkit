@@ -72,7 +72,7 @@ export function AppSidebar() {
             "flex items-center gap-2",
             "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>
-          <Image src="/logo.png" alt="OpenWritingKit Logo" width={32} height={32} className="rounded-full" />
+          <Image src="/logo.png" alt="OpenWritingKit Logo" width={32} height={32} className="rounded-md" />
           <span className={cn(
               "font-headline text-xl font-semibold text-primary",
               "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" 
