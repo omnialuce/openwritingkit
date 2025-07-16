@@ -24,7 +24,7 @@ if (!clientId || !clientSecret) {
   throw new Error('Missing Google OAuth credentials in environment variables');
 }
 
-const auth = new GoogleOAuthProvider(clientId, clientSecret, {
+const auth = GoogleOAuthProvider(clientId, clientSecret, {
     redirectURI: redirectUri,
     scope: ['openid', 'email', 'profile', 'https://www.googleapis.com/auth/drive.appdata'],
 });
@@ -65,7 +65,7 @@ export const getGoogleAuthUrl = ai.defineFlow(
   },
   async () => {
     const state = generateState();
-    const codeVerifier = generateCodeifier();
+    const codeVerifier = generateCodeVerifier();
 
     cookies().set(STATE_COOKIE_NAME, state, {
       httpOnly: true,
