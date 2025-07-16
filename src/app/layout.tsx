@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
 
-
 export const metadata: Metadata = {
   title: 'OpenWritingKit',
   description: 'A complete, open-source, entirely free writing companion.',
@@ -32,7 +31,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-              {children}
+            {children}
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
