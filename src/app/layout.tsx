@@ -3,6 +3,8 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { StoryProvider } from '@/contexts/StoryContext';
+import { MainLayout } from '@/components/layout/MainLayout';
 
 
 export const metadata: Metadata = {
