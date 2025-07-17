@@ -20,16 +20,19 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { open: isDesktopSidebarExpanded, isMobile } = useSidebar(); 
+  const { user } = useAuth();
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
   const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
 
   const handleConnectDriveClick = () => {
-    window.location.href = '/api/auth/google';
+    // This will be replaced with actual OAuth flow later
+    alert("Connecting to Google Drive (placeholder).");
   };
 
   const handleDisconnectDriveClick = (e: React.MouseEvent) => {
@@ -45,7 +48,7 @@ export function AppSidebar() {
      <SidebarMenuItem key={item.href}>
         <SidebarMenuButton
           asChild
-          isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
+          isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
           disabled={item.disabled}
           aria-disabled={item.disabled}
           tooltip={{ 
@@ -68,7 +71,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/" className={cn(
+        <Link href="/dashboard" className={cn(
             "flex items-center gap-2",
             "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>

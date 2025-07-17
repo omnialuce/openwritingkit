@@ -37,7 +37,6 @@ export function MainLayout({ children }: MainLayoutProps) {
           OpenWritingKit &copy; {new Date().getFullYear()}
         </footer>
       </SidebarInset>
-      <Toaster />
     </SidebarProvider>
   );
 }

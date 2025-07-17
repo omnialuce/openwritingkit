@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
-import { StoryProvider } from '@/contexts/StoryContext';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
 

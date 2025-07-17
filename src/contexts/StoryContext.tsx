@@ -2,8 +2,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { storage } from '@/lib/storage';
-import type { CharacterProfile } from '@/app/characters/page';
+import { useAuth } from './AuthContext'; // Import useAuth from our updated AuthContext
+import type { CharacterProfile } from '@/app/(app)/characters/page';
 
 interface Story {
   id: string;
@@ -20,103 +20,122 @@ interface StoryContextType {
   addStory: (newStory: Story) => void;
   updateStory: (updatedStory: Story) => void;
   deleteStory: (storyId: string) => void;
-  refreshStories: () => void; 
+  refreshStories: () => void;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
 
-const STORIES_STORAGE_KEY = 'openwritingkit-stories';
-const ACTIVE_STORY_ID_KEY = 'openwritingkit-active-story-id';
+// Helper function to get the storage key for stories, now namespaced by user ID
+const getStoriesStorageKey = (userId: string | undefined | null) => 
+  userId ? `openwritingkit-user-${userId}-stories` : 'openwritingkit-stories-anonymous';
 
 export function StoryProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth(); // Get the current user from next-auth session
   const [stories, setStories] = useState<Story[]>([]);
   const [activeStoryId, setActiveStoryIdState] = useState<string | null>(null);
   const [activeStoryName, setActiveStoryName] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const loadStories = useCallback(async () => {
-    const loadedStories = await storage.getItem<Story[]>(STORIES_STORAGE_KEY) || [];
+  const storiesStorageKey = getStoriesStorageKey(user?.email); // Use email or another stable ID
+  const activeStoryIdKey = user?.email ? `openwritingkit-user-${user.email}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
+
+  const loadDataForUser = useCallback(async () => {
+    if (!user) {
+      setStories([]);
+      setActiveStoryIdState(null);
+      setActiveStoryName(null);
+      setIsLoaded(true);
+      return;
+    }
+
+    const loadedStories = JSON.parse(localStorage.getItem(storiesStorageKey) || '[]') as Story[];
     setStories(loadedStories);
-    return loadedStories;
-  }, []);
+
+    const storedActiveId = localStorage.getItem(activeStoryIdKey);
+    if (storedActiveId) {
+      const foundActiveStory = loadedStories.find(s => s.id === storedActiveId);
+      if (foundActiveStory) {
+        setActiveStoryIdState(storedActiveId);
+        setActiveStoryName(foundActiveStory.title);
+      } else {
+        localStorage.removeItem(activeStoryIdKey);
+        setActiveStoryIdState(null);
+        setActiveStoryName(null);
+      }
+    } else {
+        setActiveStoryIdState(null);
+        setActiveStoryName(null);
+    }
+    setIsLoaded(true);
+  }, [user, storiesStorageKey, activeStoryIdKey]);
 
   useEffect(() => {
-    const initialize = async () => {
-      const loadedStories = await loadStories();
-      const storedActiveId = await storage.getItem<string>(ACTIVE_STORY_ID_KEY);
-      if (storedActiveId) {
-        const foundActiveStory = loadedStories.find(s => s.id === storedActiveId);
-        if (foundActiveStory) {
-          setActiveStoryIdState(storedActiveId);
-          setActiveStoryName(foundActiveStory.title);
-        } else {
-          await storage.removeItem(ACTIVE_STORY_ID_KEY);
-          setActiveStoryIdState(null);
-          setActiveStoryName(null);
-        }
-      }
-      setIsLoaded(true);
-    };
-    initialize();
-  }, [loadStories]);
+    loadDataForUser();
+  }, [loadDataForUser]);
 
-  const setActiveStory = useCallback(async (storyId: string | null) => {
+  const setActiveStory = useCallback((storyId: string | null) => {
+    if (!user) return;
     if (storyId) {
-      await storage.setItem(ACTIVE_STORY_ID_KEY, storyId);
+      localStorage.setItem(activeStoryIdKey, storyId);
       const story = stories.find(s => s.id === storyId);
       setActiveStoryName(story ? story.title : null);
     } else {
-      await storage.removeItem(ACTIVE_STORY_ID_KEY);
+      localStorage.removeItem(activeStoryIdKey);
       setActiveStoryName(null);
     }
     setActiveStoryIdState(storyId);
-  }, [stories]);
+  }, [user, stories, activeStoryIdKey]);
 
-  const addStory = useCallback(async (newStory: Story) => {
+  const addStory = useCallback((newStory: Story) => {
+    if (!user) return;
     const updatedStories = [...stories, newStory];
     setStories(updatedStories);
-    await storage.setItem(STORIES_STORAGE_KEY, updatedStories);
-  }, [stories]);
+    localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
+  }, [user, stories, storiesStorageKey]);
 
-  const updateStory = useCallback(async (updatedStoryData: Story) => {
+  const updateStory = useCallback((updatedStoryData: Story) => {
+    if (!user) return;
     const updatedStories = stories.map(s => s.id === updatedStoryData.id ? updatedStoryData : s);
     setStories(updatedStories);
-    await storage.setItem(STORIES_STORAGE_KEY, updatedStories);
+    localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
     if (activeStoryId === updatedStoryData.id) {
       setActiveStoryName(updatedStoryData.title);
     }
-  }, [stories, activeStoryId]);
+  }, [user, stories, activeStoryId, storiesStorageKey]);
 
-  const deleteStory = useCallback(async (storyId: string) => {
+  const deleteStory = useCallback((storyId: string) => {
+    if (!user) return;
+    const keysToRemove = [
+        getCharactersStorageKey(storyId),
+        getOutlineStorageKey(storyId),
+        getPlotPointsStorageKey(storyId),
+        getTimelineEventsStorageKey(storyId),
+        getEditorContentKey(storyId),
+        getWordGoalKey(storyId),
+        getActivityLogKey(storyId),
+        getDocumentsStorageKey(storyId),
+    ];
+    // Also remove character sheets
     const charactersKey = getCharactersStorageKey(storyId);
-    const storedCharacters = await storage.getItem<CharacterProfile[]>(charactersKey);
-    if (storedCharacters) {
-      for (const char of storedCharacters) {
-        const sheetKey = getCharacterSheetStorageKey(storyId, char.id);
-        await storage.removeItem(sheetKey);
-      }
+    const storedCharacters = JSON.parse(localStorage.getItem(charactersKey) || '[]') as CharacterProfile[];
+    for (const char of storedCharacters) {
+        keysToRemove.push(getCharacterSheetStorageKey(storyId, char.id));
     }
-    await storage.removeItem(charactersKey);
-    await storage.removeItem(getOutlineStorageKey(storyId));
-    await storage.removeItem(getPlotPointsStorageKey(storyId));
-    await storage.removeItem(getTimelineEventsStorageKey(storyId));
-    await storage.removeItem(getEditorContentKey(storyId));
-    await storage.removeItem(getWordGoalKey(storyId));
-    await storage.removeItem(getActivityLogKey(storyId));
-    await storage.removeItem(getDocumentsStorageKey(storyId));
+    keysToRemove.forEach(key => localStorage.removeItem(key));
     
     const updatedStories = stories.filter(s => s.id !== storyId);
     setStories(updatedStories);
-    await storage.setItem(STORIES_STORAGE_KEY, updatedStories);
+    localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
     if (activeStoryId === storyId) {
-      await setActiveStory(null);
+      setActiveStory(null);
     }
-  }, [activeStoryId, setActiveStory, stories]);
-
-  const refreshStories = useCallback(async () => {
-    await loadStories();
-  }, [loadStories]);
-
+  }, [user, activeStoryId, setActiveStory, stories, storiesStorageKey]);
+  
+  const refreshStories = useCallback(() => {
+    if (user) {
+        loadDataForUser();
+    }
+  }, [user, loadDataForUser]);
 
   if (!isLoaded) {
     return null;

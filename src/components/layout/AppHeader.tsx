@@ -1,9 +1,9 @@
-
+// src/components/layout/AppHeader.tsx
 'use client';
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpenCheck, Settings as SettingsIcon, User, LogOut, ChevronDown, PlusCircle, FolderKanban } from 'lucide-react';
+import { BookOpenCheck, Settings as SettingsIcon, LogOut, ChevronDown, PlusCircle, FolderKanban } from 'lucide-react';
 import { useStoryContext } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import {
