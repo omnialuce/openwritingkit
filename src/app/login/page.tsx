@@ -1,3 +1,4 @@
+
 // src/app/login/page.tsx
 'use client';
 
@@ -28,7 +29,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-secondary">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-            <Image src="/public/logo.png" alt="OpenWritingKit Logo" width={64} height={64} className="mx-auto mb-4 rounded-lg" />
+            <Image src="/logo.png" alt="OpenWritingKit Logo" width={64} height={64} className="mx-auto mb-4 rounded-lg" />
             <CardTitle className="text-2xl">OpenWritingKit</CardTitle>
             <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
