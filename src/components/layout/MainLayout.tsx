@@ -7,6 +7,7 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -34,7 +35,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
         <footer className="p-4 text-center text-sm text-muted-foreground border-t">
-          OpenWritingKit &copy; {new Date().getFullYear()}
+          OpenWritingKit &copy; {new Date().getFullYear()} - A <a href="https://omnialuce.tech" target="_blank" rel="noopener noreferrer" className="hover:text-primary">OmniaLuce.Tech</a> project.
         </footer>
       </SidebarInset>
     </SidebarProvider>

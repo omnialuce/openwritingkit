@@ -17,11 +17,11 @@ export default function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   const updateStreakDisplay = useCallback(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
+    if (typeof window !== 'undefined' && activeStoryId && user) {
       const today = new Date().toISOString().split('T')[0];
-      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`;
-      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`;
-      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
+      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`;
+      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`;
+      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date-${user.uid}`;
 
       const lastActiveDateStr = localStorage.getItem(lastActiveDateKey);
       const storedStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
@@ -60,7 +60,7 @@ export default function DashboardPage() {
     } else {
         setWritingStreak(0);
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
 
   useEffect(() => {
@@ -72,10 +72,10 @@ export default function DashboardPage() {
     }
 
     const handleStorageChange = (event: StorageEvent) => {
-      if (!activeStoryId) return;
-      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date`;
-      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak`;
-      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date`;
+      if (!activeStoryId || !user) return;
+      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`;
+      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`;
+      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date-${user.uid}`;
 
       if (
         event.key === streakKey ||
@@ -90,7 +90,7 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [activeStoryId, updateStreakDisplay]);
+  }, [activeStoryId, updateStreakDisplay, user]);
 
 
   const quickActions = [
