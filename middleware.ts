@@ -6,18 +6,22 @@ const PUBLIC_ROUTES = ['/login'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // If the request is for the root path, redirect to the dashboard
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
   const sessionToken = request.cookies.get('firebaseIdToken');
 
+  // Handle the root path redirect
+  if (pathname === '/') {
+    if (sessionToken) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Redirect unauthenticated users from protected routes to login
   if (!sessionToken && PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
+  // Redirect authenticated users from public routes (like login) to dashboard
   if (sessionToken && PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
