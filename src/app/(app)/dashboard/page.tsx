@@ -108,7 +108,7 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
              <h1 className="text-4xl font-bold mb-4 text-primary">
-              {activeStoryName ? `Working on: ${activeStoryName}` : `Welcome, ${user?.email || 'Writer'}`}
+              {activeStoryName ? `Working on: ${activeStoryName}` : `Welcome, ${user?.email?.split('@')[0] || 'Writer'}`}
             </h1>
             <p className="text-lg text-foreground mb-6">
               {activeStoryId 
