@@ -127,7 +127,7 @@ export default function DashboardPage() {
               alt="OpenWritingKit illustrative banner" 
               width={500} 
               height={300}
-              className="rounded-none"
+              className="rounded-none dark:invert"
             />
           </div>
         </div>
