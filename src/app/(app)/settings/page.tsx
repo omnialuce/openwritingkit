@@ -1,3 +1,4 @@
+
 // src/app/(app)/settings/page.tsx
 'use client';
 
@@ -7,11 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle } from 'lucide-react';
+import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle, Info } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import Link from 'next/link';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
@@ -183,7 +185,7 @@ export default function SettingsPage() {
                 Enable AI Writing Assistant
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Allow the app to send selected text to third-party services (like Google's Gemini) for analysis and suggestions.
+                Allow the app to send selected text to third-party services for analysis and suggestions.
               </p>
             </div>
           </div>
@@ -194,8 +196,20 @@ export default function SettingsPage() {
                <h4 className="font-semibold text-destructive">Privacy Disclaimer</h4>
             </div>
             <p className="text-sm text-destructive/90 mt-2">
-              By enabling AI features, you acknowledge that the text you submit for analysis (e.g., for pacing feedback or prompt generation) will be sent to external AI models for processing. OpenWritingKit does not store this text. You can disable this feature at any time.
+              By enabling AI features, you acknowledge that the text you submit for analysis will be sent to external AI models for processing. OpenWritingKit does not store this text, and **your data is not used for training the AI models.** You can disable this feature at any time.
             </p>
+          </div>
+           <div className="mt-4 p-4 border-l-4 border-primary bg-primary/10 rounded-r-lg">
+            <div className="flex items-center gap-2">
+               <Info className="h-5 w-5 text-primary" />
+               <h4 className="font-semibold text-primary">Service Transparency</h4>
+            </div>
+            <p className="text-sm text-primary/90 mt-2">
+              Our AI features are powered by Google's Gemini models. For more information on how data is handled, please review the relevant privacy policies.
+            </p>
+             <Link href="https://policies.google.com/privacy" passHref target="_blank" rel="noopener noreferrer">
+              <Button variant="link" className="p-0 h-auto mt-2 text-sm">View Google Privacy Policy</Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
