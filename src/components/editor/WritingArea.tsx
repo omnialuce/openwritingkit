@@ -1,3 +1,4 @@
+
 // src/components/editor/WritingArea.tsx
 'use client';
 
@@ -90,6 +91,7 @@ export function WritingArea() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const sidebarContext = useSidebar();
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const [sessionTime, setSessionTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -286,20 +288,26 @@ export function WritingArea() {
   };
   
   useEffect(() => {
-    const root = document.documentElement;
+    const editorElement = editor?.view.dom;
+    if (!editorElement) return;
+
+    const root = editorElement.closest('.ProseMirror') as HTMLElement | null;
+    if (!root) return;
+
     const fontMap = {
-      sans: "'PT Sans', sans-serif",
-      serif: "Georgia, serif",
+        sans: "'PT Sans', sans-serif",
+        serif: "Georgia, 'Times New Roman', Times, serif",
     };
     const sizeMap = { sm: '0.9rem', base: '1rem', lg: '1.1rem' };
     const lineHeightMap = { tight: '1.5', normal: '1.7', loose: '1.9' };
     const paraSpacingMap = { sm: '0.75rem', base: '1rem', lg: '1.5rem' };
 
-    root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily] || fontMap.sans);
-    root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize] || sizeMap.base);
-    root.style.setProperty('--editor-line-height', lineHeightMap[editorSettings.lineHeight] || lineHeightMap.normal);
-    root.style.setProperty('--editor-paragraph-spacing', paraSpacingMap[editorSettings.paragraphSpacing] || paraSpacingMap.base);
-  }, [editorSettings]);
+    root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily]);
+    root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize]);
+    root.style.setProperty('--editor-line-height', lineHeightMap[editorSettings.lineHeight]);
+    root.style.setProperty('--editor-paragraph-spacing', paraSpacingMap[editorSettings.paragraphSpacing]);
+
+  }, [editorSettings, editor]);
 
 
   useEffect(() => {
@@ -560,7 +568,7 @@ export function WritingArea() {
 
   if (isFocusMode) {
     return (
-      <div className={cn("fixed inset-0 z-50 flex flex-col p-2 md:p-4", currentOverallTheme, themeClasses[editorTheme])}>
+      <div className={cn("fixed inset-0 z-50 flex flex-col p-2 md:p-4", currentOverallTheme, themeClasses[editorTheme])} ref={editorRef}>
         <Button
           variant="ghost"
           size="icon"
@@ -646,47 +654,49 @@ export function WritingArea() {
                         <Palette className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-none w-64">
-                      <DropdownMenuLabel>{t('editor.customize_view.editor_theme')}</DropdownMenuLabel>
-                      <DropdownMenuRadioGroup value={editorTheme} onValueChange={(v) => applyEditorTheme(v as EditorTheme)}>
-                        <DropdownMenuRadioItem value="light"><Sun className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_light')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="dark"><Moon className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_dark')}</DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-                      
-                      <DropdownMenuSeparator />
-                      
-                      <DropdownMenuLabel>{t('editor.customize_view.font_family')}</DropdownMenuLabel>
-                       <DropdownMenuRadioGroup value={editorSettings.fontFamily} onValueChange={(v) => updateEditorSettings({ fontFamily: v as EditorSettings['fontFamily'] })}>
-                        <DropdownMenuRadioItem value="sans"><Type className="mr-2 h-4 w-4" />{t('editor.customize_view.font_sans')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="serif"><CaseSensitive className="mr-2 h-4 w-4" />{t('editor.customize_view.font_serif')}</DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-
-                      <DropdownMenuSeparator />
-
-                      <DropdownMenuLabel>{t('editor.customize_view.font_size')}</DropdownMenuLabel>
-                       <DropdownMenuRadioGroup value={editorSettings.fontSize} onValueChange={(v) => updateEditorSettings({ fontSize: v as EditorSettings['fontSize'] })}>
-                        <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="lg">{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-
-                       <DropdownMenuSeparator />
-
-                      <DropdownMenuLabel>{t('editor.customize_view.line_height')}</DropdownMenuLabel>
-                       <DropdownMenuRadioGroup value={editorSettings.lineHeight} onValueChange={(v) => updateEditorSettings({ lineHeight: v as EditorSettings['lineHeight'] })}>
-                        <DropdownMenuRadioItem value="tight">{t('editor.customize_view.line_height_tight')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="normal">{t('editor.customize_view.line_height_normal')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="loose">{t('editor.customize_view.line_height_loose')}</DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
-
-                       <DropdownMenuSeparator />
-
-                      <DropdownMenuLabel>{t('editor.customize_view.paragraph_spacing')}</DropdownMenuLabel>
-                       <DropdownMenuRadioGroup value={editorSettings.paragraphSpacing} onValueChange={(v) => updateEditorSettings({ paragraphSpacing: v as EditorSettings['paragraphSpacing'] })}>
-                        <DropdownMenuRadioItem value="sm"><Pilcrow className="mr-2 h-4 w-4" />{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="base"><Pilcrow className="mr-2 h-4 w-4" />{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
-                        <DropdownMenuRadioItem value="lg"><Pilcrow className="mr-2 h-4 w-4" />{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
-                      </DropdownMenuRadioGroup>
+                    <DropdownMenuContent align="end" className="w-80 rounded-none p-4">
+                       <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <DropdownMenuLabel>{t('editor.customize_view.editor_theme')}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup value={editorTheme} onValueChange={(v) => applyEditorTheme(v as EditorTheme)}>
+                              <DropdownMenuRadioItem value="light"><Sun className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_light')}</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="dark"><Moon className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_dark')}</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                          <div>
+                            <DropdownMenuLabel>{t('editor.customize_view.font_family')}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup value={editorSettings.fontFamily} onValueChange={(v) => updateEditorSettings({ fontFamily: v as EditorSettings['fontFamily'] })}>
+                              <DropdownMenuRadioItem value="sans"><Type className="mr-2 h-4 w-4" />{t('editor.customize_view.font_sans')}</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="serif"><CaseSensitive className="mr-2 h-4 w-4" />{t('editor.customize_view.font_serif')}</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                          <div>
+                            <DropdownMenuLabel>{t('editor.customize_view.font_size')}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup value={editorSettings.fontSize} onValueChange={(v) => updateEditorSettings({ fontSize: v as EditorSettings['fontSize'] })}>
+                              <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="lg">{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                           <div>
+                            <DropdownMenuLabel>{t('editor.customize_view.line_height')}</DropdownMenuLabel>
+                            <DropdownMenuRadioGroup value={editorSettings.lineHeight} onValueChange={(v) => updateEditorSettings({ lineHeight: v as EditorSettings['lineHeight'] })}>
+                              <DropdownMenuRadioItem value="tight">{t('editor.customize_view.line_height_tight')}</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="normal">{t('editor.customize_view.line_height_normal')}</DropdownMenuRadioItem>
+                              <DropdownMenuRadioItem value="loose">{t('editor.customize_view.line_height_loose')}</DropdownMenuRadioItem>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                           <div className="col-span-2">
+                             <DropdownMenuLabel>{t('editor.customize_view.paragraph_spacing')}</DropdownMenuLabel>
+                              <DropdownMenuRadioGroup value={editorSettings.paragraphSpacing} onValueChange={(v) => updateEditorSettings({ paragraphSpacing: v as EditorSettings['paragraphSpacing'] })}>
+                                <div className="flex justify-around">
+                                  <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
+                                  <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
+                                  <DropdownMenuRadioItem value="lg">{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
+                                </div>
+                            </DropdownMenuRadioGroup>
+                          </div>
+                       </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
@@ -708,7 +718,9 @@ export function WritingArea() {
           )}
           <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
             <ScrollArea className="h-full w-full">
-              <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
+               <div ref={editorRef} className="min-h-full">
+                    <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
+                </div>
             </ScrollArea>
           </CardContent>
           {!isFocusMode && (
