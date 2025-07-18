@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -15,33 +14,35 @@ import {
   SidebarSeparator,
   useSidebar, 
 } from '@/components/ui/sidebar';
-import { mainNavItems, secondaryNavItems, type NavItem } from '@/lib/navigation';
+import { getMainNavItems, getSecondaryNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function AppSidebar() {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const { open: isDesktopSidebarExpanded, isMobile } = useSidebar(); 
   const { user } = useAuth();
+  
+  const mainNavItems = getMainNavItems(t);
+  const secondaryNavItems = getSecondaryNavItems(t);
 
   const [isDriveConnected, setIsDriveConnected] = React.useState(false);
-  const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: 'Not Connected' });
+  const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: t('sidebar.drive.not_connected') });
 
   const handleConnectDriveClick = () => {
-    // This will be replaced with actual OAuth flow later
-    alert("Connecting to Google Drive (placeholder).");
+    alert(t('sidebar.drive.connect_alert'));
   };
 
   const handleDisconnectDriveClick = (e: React.MouseEvent) => {
     e.stopPropagation(); 
-    // This would involve clearing cookies/session on the backend.
-    // For now, it's a UI simulation.
     setIsDriveConnected(false);
-    setDriveStorageInfo({ used: '0 MB', total: 'Not Connected' });
-    alert("Disconnected from Google Drive (UI simulation).");
+    setDriveStorageInfo({ used: '0 MB', total: t('sidebar.drive.not_connected') });
+    alert(t('sidebar.drive.disconnect_alert'));
   };
 
   const renderNavItem = (item: NavItem) => (
@@ -96,17 +97,17 @@ export function AppSidebar() {
         
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={isDriveConnected ? () => alert("Open Google Drive settings (placeholder).") : handleConnectDriveClick}
+              onClick={isDriveConnected ? () => alert(t('sidebar.drive.settings_alert')) : handleConnectDriveClick}
               tooltip={{
                   children: <>
-                    <p className="font-semibold mb-1">{isDriveConnected ? "Cloud Storage Connected" : "Cloud Storage"}</p>
+                    <p className="font-semibold mb-1">{isDriveConnected ? t('sidebar.drive.tooltip_connected_title') : t('sidebar.drive.tooltip_disconnected_title')}</p>
                     {isDriveConnected ? (
-                      <p>Storage: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
+                      <p>{t('sidebar.drive.tooltip_storage')}: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
                     ) : (
                       <>
-                      <p>Connect to Google Drive to back up your stories, outlines, and characters, and access them across your devices.</p>
+                      <p>{t('sidebar.drive.tooltip_disconnected_desc_1')}</p>
                       <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                        <strong>Important:</strong> Without connecting, all your data is saved locally in this browser only. This means it can be lost if you clear your browser's data, use a different browser, or switch devices.
+                        <strong>{t('sidebar.drive.tooltip_disconnected_important')}:</strong> {t('sidebar.drive.tooltip_disconnected_desc_2')}
                       </p>
                       </>
                     )}
@@ -119,10 +120,10 @@ export function AppSidebar() {
             >
               {isDriveConnected ? <Cloud /> : <DatabaseZap />}
               <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
-                {isDriveConnected ? `Drive: ${driveStorageInfo.used}` : "Connect to Drive"}
+                {isDriveConnected ? `${t('sidebar.drive.drive_prefix')}: ${driveStorageInfo.used}` : t('sidebar.drive.connect_button')}
                 {isDriveConnected && (
                   <Button variant="link" size="sm" className="p-0 h-auto text-xs ml-auto text-primary hover:text-primary/80 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" onClick={handleDisconnectDriveClick}>
-                    Disconnect
+                    {t('sidebar.drive.disconnect_button')}
                   </Button>
                 )}
               </span>
@@ -133,11 +134,11 @@ export function AppSidebar() {
             <SidebarMenuButton 
               asChild 
               className="w-full rounded-none"
-              tooltip={{ children: "Buy Me a Coffee", side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
+              tooltip={{ children: t('sidebar.coffee_button'), side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
             >
               <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
                 <Coffee />
-                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">Buy Me a Coffee</span>
+                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">{t('sidebar.coffee_button')}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

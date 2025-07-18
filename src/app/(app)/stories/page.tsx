@@ -13,8 +13,10 @@ import { BookOpenCheck, PlusCircle, Edit, Trash2, CheckCircle } from 'lucide-rea
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, type Story } from '@/contexts/StoryContext';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function StoriesPage() {
+  const { t } = useLanguage();
   const { stories, activeStoryId, setActiveStory, addStory: contextAddStory, updateStory: contextUpdateStory, deleteStory: contextDeleteStory, refreshStories } = useStoryContext();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -24,7 +26,7 @@ export default function StoriesPage() {
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    refreshStories(); // Ensure stories are up-to-date on mount
+    refreshStories();
   }, [refreshStories]);
 
 
@@ -80,12 +82,12 @@ export default function StoriesPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <BookOpenCheck className="mr-3 h-8 w-8 text-primary" /> Your Stories
+            <BookOpenCheck className="mr-3 h-8 w-8 text-primary" /> {t('stories.title')}
           </h1>
-          <p className="text-muted-foreground">Manage your different writing projects and narratives. Select a story to make it active.</p>
+          <p className="text-muted-foreground">{t('stories.description')}</p>
         </div>
         <Button onClick={handleOpenCreateDialog}>
-          <PlusCircle className="mr-2 h-5 w-5" /> Create New Story
+          <PlusCircle className="mr-2 h-5 w-5" /> {t('stories.create_button')}
         </Button>
       </div>
 
@@ -93,7 +95,7 @@ export default function StoriesPage() {
         <Card>
           <CardContent className="py-10 text-center">
             <BookOpenCheck className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No stories yet. Start by creating one!</p>
+            <p className="text-muted-foreground">{t('stories.no_stories')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -108,10 +110,10 @@ export default function StoriesPage() {
             >
               <CardHeader>
                 <CardTitle className="truncate">{story.title}</CardTitle>
-                <CardDescription>Last modified: {new Date(story.lastModified).toLocaleDateString()}</CardDescription>
+                <CardDescription>{t('stories.last_modified')}: {new Date(story.lastModified).toLocaleDateString()}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground line-clamp-4">{story.description || "No description provided."}</p>
+                <p className="text-sm text-muted-foreground line-clamp-4">{story.description || t('stories.no_description')}</p>
               </CardContent>
               <CardFooter className="flex flex-col gap-2">
                 <Button 
@@ -122,30 +124,30 @@ export default function StoriesPage() {
                   disabled={activeStoryId === story.id}
                 >
                   {activeStoryId === story.id ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
-                  {activeStoryId === story.id ? 'Active Story' : 'Select Story'}
+                  {activeStoryId === story.id ? t('stories.active_story') : t('stories.select_story')}
                 </Button>
                 <div className="flex gap-2 w-full">
                   <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(story)} className="flex-1">
-                    <Edit className="mr-2 h-4 w-4" /> Edit
+                    <Edit className="mr-2 h-4 w-4" /> {t('common.edit')}
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm" className="flex-1">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        <Trash2 className="mr-2 h-4 w-4" /> {t('common.delete')}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('stories.delete_dialog.title')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the story: "{story.title}".
-                          Associated data (characters, outlines, etc.) for this story will become inaccessible if not re-associated.
+                          {t('stories.delete_dialog.description_1')} "{story.title}". 
+                          {t('stories.delete_dialog.description_2')}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={() => handleDeleteStory(story.id)}>
-                          Delete Story
+                          {t('stories.delete_dialog.confirm_button')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -165,32 +167,32 @@ export default function StoriesPage() {
           <ScrollArea className="max-h-[80vh]">
             <div className="p-1 pr-3">
               <DialogHeader>
-                <DialogTitle>{editingStory ? 'Edit Story Details' : 'Create New Story'}</DialogTitle>
+                <DialogTitle>{editingStory ? t('stories.edit_dialog.title') : t('stories.create_dialog.title')}</DialogTitle>
                 <DialogDescription>
-                  {editingStory ? 'Update the title and description for this story.' : 'Provide a title and description for your new story.'}
+                  {editingStory ? t('stories.edit_dialog.description') : t('stories.create_dialog.description')}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="story-title" className="text-right">Title</Label>
-                  <Input id="story-title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" required placeholder="e.g., The Dragon's Prophecy" />
+                  <Label htmlFor="story-title" className="text-right">{t('stories.fields.title')}</Label>
+                  <Input id="story-title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" required placeholder={t('stories.fields.title_placeholder')} />
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="story-description" className="text-right pt-2">Description</Label>
+                  <Label htmlFor="story-description" className="text-right pt-2">{t('stories.fields.description')}</Label>
                   <Textarea 
                     id="story-description" 
                     value={description} 
                     onChange={(e) => setDescription(e.target.value)} 
                     className="col-span-3" 
                     rows={5} 
-                    placeholder="A brief summary or logline for your story..."
+                    placeholder={t('stories.fields.description_placeholder')}
                   />
                 </div>
                 <DialogFooter className="mt-4">
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
+                    <Button type="button" variant="outline">{t('common.cancel')}</Button>
                   </DialogClose>
-                  <Button type="submit">{editingStory ? 'Save Changes' : 'Create Story'}</Button>
+                  <Button type="submit">{editingStory ? t('common.save') : t('stories.create_button')}</Button>
                 </DialogFooter>
               </form>
             </div>

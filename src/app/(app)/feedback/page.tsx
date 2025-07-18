@@ -11,8 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Lightbulb, Coffee, Send } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function FeedbackPage() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [feedbackType, setFeedbackType] = useState('general');
   const [page, setPage] = useState('general');
@@ -22,8 +24,8 @@ export default function FeedbackPage() {
     e.preventDefault();
     if (!message.trim()) {
       toast({
-        title: "Message is empty",
-        description: "Please write something before submitting.",
+        title: t('feedback.toast.empty_title'),
+        description: t('feedback.toast.empty_desc'),
         variant: "destructive",
       });
       return;
@@ -36,8 +38,8 @@ export default function FeedbackPage() {
     });
     
     toast({
-      title: "Feedback Submitted!",
-      description: "Thank you for your valuable input. This is a demo and data was logged to the console.",
+      title: t('feedback.toast.success_title'),
+      description: t('feedback.toast.success_desc'),
     });
 
     setMessage('');
@@ -48,10 +50,10 @@ export default function FeedbackPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2 flex items-center">
           <MessageSquare className="mr-3 h-8 w-8 text-primary" />
-          Feedback, Suggestions & Support
+          {t('feedback.title')}
         </h1>
         <p className="text-muted-foreground">
-          Your input is valuable in making OpenWritingKit better for everyone.
+          {t('feedback.description')}
         </p>
       </div>
 
@@ -59,52 +61,52 @@ export default function FeedbackPage() {
         <Card>
           <form onSubmit={handleSubmit}>
             <CardHeader>
-              <CardTitle>Submit Your Feedback</CardTitle>
+              <CardTitle>{t('feedback.form.title')}</CardTitle>
               <CardDescription>
-                Have a suggestion, found a bug, or want to give general feedback? Let us know!
+                {t('feedback.form.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="feedback-type">Type of Feedback</Label>
+                <Label htmlFor="feedback-type">{t('feedback.form.type_label')}</Label>
                 <Select value={feedbackType} onValueChange={setFeedbackType}>
                   <SelectTrigger id="feedback-type">
-                    <SelectValue placeholder="Select a type" />
+                    <SelectValue placeholder={t('feedback.form.type_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general">General Feedback</SelectItem>
-                    <SelectItem value="bug">Bug Report</SelectItem>
-                    <SelectItem value="suggestion">Feature Suggestion</SelectItem>
+                    <SelectItem value="general">{t('feedback.form.types.general')}</SelectItem>
+                    <SelectItem value="bug">{t('feedback.form.types.bug')}</SelectItem>
+                    <SelectItem value="suggestion">{t('feedback.form.types.suggestion')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="page-context">Related Page (Optional)</Label>
+                <Label htmlFor="page-context">{t('feedback.form.page_label')}</Label>
                 <Select value={page} onValueChange={setPage}>
                   <SelectTrigger id="page-context">
-                    <SelectValue placeholder="Select a page" />
+                    <SelectValue placeholder={t('feedback.form.page_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general">General / Unrelated</SelectItem>
-                    <SelectItem value="dashboard">Dashboard</SelectItem>
-                    <SelectItem value="editor">Editor</SelectItem>
-                    <SelectItem value="documents">Documents</SelectItem>
-                    <SelectItem value="outline">Outline Builder</SelectItem>
-                    <SelectItem value="characters">Characters</SelectItem>
-                    <SelectItem value="plot-tools">Plot Tools</SelectItem>
-                    <SelectItem value="ai-tools">AI Tools</SelectItem>
-                    <SelectItem value="analytics">Analytics</SelectItem>
-                    <SelectItem value="settings">Settings</SelectItem>
+                    <SelectItem value="general">{t('feedback.form.pages.general')}</SelectItem>
+                    <SelectItem value="dashboard">{t('nav.dashboard')}</SelectItem>
+                    <SelectItem value="editor">{t('nav.editor')}</SelectItem>
+                    <SelectItem value="documents">{t('nav.documents')}</SelectItem>
+                    <SelectItem value="outline">{t('nav.outline')}</SelectItem>
+                    <SelectItem value="characters">{t('nav.characters')}</SelectItem>
+                    <SelectItem value="plot-tools">{t('nav.plot_tools')}</SelectItem>
+                    <SelectItem value="ai-tools">{t('nav.ai_tools')}</SelectItem>
+                    <SelectItem value="analytics">{t('nav.analytics')}</SelectItem>
+                    <SelectItem value="settings">{t('nav.settings')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="feedback-message">Your Message</Label>
+                <Label htmlFor="feedback-message">{t('feedback.form.message_label')}</Label>
                 <Textarea
                   id="feedback-message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Tell us what's on your mind..."
+                  placeholder={t('feedback.form.message_placeholder')}
                   rows={8}
                   required
                 />
@@ -113,7 +115,7 @@ export default function FeedbackPage() {
             <CardContent>
                <Button type="submit" className="w-full">
                 <Send className="mr-2 h-4 w-4" />
-                Submit Feedback
+                {t('feedback.form.submit_button')}
               </Button>
             </CardContent>
           </form>
@@ -124,15 +126,15 @@ export default function FeedbackPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Lightbulb className="h-8 w-8 text-primary" />
-                <CardTitle>Contribute on GitHub</CardTitle>
+                <CardTitle>{t('feedback.contribute.title')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                OpenWritingKit is an open-source project. If you're a developer, you can contribute directly to the codebase, fix bugs, or add new features.
+                {t('feedback.contribute.description')}
               </p>
               <a href="https://github.com/your-repo/openwritingkit" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline">View on GitHub</Button>
+                <Button variant="outline">{t('feedback.contribute.button')}</Button>
               </a>
             </CardContent>
           </Card>
@@ -141,16 +143,16 @@ export default function FeedbackPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Coffee className="h-8 w-8 text-primary" />
-                <CardTitle>Support the Project</CardTitle>
+                <CardTitle>{t('feedback.support.title')}</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                If you find this tool useful, consider supporting its development. Your contribution helps cover costs and fuels further improvements.
+                {t('feedback.support.description')}
               </p>
                <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
                 <Button variant="default" className="w-full">
-                    Buy Me a Coffee
+                    {t('feedback.support.button')}
                 </Button>
               </Link>
             </CardContent>

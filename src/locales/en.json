@@ -14,6 +14,38 @@
     "search_placeholder": "Search...",
     "coming_soon": "Coming Soon"
   },
+  "nav": {
+    "dashboard": "Dashboard",
+    "stories": "Stories",
+    "editor": "Editor",
+    "documents": "Documents",
+    "outline": "Outline Builder",
+    "characters": "Characters",
+    "plot_tools": "Plot Tools",
+    "ai_tools": "AI Tools",
+    "analytics": "Analytics",
+    "resources": "Resources",
+    "feedback": "Feedback",
+    "settings": "Settings"
+  },
+  "sidebar": {
+    "drive": {
+      "not_connected": "Not Connected",
+      "connect_alert": "Connecting to Google Drive (placeholder).",
+      "settings_alert": "Open Google Drive settings (placeholder).",
+      "disconnect_alert": "Disconnected from Google Drive (UI simulation).",
+      "tooltip_connected_title": "Cloud Storage Connected",
+      "tooltip_disconnected_title": "Cloud Storage",
+      "tooltip_storage": "Storage",
+      "tooltip_disconnected_desc_1": "Connect to Google Drive to back up your stories, outlines, and characters, and access them across your devices.",
+      "tooltip_disconnected_important": "Important",
+      "tooltip_disconnected_desc_2": "Without connecting, all your data is saved locally in this browser only. This means it can be lost if you clear your browser's data, use a different browser, or switch devices.",
+      "drive_prefix": "Drive",
+      "connect_button": "Connect to Drive",
+      "disconnect_button": "Disconnect"
+    },
+    "coffee_button": "Buy Me a Coffee"
+  },
   "login": {
     "description": "Sign in to your account",
     "email_label": "Email / User ID",
@@ -148,6 +180,414 @@
       "password_reset_sent_desc": "An email has been sent to",
       "password_reset_error_title": "Error Sending Reset Email",
       "password_reset_error_desc": "Could not send the password reset email. Please try again later."
+    }
+  },
+  "stories": {
+    "title": "Your Stories",
+    "description": "Manage your different writing projects and narratives. Select a story to make it active.",
+    "create_button": "Create New Story",
+    "no_stories": "No stories yet. Start by creating one!",
+    "last_modified": "Last modified",
+    "no_description": "No description provided.",
+    "active_story": "Active Story",
+    "select_story": "Select Story",
+    "delete_dialog": {
+      "title": "Are you absolutely sure?",
+      "description_1": "This action cannot be undone. This will permanently delete the story:",
+      "description_2": "Associated data (characters, outlines, etc.) for this story will become inaccessible if not re-associated.",
+      "confirm_button": "Delete Story"
+    },
+    "edit_dialog": {
+      "title": "Edit Story Details",
+      "description": "Update the title and description for this story."
+    },
+    "create_dialog": {
+      "title": "Create New Story",
+      "description": "Provide a title and description for your new story."
+    },
+    "fields": {
+      "title": "Title",
+      "title_placeholder": "e.g., The Dragon's Prophecy",
+      "description": "Description",
+      "description_placeholder": "A brief summary or logline for your story..."
+    }
+  },
+  "ai_tools": {
+    "title": "AI Writing Assistant",
+    "description": "Leverage AI to enhance your creative writing process.",
+    "loading_preferences": "Loading AI tool preferences...",
+    "disabled": {
+      "title": "AI Features Disabled",
+      "description": "AI-powered writing assistance is currently disabled in your settings. To use these tools, please enable them.",
+      "go_to_settings": "Go to Settings",
+      "disclaimer": "Enabling AI features involves sending selected text to third-party AI models for processing. Please review the disclaimer in settings before enabling."
+    },
+    "coming_soon": {
+      "title": "More AI Tools Coming Soon!",
+      "plot_hole_detector_title": "Plot Hole Detector",
+      "plot_hole_detector_desc": "Identifies potential inconsistencies in your plot.",
+      "character_voice_consistency_title": "Character Voice Consistency",
+      "character_voice_consistency_desc": "Checks if your characters speak in a consistent voice."
+    }
+  },
+  "pacing_analyzer": {
+    "title": "Pacing Analyzer",
+    "description": "Get AI-powered feedback on your story's pacing by linking a document.",
+    "doc_label": "Document to Analyze",
+    "no_story_placeholder": "No story selected",
+    "doc_placeholder": "Select a document or scene",
+    "genre_label": "Genre (Optional)",
+    "genre_placeholder": "e.g., Thriller, Romance",
+    "submit_button": "Analyze Pacing",
+    "results": {
+      "analysis_title": "Pacing Analysis:",
+      "recommendations_title": "Recommendations:"
+    },
+    "toast": {
+      "no_doc_title": "No Document Selected",
+      "no_doc_desc": "Please select a document to analyze.",
+      "doc_empty_title": "Document Empty",
+      "doc_empty_desc": "The selected document has no content to analyze.",
+      "error_title": "Error Analyzing Pacing",
+      "error_desc": "An unexpected error occurred."
+    }
+  },
+  "prompt_generator": {
+    "title": "Writing Prompt Generator",
+    "description": "Get inspired with a custom writing prompt. Add context for better results.",
+    "genre_label": "Genre",
+    "genre_placeholder": "e.g., Fantasy, Sci-Fi",
+    "style_label": "Style",
+    "style_placeholder": "e.g., Humorous, Dark",
+    "notes_label": "Notes (Optional)",
+    "notes_placeholder": "Add any extra details, themes, or keywords...",
+    "link_doc_label": "Link Document (Optional)",
+    "link_char_label": "Link Character (Optional)",
+    "no_story_placeholder": "No story selected",
+    "doc_placeholder": "Select a document",
+    "char_placeholder": "Select a character",
+    "generated_prompt_label": "Generated Prompt:",
+    "submit_button": "Generate Prompt",
+    "toast": {
+      "error_title": "Error Generating Prompt",
+      "error_desc": "An unexpected error occurred."
+    }
+  },
+  "analytics": {
+    "title": "Writing Analytics & Insights",
+    "description": "Understand your writing patterns for the current story:",
+    "no_data": "Data will appear here once you start writing in the selected story.",
+    "no_active_story_title": "No Active Story",
+    "no_active_story_desc_1": "Please select or create a story from the",
+    "no_active_story_desc_2": "Stories page",
+    "no_active_story_desc_3": "to view analytics.",
+    "word_count_today": {
+      "title": "Word Count Today",
+      "description": "Words recorded in the editor today based on saves for this story.",
+      "footer": "Based on auto-saves. More detailed daily/weekly trends coming soon.",
+      "no_story": "0 words (No story selected)",
+      "no_words": "0 words recorded today",
+      "words_recorded": "{{count}} words recorded in editor today"
+    },
+    "productive_times": {
+      "title": "Productive Times Today",
+      "description": "Hour with most saves in the editor today for this story.",
+      "footer": "Based on auto-saves. Deeper analysis coming soon.",
+      "no_story": "No activity (No story selected)",
+      "no_activity": "No activity logged today",
+      "not_enough_data": "Not enough data for today.",
+      "most_active": "Most active: {{start_hour}}:00 - {{end_hour}}:00 ({{saves}} save(s))"
+    },
+    "advanced": {
+      "section_title": "Advanced Writing Insights (Coming Soon)",
+      "writing_pattern_title": "Writing Pattern Analysis",
+      "writing_pattern_desc": "Analyze sentence length, common phrases, and writing habits.",
+      "vocabulary_richness_title": "Vocabulary Richness Analysis",
+      "vocabulary_richness_desc": "Assess the diversity and complexity of your word usage.",
+      "narrative_pacing_title": "Narrative Pacing & Structure Deep Dive",
+      "narrative_pacing_desc": "Get detailed insights into your story's structural flow and tension."
+    },
+    "general": {
+      "section_title": "General Writing Statistics (Coming Soon)",
+      "analysis_pending": "analysis pending",
+      "dialogue_ratio_title": "Dialogue Ratio",
+      "dialogue_ratio_desc": "Analyze dialogue vs. narrative balance.",
+      "chapter_length_title": "Chapter Length Consistency",
+      "chapter_length_desc": "Monitor the consistency of your chapter lengths.",
+      "reading_difficulty_title": "Reading Difficulty",
+      "reading_difficulty_desc": "Gauge the readability of your text."
+    },
+    "overall_progress": {
+      "title": "Overall Progress Overview",
+      "description": "A visual summary of your writing journey for this story.",
+      "footer": "Detailed charts and graphs are coming soon to help you visualize your progress."
+    }
+  },
+  "word_goal": {
+    "title": "Word Count Goal",
+    "description": "Set a target for the current story and track progress.",
+    "no_story_desc": "Select a story to set and track word goals.",
+    "go_to_stories": "Go to Stories",
+    "placeholder": "Enter word goal",
+    "set_button": "Set",
+    "goal_prefix": "Goal",
+    "words": "words",
+    "progress": "Current Progress",
+    "complete": "{{progress}}% complete",
+    "footer": "Your goal is saved for this story in your browser."
+  },
+  "characters": {
+    "title": "Character Development",
+    "description": "Create, manage, and explore your story's characters.",
+    "no_active_story_title": "No Active Story",
+    "no_active_story_desc_1": "Please select or create a story from the",
+    "no_active_story_desc_2": "Stories page",
+    "no_active_story_desc_3": "to manage characters.",
+    "export_button": "Export",
+    "export_as_json": "Export as JSON",
+    "export_as_text": "Export as Text",
+    "create_button": "Create New Profile",
+    "no_characters": "No character profiles for this story yet. Start by creating one!",
+    "view_sheet_button": "View Sheet",
+    "delete_dialog": {
+      "title": "Are you absolutely sure?",
+      "description_1": "This action cannot be undone. This will permanently delete the character profile for",
+      "description_2": "The detailed character sheet data will also be permanently deleted."
+    },
+    "edit_dialog": {
+      "title": "Edit Character Profile",
+      "description": "Update the details for this character."
+    },
+    "create_dialog": {
+      "title": "Create New Character Profile",
+      "description": "Fill in the details for your new character."
+    },
+    "fields": {
+      "name": "Name",
+      "role": "Role",
+      "role_placeholder": "e.g., Protagonist, Antagonist, Mentor",
+      "image_url": "Image URL",
+      "image_hint": "Image Hint",
+      "image_hint_placeholder": "Keywords for AI (e.g., male wizard)",
+      "description": "Description",
+      "description_placeholder": "A brief summary of the character.",
+      "backstory": "Backstory",
+      "backstory_placeholder": "Detailed history and background."
+    },
+    "export": {
+      "name": "Name",
+      "role": "Role",
+      "description": "Description",
+      "backstory": "Backstory",
+      "image_url": "Image URL"
+    },
+    "relationship_map": {
+      "title": "Relationship Mapping",
+      "description": "A visual tool to map connections, allegiances, and conflicts between your characters is coming soon!"
+    }
+  },
+  "character_sheet": {
+    "loading": "Loading character sheet...",
+    "no_active_story_title": "No Active Story",
+    "no_active_story_desc_1": "Please select a story from the",
+    "no_active_story_desc_2": "Stories page",
+    "no_active_story_desc_3": "to view character sheets.",
+    "not_found_title": "Character Not Found",
+    "not_found_desc": "The character you are looking for does not exist in the active story.",
+    "back_to_characters": "Back to All Characters",
+    "title": "Character Sheet",
+    "autosave_notice": "All changes are saved automatically. Last saved:",
+    "autosave_na": "N/A",
+    "export_button": "Export Sheet",
+    "field_placeholder": "Details about {{label}}...",
+    "export": {
+      "title_prefix": "CHARACTER SHEET:",
+      "role": "ROLE",
+      "description": "DESCRIPTION",
+      "backstory": "BACKSTORY"
+    },
+    "sections": {
+      "demographics": "Demographics",
+      "physical_appearance": "Physical Appearance",
+      "history": "History",
+      "psychological_traits": "Psychological Traits",
+      "communication": "Communication",
+      "strengths_weaknesses_abilities": "Strengths, Weaknesses & Abilities",
+      "relationships": "Relationships",
+      "character_growth": "Character Growth"
+    },
+    "fields": {
+      "name": "Name (from profile)",
+      "age": "Age",
+      "sex_gender": "Sex/Gender",
+      "ethnicity": "Ethnicity",
+      "occupation": "Occupation",
+      "socioeconomic_status": "Socioeconomic Status",
+      "education": "Education",
+      "other_notes": "Other Notes",
+      "eye_color": "Eye Color",
+      "skin_color": "Skin Color",
+      "hair_color": "Hair Color",
+      "height": "Height",
+      "weight": "Weight",
+      "body_type": "Body Type",
+      "fitness_level": "Fitness Level",
+      "tattoos": "Tattoos",
+      "scars_birthmarks": "Scars/Birthmarks",
+      "distinguishing_features": "Other Distinguishing Features",
+      "disabilities": "Disabilities",
+      "fashion_style": "Fashion Style",
+      "accessories": "Accessories",
+      "grooming": "Cleanliness/Grooming",
+      "posture_gait": "Posture/Gait",
+      "tics": "Tics",
+      "coordination": "Coordination (or lack thereof)",
+      "physical_weaknesses": "Physical Weaknesses",
+      "birth_date": "Birth Date",
+      "place_of_birth": "Place of Birth",
+      "family_members": "Key Family Members",
+      "notable_events": "Notable Events/Milestones",
+      "criminal_record": "Criminal Record",
+      "affiliations": "Affiliations",
+      "skeletons": "Skeletons in the Closet",
+      "personality_type": "Personality Type (e.g., Myers-Briggs)",
+      "traits": "Personality Traits",
+      "temperament": "Temperament",
+      "introvert_extrovert": "Introvert/Extrovert",
+      "mannerisms": "Mannerisms",
+      "hobbies": "Hobbies",
+      "skills": "Skills/Talents",
+      "loves": "Loves",
+      "morals": "Morals/Virtues",
+      "phobias": "Phobias/Fears",
+      "angered_by": "Angered By",
+      "pet_peeves": "Pet Peeves",
+      "obsessed_with": "Obsessed With",
+      "routines": "Routines",
+      "bad_habits": "Bad Habits",
+      "desires": "Desires",
+      "flaws": "Flaws",
+      "quirks": "Quirks",
+      "favorite_sayings": "Favorite Sayings",
+      "secrets": "Secrets",
+      "regrets": "Regrets",
+      "accomplishments": "Accomplishments",
+      "memories": "Memories",
+      "languages": "Languages Known",
+      "comm_methods": "Preferred Communication Methods",
+      "accent": "Accent",
+      "speech_style": "Style and Pacing of Speech",
+      "pitch": "Pitch",
+      "laughter": "Laughter",
+      "smile": "Smile",
+      "gestures": "Use of Gestures",
+      "facial_expressions": "Facial Expressions",
+      "verbal_expressions": "Verbal Expressions",
+      "physical_strengths": "Physical Strengths",
+      "physical_weaknesses_2": "Physical Weaknesses",
+      "intellectual_strengths": "Intellectual Strengths",
+      "intellectual_weaknesses": "Intellectual Weaknesses",
+      "interpersonal_strengths": "Interpersonal Strengths",
+      "interpersonal_weaknesses": "Interpersonal Weaknesses",
+      "abilities": "Physical/Magical Abilities",
+      "physical_conditions": "Physical Illnesses/Conditions",
+      "mental_conditions": "Mental Illnesses/Conditions",
+      "partners": "Partner(s)/Significant Other(s)",
+      "family": "Family (Parents, Children, etc.)",
+      "friends": "Friends & Best Friends",
+      "rivals_enemies": "Rivals & Enemies",
+      "colleagues": "Colleagues & Mentors",
+      "social_media": "Social Media Presence",
+      "public_perception": "Public Perception",
+      "archetype": "Character Archetype",
+      "arc": "Character Arc",
+      "core_values": "Core Values",
+      "internal_conflicts": "Internal Conflicts",
+      "external_conflicts": "External Conflicts",
+      "goals": "Goals",
+      "motivations": "Motivations",
+      "epiphanies": "Epiphanies",
+      "significant_events": "Significant Events/Plot Points"
+    }
+  },
+  "feedback": {
+    "title": "Feedback, Suggestions & Support",
+    "description": "Your input is valuable in making OpenWritingKit better for everyone.",
+    "form": {
+      "title": "Submit Your Feedback",
+      "description": "Have a suggestion, found a bug, or want to give general feedback? Let us know!",
+      "type_label": "Type of Feedback",
+      "type_placeholder": "Select a type",
+      "types": {
+        "general": "General Feedback",
+        "bug": "Bug Report",
+        "suggestion": "Feature Suggestion"
+      },
+      "page_label": "Related Page (Optional)",
+      "page_placeholder": "Select a page",
+      "pages": {
+        "general": "General / Unrelated"
+      },
+      "message_label": "Your Message",
+      "message_placeholder": "Tell us what's on your mind...",
+      "submit_button": "Submit Feedback"
+    },
+    "toast": {
+      "empty_title": "Message is empty",
+      "empty_desc": "Please write something before submitting.",
+      "success_title": "Feedback Submitted!",
+      "success_desc": "Thank you for your valuable input. This is a demo and data was logged to the console."
+    },
+    "contribute": {
+      "title": "Contribute on GitHub",
+      "description": "OpenWritingKit is an open-source project. If you're a developer, you can contribute directly to the codebase, fix bugs, or add new features.",
+      "button": "View on GitHub"
+    },
+    "support": {
+      "title": "Support the Project",
+      "description": "If you find this tool useful, consider supporting its development. Your contribution helps cover costs and fuels further improvements.",
+      "button": "Buy Me a Coffee"
+    }
+  },
+  "resources": {
+    "title": "Writing Resources",
+    "description": "A curated list of helpful articles, tools, and communities for writers.",
+    "visit_site": "Visit Site",
+    "suggestion_box": {
+      "title": "Have a suggestion?",
+      "description": "This is an open-source project. If you have a resource you'd love to see here, consider contributing on GitHub!"
+    },
+    "types": {
+      "article": "Article",
+      "podcast": "Podcast",
+      "tool": "Tool",
+      "guide": "Guide"
+    },
+    "list": {
+      "nanowrimo": {
+        "title": "NaNoWriMo",
+        "description": "Join the National Novel Writing Month challenge. A great community for motivation."
+      },
+      "reedsy": {
+        "title": "Reedsy Blog",
+        "description": "A wealth of articles on writing, editing, and publishing."
+      },
+      "writing_excuses": {
+        "title": "Writing Excuses Podcast",
+        "description": "Fifteen minutes long, because you're in a hurry, and we're not that smart."
+      },
+      "creative_penn": {
+        "title": "The Creative Penn",
+        "description": "Articles, podcast, and resources for authors on writing and the business of writing."
+      },
+      "helping_writers": {
+        "title": "Helping Writers Become Authors",
+        "description": "K.M. Weiland's site offers deep insights into story structure and character arcs."
+      },
+      "one_stop": {
+        "title": "One Stop for Writers",
+        "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders."
+      }
     }
   }
 }

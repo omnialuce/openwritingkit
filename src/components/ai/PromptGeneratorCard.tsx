@@ -12,7 +12,8 @@ import { Loader2, Wand2 } from 'lucide-react';
 import { generateWritingPrompts, type GenerateWritingPromptsInput } from '@/ai/flows/generate-writing-prompts';
 import { useToast } from "@/hooks/use-toast";
 import { useStoryContext, getDocumentsStorageKey, getCharactersStorageKey } from '@/contexts/StoryContext';
-import type { CharacterProfile } from '@/app/characters/page';
+import type { CharacterProfile } from '@/app/(app)/characters/page';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DocumentItem {
   id: string;
@@ -24,6 +25,7 @@ interface DocumentItem {
 
 
 export function PromptGeneratorCard() {
+  const { t } = useLanguage();
   const { activeStoryId } = useStoryContext();
   const [genre, setGenre] = useState('');
   const [style, setStyle] = useState('');
@@ -51,7 +53,6 @@ export function PromptGeneratorCard() {
 
   useEffect(() => {
     if (activeStoryId) {
-      // Load documents
       const docKey = getDocumentsStorageKey(activeStoryId);
       const storedDocs = localStorage.getItem(docKey);
       if (storedDocs) {
@@ -65,7 +66,6 @@ export function PromptGeneratorCard() {
         setDocuments([]);
       }
 
-      // Load characters
       const charKey = getCharactersStorageKey(activeStoryId);
       const storedChars = localStorage.getItem(charKey);
       if (storedChars) {
@@ -105,8 +105,8 @@ export function PromptGeneratorCard() {
     } catch (error) {
       console.error('Error generating prompt:', error);
       toast({
-        title: "Error Generating Prompt",
-        description: (error as Error).message || "An unexpected error occurred.",
+        title: t('prompt_generator.toast.error_title'),
+        description: (error as Error).message || t('prompt_generator.toast.error_desc'),
         variant: "destructive",
       });
     } finally {
@@ -119,50 +119,50 @@ export function PromptGeneratorCard() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Wand2 className="h-6 w-6 text-primary" />
-          <CardTitle>Writing Prompt Generator</CardTitle>
+          <CardTitle>{t('prompt_generator.title')}</CardTitle>
         </div>
-        <CardDescription>Get inspired with a custom writing prompt. Add context for better results.</CardDescription>
+        <CardDescription>{t('prompt_generator.description')}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="genre">Genre</Label>
+              <Label htmlFor="genre">{t('prompt_generator.genre_label')}</Label>
               <Input
                 id="genre"
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
-                placeholder="e.g., Fantasy, Sci-Fi"
+                placeholder={t('prompt_generator.genre_placeholder')}
                 required
               />
             </div>
             <div>
-              <Label htmlFor="style">Style</Label>
+              <Label htmlFor="style">{t('prompt_generator.style_label')}</Label>
               <Input
                 id="style"
                 value={style}
                 onChange={(e) => setStyle(e.target.value)}
-                placeholder="e.g., Humorous, Dark"
+                placeholder={t('prompt_generator.style_placeholder')}
                 required
               />
             </div>
           </div>
            <div>
-            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Label htmlFor="notes">{t('prompt_generator.notes_label')}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any extra details, themes, or keywords..."
+              placeholder={t('prompt_generator.notes_placeholder')}
               rows={3}
             />
           </div>
           <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="link-doc">Link Document (Optional)</Label>
+                <Label htmlFor="link-doc">{t('prompt_generator.link_doc_label')}</Label>
                 <Select value={selectedDocumentId} onValueChange={setSelectedDocumentId} disabled={!activeStoryId || documents.length === 0}>
                   <SelectTrigger id="link-doc">
-                    <SelectValue placeholder={!activeStoryId ? "No story selected" : "Select a document"} />
+                    <SelectValue placeholder={!activeStoryId ? t('prompt_generator.no_story_placeholder') : t('prompt_generator.doc_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {documents.map(doc => (
@@ -174,10 +174,10 @@ export function PromptGeneratorCard() {
                 </Select>
               </div>
                <div>
-                <Label htmlFor="link-char">Link Character (Optional)</Label>
+                <Label htmlFor="link-char">{t('prompt_generator.link_char_label')}</Label>
                 <Select value={selectedCharacterId} onValueChange={setSelectedCharacterId} disabled={!activeStoryId || characters.length === 0}>
                   <SelectTrigger id="link-char">
-                    <SelectValue placeholder={!activeStoryId ? "No story selected" : "Select a character"} />
+                    <SelectValue placeholder={!activeStoryId ? t('prompt_generator.no_story_placeholder') : t('prompt_generator.char_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {characters.map(char => (
@@ -191,7 +191,7 @@ export function PromptGeneratorCard() {
           </div>
           {prompt && (
             <div>
-              <Label htmlFor="generated-prompt">Generated Prompt:</Label>
+              <Label htmlFor="generated-prompt">{t('prompt_generator.generated_prompt_label')}</Label>
               <Textarea id="generated-prompt" value={prompt} readOnly rows={4} className="bg-muted" />
             </div>
           )}
@@ -199,7 +199,7 @@ export function PromptGeneratorCard() {
         <CardFooter>
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-            Generate Prompt
+            {t('prompt_generator.submit_button')}
           </Button>
         </CardFooter>
       </form>

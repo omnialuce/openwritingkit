@@ -8,10 +8,12 @@ import { PacingAnalyzerCard } from '@/components/ai/PacingAnalyzerCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Lightbulb, Users, Settings, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 export default function AiToolsPage() {
+  const { t } = useLanguage();
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -32,14 +34,14 @@ export default function AiToolsPage() {
   }, []);
 
   const comingSoonTools = [
-    { title: "Plot Hole Detector", description: "Identifies potential inconsistencies in your plot.", icon: Lightbulb },
-    { title: "Character Voice Consistency", description: "Checks if your characters speak in a consistent voice.", icon: Users },
+    { title: t('ai_tools.coming_soon.plot_hole_detector_title'), description: t('ai_tools.coming_soon.plot_hole_detector_desc'), icon: Lightbulb },
+    { title: t('ai_tools.coming_soon.character_voice_consistency_title'), description: t('ai_tools.coming_soon.character_voice_consistency_desc'), icon: Users },
   ];
 
   if (!isMounted) {
-    return ( // Or a loading spinner
+    return (
       <div className="flex justify-center items-center h-64">
-        <p>Loading AI tool preferences...</p>
+        <p>{t('ai_tools.loading_preferences')}</p>
       </div>
     );
   }
@@ -47,8 +49,8 @@ export default function AiToolsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">AI Writing Assistant</h1>
-        <p className="text-muted-foreground">Leverage AI to enhance your creative writing process.</p>
+        <h1 className="text-3xl font-bold mb-2">{t('ai_tools.title')}</h1>
+        <p className="text-muted-foreground">{t('ai_tools.description')}</p>
       </div>
 
       {!aiFeaturesEnabled ? (
@@ -56,20 +58,20 @@ export default function AiToolsPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-8 w-8 text-destructive" />
-              <CardTitle className="text-xl text-destructive">AI Features Disabled</CardTitle>
+              <CardTitle className="text-xl text-destructive">{t('ai_tools.disabled.title')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              AI-powered writing assistance is currently disabled in your settings. To use these tools, please enable them.
+              {t('ai_tools.disabled.description')}
             </p>
             <Link href="/settings" passHref>
               <Button variant="secondary">
-                <Settings className="mr-2 h-4 w-4" /> Go to Settings
+                <Settings className="mr-2 h-4 w-4" /> {t('ai_tools.disabled.go_to_settings')}
               </Button>
             </Link>
             <p className="text-xs text-muted-foreground mt-4">
-              Enabling AI features involves sending selected text to third-party AI models for processing. Please review the disclaimer in settings before enabling.
+              {t('ai_tools.disabled.disclaimer')}
             </p>
           </CardContent>
         </Card>
@@ -81,7 +83,7 @@ export default function AiToolsPage() {
           </div>
           
           <div>
-            <h2 className="text-2xl font-semibold mt-12 mb-6">More AI Tools Coming Soon!</h2>
+            <h2 className="text-2xl font-semibold mt-12 mb-6">{t('ai_tools.coming_soon.title')}</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {comingSoonTools.map((tool) => (
                 <Card key={tool.title} className="opacity-70">
@@ -93,7 +95,7 @@ export default function AiToolsPage() {
                     <CardDescription>{tool.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-primary font-semibold">Coming Soon</p>
+                    <p className="text-sm text-primary font-semibold">{t('common.coming_soon')}</p>
                   </CardContent>
                 </Card>
               ))}

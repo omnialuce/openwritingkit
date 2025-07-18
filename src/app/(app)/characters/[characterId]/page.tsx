@@ -14,129 +14,143 @@ import { ArrowLeft, User, Save, Loader2, AlertTriangle, Download } from 'lucide-
 import { useStoryContext, getCharactersStorageKey, getCharacterSheetStorageKey, type CharacterProfile } from '@/contexts/StoryContext';
 import { useToast } from '@/hooks/use-toast';
 import useAutosave from '@/hooks/useAutosave';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const characterSheetSections = {
+  demographics: 'character_sheet.sections.demographics',
+  physicalAppearance: 'character_sheet.sections.physical_appearance',
+  history: 'character_sheet.sections.history',
+  psychologicalTraits: 'character_sheet.sections.psychological_traits',
+  communication: 'character_sheet.sections.communication',
+  strengthsWeaknessesAbilities: 'character_sheet.sections.strengths_weaknesses_abilities',
+  relationships: 'character_sheet.sections.relationships',
+  characterGrowth: 'character_sheet.sections.character_growth',
+};
+
+const getCharacterSheetFields = (t: (key: any) => string) => ({
   demographics: [
-    { id: 'name', label: 'Name (from profile)', type: 'display' },
-    { id: 'age', label: 'Age' },
-    { id: 'sexGender', label: 'Sex/Gender' },
-    { id: 'ethnicity', label: 'Ethnicity' },
-    { id: 'occupation', label: 'Occupation' },
-    { id: 'socioeconomicStatus', label: 'Socioeconomic Status' },
-    { id: 'education', label: 'Education' },
-    { id: 'demographicsNotes', label: 'Other Notes' },
+    { id: 'name', label: t('character_sheet.fields.name'), type: 'display' },
+    { id: 'age', label: t('character_sheet.fields.age') },
+    { id: 'sexGender', label: t('character_sheet.fields.sex_gender') },
+    { id: 'ethnicity', label: t('character_sheet.fields.ethnicity') },
+    { id: 'occupation', label: t('character_sheet.fields.occupation') },
+    { id: 'socioeconomicStatus', label: t('character_sheet.fields.socioeconomic_status') },
+    { id: 'education', label: t('character_sheet.fields.education') },
+    { id: 'demographicsNotes', label: t('character_sheet.fields.other_notes') },
   ],
   physicalAppearance: [
-    { id: 'eyeColor', label: 'Eye Color' },
-    { id: 'skinColor', label: 'Skin Color' },
-    { id: 'hairColor', label: 'Hair Color' },
-    { id: 'height', label: 'Height' },
-    { id: 'weight', label: 'Weight' },
-    { id: 'bodyType', label: 'Body Type' },
-    { id: 'fitnessLevel', label: 'Fitness Level' },
-    { id: 'tattoos', label: 'Tattoos' },
-    { id: 'scarsBirthmarks', label: 'Scars/Birthmarks' },
-    { id: 'distinguishingFeatures', label: 'Other Distinguishing Features' },
-    { id: 'disabilities', label: 'Disabilities' },
-    { id: 'fashionStyle', label: 'Fashion Style' },
-    { id: 'accessories', label: 'Accessories' },
-    { id: 'grooming', label: 'Cleanliness/Grooming' },
-    { id: 'postureGait', label: 'Posture/Gait' },
-    { id: 'tics', label: 'Tics' },
-    { id: 'coordination', label: 'Coordination (or lack thereof)' },
-    { id: 'weaknesses', label: 'Physical Weaknesses' },
-    { id: 'physicalAppearanceNotes', label: 'Other Notes' },
+    { id: 'eyeColor', label: t('character_sheet.fields.eye_color') },
+    { id: 'skinColor', label: t('character_sheet.fields.skin_color') },
+    { id: 'hairColor', label: t('character_sheet.fields.hair_color') },
+    { id: 'height', label: t('character_sheet.fields.height') },
+    { id: 'weight', label: t('character_sheet.fields.weight') },
+    { id: 'bodyType', label: t('character_sheet.fields.body_type') },
+    { id: 'fitnessLevel', label: t('character_sheet.fields.fitness_level') },
+    { id: 'tattoos', label: t('character_sheet.fields.tattoos') },
+    { id: 'scarsBirthmarks', label: t('character_sheet.fields.scars_birthmarks') },
+    { id: 'distinguishingFeatures', label: t('character_sheet.fields.distinguishing_features') },
+    { id: 'disabilities', label: t('character_sheet.fields.disabilities') },
+    { id: 'fashionStyle', label: t('character_sheet.fields.fashion_style') },
+    { id: 'accessories', label: t('character_sheet.fields.accessories') },
+    { id: 'grooming', label: t('character_sheet.fields.grooming') },
+    { id: 'postureGait', label: t('character_sheet.fields.posture_gait') },
+    { id: 'tics', label: t('character_sheet.fields.tics') },
+    { id: 'coordination', label: t('character_sheet.fields.coordination') },
+    { id: 'weaknesses', label: t('character_sheet.fields.physical_weaknesses') },
+    { id: 'physicalAppearanceNotes', label: t('character_sheet.fields.other_notes') },
   ],
   history: [
-    { id: 'birthDate', label: 'Birth Date' },
-    { id: 'placeOfBirth', label: 'Place of Birth' },
-    { id: 'familyMembers', label: 'Key Family Members' },
-    { id: 'notableEvents', label: 'Notable Events/Milestones' },
-    { id: 'criminalRecord', label: 'Criminal Record' },
-    { id: 'affiliations', label: 'Affiliations' },
-    { id: 'skeletons', label: 'Skeletons in the Closet' },
-    { id: 'historyNotes', label: 'Other Notes' },
+    { id: 'birthDate', label: t('character_sheet.fields.birth_date') },
+    { id: 'placeOfBirth', label: t('character_sheet.fields.place_of_birth') },
+    { id: 'familyMembers', label: t('character_sheet.fields.family_members') },
+    { id: 'notableEvents', label: t('character_sheet.fields.notable_events') },
+    { id: 'criminalRecord', label: t('character_sheet.fields.criminal_record') },
+    { id: 'affiliations', label: t('character_sheet.fields.affiliations') },
+    { id: 'skeletons', label: t('character_sheet.fields.skeletons') },
+    { id: 'historyNotes', label: t('character_sheet.fields.other_notes') },
   ],
   psychologicalTraits: [
-    { id: 'personalityType', label: 'Personality Type (e.g., Myers-Briggs)' },
-    { id: 'traits', label: 'Personality Traits' },
-    { id: 'temperament', label: 'Temperament' },
-    { id: 'introvertExtrovert', label: 'Introvert/Extrovert' },
-    { id: 'mannerisms', label: 'Mannerisms' },
-    { id: 'hobbies', label: 'Hobbies' },
-    { id: 'skills', label: 'Skills/Talents' },
-    { id: 'loves', label: 'Loves' },
-    { id: 'morals', label: 'Morals/Virtues' },
-    { id: 'phobias', label: 'Phobias/Fears' },
-    { id: 'angeredBy', label: 'Angered By' },
-    { id: 'petPeeves', label: 'Pet Peeves' },
-    { id: 'obsessedWith', label: 'Obsessed With' },
-    { id: 'routines', label: 'Routines' },
-    { id: 'badHabits', label: 'Bad Habits' },
-    { id: 'desires', label: 'Desires' },
-    { id: 'flaws', label: 'Flaws' },
-    { id: 'quirks', label: 'Quirks' },
-    { id: 'favoriteSayings', label: 'Favorite Sayings' },
-    { id: 'secrets', label: 'Secrets' },
-    { id: 'regrets', label: 'Regrets' },
-    { id: 'accomplishments', label: 'Accomplishments' },
-    { id: 'memories', label: 'Memories' },
-    { id: 'psychologicalNotes', label: 'Other Notes' },
+    { id: 'personalityType', label: t('character_sheet.fields.personality_type') },
+    { id: 'traits', label: t('character_sheet.fields.traits') },
+    { id: 'temperament', label: t('character_sheet.fields.temperament') },
+    { id: 'introvertExtrovert', label: t('character_sheet.fields.introvert_extrovert') },
+    { id: 'mannerisms', label: t('character_sheet.fields.mannerisms') },
+    { id: 'hobbies', label: t('character_sheet.fields.hobbies') },
+    { id: 'skills', label: t('character_sheet.fields.skills') },
+    { id: 'loves', label: t('character_sheet.fields.loves') },
+    { id: 'morals', label: t('character_sheet.fields.morals') },
+    { id: 'phobias', label: t('character_sheet.fields.phobias') },
+    { id: 'angeredBy', label: t('character_sheet.fields.angered_by') },
+    { id: 'petPeeves', label: t('character_sheet.fields.pet_peeves') },
+    { id: 'obsessedWith', label: t('character_sheet.fields.obsessed_with') },
+    { id: 'routines', label: t('character_sheet.fields.routines') },
+    { id: 'badHabits', label: t('character_sheet.fields.bad_habits') },
+    { id: 'desires', label: t('character_sheet.fields.desires') },
+    { id: 'flaws', label: t('character_sheet.fields.flaws') },
+    { id: 'quirks', label: t('character_sheet.fields.quirks') },
+    { id: 'favoriteSayings', label: t('character_sheet.fields.favorite_sayings') },
+    { id: 'secrets', label: t('character_sheet.fields.secrets') },
+    { id: 'regrets', label: t('character_sheet.fields.regrets') },
+    { id: 'accomplishments', label: t('character_sheet.fields.accomplishments') },
+    { id: 'memories', label: t('character_sheet.fields.memories') },
+    { id: 'psychologicalNotes', label: t('character_sheet.fields.other_notes') },
   ],
   communication: [
-    { id: 'languages', label: 'Languages Known' },
-    { id: 'commMethods', label: 'Preferred Communication Methods' },
-    { id: 'accent', label: 'Accent' },
-    { id: 'speechStyle', label: 'Style and Pacing of Speech' },
-    { id: 'pitch', label: 'Pitch' },
-    { id: 'laughter', label: 'Laughter' },
-    { id: 'smile', label: 'Smile' },
-    { id: 'gestures', label: 'Use of Gestures' },
-    { id: 'facialExpressions', label: 'Facial Expressions' },
-    { id: 'verbalExpressions', label: 'Verbal Expressions' },
-    { id: 'communicationNotes', label: 'Other Notes' },
+    { id: 'languages', label: t('character_sheet.fields.languages') },
+    { id: 'commMethods', label: t('character_sheet.fields.comm_methods') },
+    { id: 'accent', label: t('character_sheet.fields.accent') },
+    { id: 'speechStyle', label: t('character_sheet.fields.speech_style') },
+    { id: 'pitch', label: t('character_sheet.fields.pitch') },
+    { id: 'laughter', label: t('character_sheet.fields.laughter') },
+    { id: 'smile', label: t('character_sheet.fields.smile') },
+    { id: 'gestures', label: t('character_sheet.fields.gestures') },
+    { id: 'facialExpressions', label: t('character_sheet.fields.facial_expressions') },
+    { id: 'verbalExpressions', label: t('character_sheet.fields.verbal_expressions') },
+    { id: 'communicationNotes', label: t('character_sheet.fields.other_notes') },
   ],
   strengthsWeaknessesAbilities: [
-    { id: 'physicalStrengths', label: 'Physical Strengths' },
-    { id: 'physicalWeaknesses', label: 'Physical Weaknesses' },
-    { id: 'intellectualStrengths', label: 'Intellectual Strengths' },
-    { id: 'intellectualWeaknesses', label: 'Intellectual Weaknesses' },
-    { id: 'interpersonalStrengths', label: 'Interpersonal Strengths' },
-    { id: 'interpersonalWeaknesses', label: 'Interpersonal Weaknesses' },
-    { id: 'abilities', label: 'Physical/Magical Abilities' },
-    { id: 'physicalConditions', label: 'Physical Illnesses/Conditions' },
-    { id: 'mentalConditions', label: 'Mental Illnesses/Conditions' },
-    { id: 'swaNotes', label: 'Other Notes' },
+    { id: 'physicalStrengths', label: t('character_sheet.fields.physical_strengths') },
+    { id: 'physicalWeaknesses', label: t('character_sheet.fields.physical_weaknesses_2') },
+    { id: 'intellectualStrengths', label: t('character_sheet.fields.intellectual_strengths') },
+    { id: 'intellectualWeaknesses', label: t('character_sheet.fields.intellectual_weaknesses') },
+    { id: 'interpersonalStrengths', label: t('character_sheet.fields.interpersonal_strengths') },
+    { id: 'interpersonalWeaknesses', label: t('character_sheet.fields.interpersonal_weaknesses') },
+    { id: 'abilities', label: t('character_sheet.fields.abilities') },
+    { id: 'physicalConditions', label: t('character_sheet.fields.physical_conditions') },
+    { id: 'mentalConditions', label: t('character_sheet.fields.mental_conditions') },
+    { id: 'swaNotes', label: t('character_sheet.fields.other_notes') },
   ],
   relationships: [
-    { id: 'partners', label: 'Partner(s)/Significant Other(s)' },
-    { id: 'family', label: 'Family (Parents, Children, etc.)' },
-    { id: 'friends', label: 'Friends & Best Friends' },
-    { id: 'rivalsEnemies', label: 'Rivals & Enemies' },
-    { id: 'colleagues', label: 'Colleagues & Mentors' },
-    { id: 'socialMedia', label: 'Social Media Presence' },
-    { id: 'publicPerception', label: 'Public Perception' },
-    { id: 'relationshipNotes', label: 'Other Notes' },
+    { id: 'partners', label: t('character_sheet.fields.partners') },
+    { id: 'family', label: t('character_sheet.fields.family') },
+    { id: 'friends', label: t('character_sheet.fields.friends') },
+    { id: 'rivalsEnemies', label: t('character_sheet.fields.rivals_enemies') },
+    { id: 'colleagues', label: t('character_sheet.fields.colleagues') },
+    { id: 'socialMedia', label: t('character_sheet.fields.social_media') },
+    { id: 'publicPerception', label: t('character_sheet.fields.public_perception') },
+    { id: 'relationshipNotes', label: t('character_sheet.fields.other_notes') },
   ],
   characterGrowth: [
-    { id: 'archetype', label: 'Character Archetype' },
-    { id: 'arc', label: 'Character Arc' },
-    { id: 'coreValues', label: 'Core Values' },
-    { id: 'internalConflicts', label: 'Internal Conflicts' },
-    { id: 'externalConflicts', label: 'External Conflicts' },
-    { id: 'goals', label: 'Goals' },
-    { id: 'motivations', label: 'Motivations' },
-    { id: 'epiphanies', label: 'Epiphanies' },
-    { id: 'significantEvents', label: 'Significant Events/Plot Points' },
-    { id: 'growthNotes', label: 'Other Notes' },
+    { id: 'archetype', label: t('character_sheet.fields.archetype') },
+    { id: 'arc', label: t('character_sheet.fields.arc') },
+    { id: 'coreValues', label: t('character_sheet.fields.core_values') },
+    { id: 'internalConflicts', label: t('character_sheet.fields.internal_conflicts') },
+    { id: 'externalConflicts', label: t('character_sheet.fields.external_conflicts') },
+    { id: 'goals', label: t('character_sheet.fields.goals') },
+    { id: 'motivations', label: t('character_sheet.fields.motivations') },
+    { id: 'epiphanies', label: t('character_sheet.fields.epiphanies') },
+    { id: 'significantEvents', label: t('character_sheet.fields.significant_events') },
+    { id: 'growthNotes', label: t('character_sheet.fields.other_notes') },
   ],
-};
+});
+
 
 type SheetData = {
   [key: string]: string;
 };
 
 export default function CharacterSheetPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const characterId = params.characterId as string;
   const { activeStoryId } = useStoryContext();
@@ -148,6 +162,7 @@ export default function CharacterSheetPage() {
   const [savedContent, setSavedContent, isSaving, , lastSavedTime] = useAutosave<string>(sheetStorageKey, '{}');
   const [sheetData, setSheetData] = useState<SheetData>({});
   const [isMounted, setIsMounted] = useState(false);
+  const dynamicCharacterSheetFields = getCharacterSheetFields(t);
 
   useEffect(() => {
     setIsMounted(true);
@@ -160,7 +175,7 @@ export default function CharacterSheetPage() {
         if (foundChar) {
           setCharacter(foundChar);
         } else {
-          setCharacter(null); // Character not found
+          setCharacter(null);
         }
       }
     }
@@ -186,14 +201,14 @@ export default function CharacterSheetPage() {
   const handleExportSheet = () => {
     if (!character || !sheetData) return;
 
-    let textContent = `CHARACTER SHEET: ${character.name}\n`;
-    textContent += `ROLE: ${character.role || 'N/A'}\n`;
-    textContent += `DESCRIPTION: ${character.description || 'N/A'}\n`;
-    textContent += `BACKSTORY: ${character.backstory || 'N/A'}\n`;
+    let textContent = `${t('character_sheet.export.title_prefix')} ${character.name}\n`;
+    textContent += `${t('character_sheet.export.role')}: ${character.role || 'N/A'}\n`;
+    textContent += `${t('character_sheet.export.description')}: ${character.description || 'N/A'}\n`;
+    textContent += `${t('character_sheet.export.backstory')}: ${character.backstory || 'N/A'}\n`;
     textContent += '===================================\n\n';
 
-    Object.entries(characterSheetSections).forEach(([sectionKey, fields]) => {
-      const sectionName = sectionKey.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+    Object.entries(dynamicCharacterSheetFields).forEach(([sectionKey, fields]) => {
+      const sectionName = t(characterSheetSections[sectionKey as keyof typeof characterSheetSections]);
       textContent += `--- ${sectionName.toUpperCase()} ---\n\n`;
       fields.forEach(field => {
         if (field.type !== 'display') {
@@ -218,7 +233,7 @@ export default function CharacterSheetPage() {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading character sheet...</p>
+        <p className="ml-2">{t('character_sheet.loading')}</p>
       </div>
     );
   }
@@ -227,10 +242,10 @@ export default function CharacterSheetPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('character_sheet.no_active_story_title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Please select a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to view character sheets.</p>
+          <p className="text-muted-foreground">{t('character_sheet.no_active_story_desc_1')} <Link href="/stories" className="text-primary hover:underline">{t('character_sheet.no_active_story_desc_2')}</Link> {t('character_sheet.no_active_story_desc_3')}</p>
         </CardContent>
       </Card>
     );
@@ -240,12 +255,12 @@ export default function CharacterSheetPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> Character Not Found</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('character_sheet.not_found_title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground mb-4">The character you are looking for does not exist in the active story.</p>
+          <p className="text-muted-foreground mb-4">{t('character_sheet.not_found_desc')}</p>
            <Button asChild variant="outline">
-             <Link href="/characters"><ArrowLeft className="mr-2 h-4 w-4" />Back to Characters</Link>
+             <Link href="/characters"><ArrowLeft className="mr-2 h-4 w-4" />{t('character_sheet.back_to_characters')}</Link>
            </Button>
         </CardContent>
       </Card>
@@ -257,27 +272,27 @@ export default function CharacterSheetPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
            <Button asChild variant="ghost" className="mb-2 -ml-4">
-             <Link href="/characters"><ArrowLeft className="mr-2 h-4 w-4" />Back to All Characters</Link>
+             <Link href="/characters"><ArrowLeft className="mr-2 h-4 w-4" />{t('character_sheet.back_to_characters')}</Link>
            </Button>
           <h1 className="text-4xl font-bold mb-1 flex items-center">
-            <User className="mr-3 h-10 w-10 text-primary" /> Character Sheet: {character.name}
+            <User className="mr-3 h-10 w-10 text-primary" /> {t('character_sheet.title')}: {character.name}
           </h1>
           <p className="text-muted-foreground">
-            All changes are saved automatically. Last saved: {lastSavedTime ? lastSavedTime.toLocaleTimeString() : 'N/A'}
+            {t('character_sheet.autosave_notice')} {lastSavedTime ? lastSavedTime.toLocaleTimeString() : t('character_sheet.autosave_na')}
             {isSaving && <Loader2 className="inline-block ml-2 h-4 w-4 animate-spin" />}
           </p>
         </div>
          <Button variant="outline" onClick={handleExportSheet}>
-            <Download className="mr-2 h-4 w-4" /> Export Sheet
+            <Download className="mr-2 h-4 w-4" /> {t('character_sheet.export_button')}
           </Button>
       </div>
 
       <Accordion type="multiple" defaultValue={['demographics', 'physicalAppearance']} className="w-full space-y-4">
-        {Object.entries(characterSheetSections).map(([sectionKey, fields]) => (
+        {Object.entries(dynamicCharacterSheetFields).map(([sectionKey, fields]) => (
           <AccordionItem key={sectionKey} value={sectionKey} className="border-b-0">
             <Card>
               <AccordionTrigger className="p-6 text-xl hover:no-underline">
-                {sectionKey.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                {t(characterSheetSections[sectionKey as keyof typeof characterSheetSections])}
               </AccordionTrigger>
               <AccordionContent>
                 <div className="grid gap-6 p-6 pt-0">
@@ -292,7 +307,7 @@ export default function CharacterSheetPage() {
                           value={sheetData[field.id] || ''}
                           onChange={(e) => handleFieldChange(field.id, e.target.value)}
                           rows={3}
-                          placeholder={`Details about ${field.label.toLowerCase()}...`}
+                          placeholder={t('character_sheet.field_placeholder', { label: field.label.toLowerCase() })}
                         />
                       )}
                     </div>

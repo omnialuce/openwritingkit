@@ -14,6 +14,38 @@
     "search_placeholder": "Pesquisar...",
     "coming_soon": "Em Breve"
   },
+  "nav": {
+    "dashboard": "Painel",
+    "stories": "Histórias",
+    "editor": "Editor",
+    "documents": "Documentos",
+    "outline": "Estrutura",
+    "characters": "Personagens",
+    "plot_tools": "Ferramentas de Enredo",
+    "ai_tools": "Ferramentas de IA",
+    "analytics": "Análises",
+    "resources": "Recursos",
+    "feedback": "Feedback",
+    "settings": "Configurações"
+  },
+  "sidebar": {
+    "drive": {
+      "not_connected": "Não Conectado",
+      "connect_alert": "Conectando ao Google Drive (demonstração).",
+      "settings_alert": "Abrir configurações do Google Drive (demonstração).",
+      "disconnect_alert": "Desconectado do Google Drive (simulação de interface).",
+      "tooltip_connected_title": "Armazenamento em Nuvem Conectado",
+      "tooltip_disconnected_title": "Armazenamento em Nuvem",
+      "tooltip_storage": "Armazenamento",
+      "tooltip_disconnected_desc_1": "Conecte-se ao Google Drive para fazer backup de suas histórias, roteiros e personagens, e acessá-los em seus dispositivos.",
+      "tooltip_disconnected_important": "Importante",
+      "tooltip_disconnected_desc_2": "Sem conectar, todos os seus dados são salvos localmente apenas neste navegador. Isso significa que podem ser perdidos se você limpar os dados do seu navegador, usar um navegador diferente ou trocar de dispositivo.",
+      "drive_prefix": "Drive",
+      "connect_button": "Conectar ao Drive",
+      "disconnect_button": "Desconectar"
+    },
+    "coffee_button": "Me Pague um Café"
+  },
   "login": {
     "description": "Faça login na sua conta",
     "email_label": "Email / ID de Usuário",
@@ -148,6 +180,414 @@
       "password_reset_sent_desc": "Um e-mail foi enviado para",
       "password_reset_error_title": "Erro ao Enviar E-mail de Redefinição",
       "password_reset_error_desc": "Não foi possível enviar o e-mail de redefinição de senha. Por favor, tente novamente mais tarde."
+    }
+  },
+    "stories": {
+    "title": "Suas Histórias",
+    "description": "Gerencie seus diferentes projetos de escrita e narrativas. Selecione uma história para torná-la ativa.",
+    "create_button": "Criar Nova História",
+    "no_stories": "Nenhuma história ainda. Comece criando uma!",
+    "last_modified": "Última modificação",
+    "no_description": "Nenhuma descrição fornecida.",
+    "active_story": "História Ativa",
+    "select_story": "Selecionar História",
+    "delete_dialog": {
+      "title": "Tem certeza absoluta?",
+      "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente a história:",
+      "description_2": "Dados associados (personagens, roteiros, etc.) a esta história se tornarão inacessíveis se não forem reassociados.",
+      "confirm_button": "Excluir História"
+    },
+    "edit_dialog": {
+      "title": "Editar Detalhes da História",
+      "description": "Atualize o título e a descrição desta história."
+    },
+    "create_dialog": {
+      "title": "Criar Nova História",
+      "description": "Forneça um título e uma descrição para sua nova história."
+    },
+    "fields": {
+      "title": "Título",
+      "title_placeholder": "ex: A Profecia do Dragão",
+      "description": "Descrição",
+      "description_placeholder": "Um breve resumo ou logline para sua história..."
+    }
+  },
+    "ai_tools": {
+    "title": "Assistente de Escrita com IA",
+    "description": "Utilize a IA para aprimorar seu processo de escrita criativa.",
+    "loading_preferences": "Carregando preferências de ferramentas de IA...",
+    "disabled": {
+      "title": "Recursos de IA Desativados",
+      "description": "A assistência de escrita com IA está atualmente desativada em suas configurações. Para usar essas ferramentas, por favor, ative-as.",
+      "go_to_settings": "Ir para Configurações",
+      "disclaimer": "Ativar os recursos de IA envolve o envio do texto selecionado para modelos de IA de terceiros para processamento. Por favor, revise o aviso nas configurações antes de ativar."
+    },
+    "coming_soon": {
+      "title": "Mais Ferramentas de IA em Breve!",
+      "plot_hole_detector_title": "Detector de Furos no Enredo",
+      "plot_hole_detector_desc": "Identifica potenciais inconsistências no seu enredo.",
+      "character_voice_consistency_title": "Consistência da Voz do Personagem",
+      "character_voice_consistency_desc": "Verifica se seus personagens falam com uma voz consistente."
+    }
+  },
+  "pacing_analyzer": {
+    "title": "Analisador de Ritmo",
+    "description": "Receba feedback com IA sobre o ritmo da sua história vinculando um documento.",
+    "doc_label": "Documento para Análise",
+    "no_story_placeholder": "Nenhuma história selecionada",
+    "doc_placeholder": "Selecione um documento ou cena",
+    "genre_label": "Gênero (Opcional)",
+    "genre_placeholder": "ex: Suspense, Romance",
+    "submit_button": "Analisar Ritmo",
+    "results": {
+      "analysis_title": "Análise de Ritmo:",
+      "recommendations_title": "Recomendações:"
+    },
+    "toast": {
+      "no_doc_title": "Nenhum Documento Selecionado",
+      "no_doc_desc": "Por favor, selecione um documento para analisar.",
+      "doc_empty_title": "Documento Vazio",
+      "doc_empty_desc": "O documento selecionado não tem conteúdo para analisar.",
+      "error_title": "Erro ao Analisar o Ritmo",
+      "error_desc": "Ocorreu um erro inesperado."
+    }
+  },
+  "prompt_generator": {
+    "title": "Gerador de Ideias de Escrita",
+    "description": "Inspire-se com uma ideia de escrita personalizada. Adicione contexto para melhores resultados.",
+    "genre_label": "Gênero",
+    "genre_placeholder": "ex: Fantasia, Ficção Científica",
+    "style_label": "Estilo",
+    "style_placeholder": "ex: Humorístico, Sombrio",
+    "notes_label": "Notas (Opcional)",
+    "notes_placeholder": "Adicione quaisquer detalhes extras, temas ou palavras-chave...",
+    "link_doc_label": "Vincular Documento (Opcional)",
+    "link_char_label": "Vincular Personagem (Opcional)",
+    "no_story_placeholder": "Nenhuma história selecionada",
+    "doc_placeholder": "Selecione um documento",
+    "char_placeholder": "Selecione um personagem",
+    "generated_prompt_label": "Ideia Gerada:",
+    "submit_button": "Gerar Ideia",
+    "toast": {
+      "error_title": "Erro ao Gerar Ideia",
+      "error_desc": "Ocorreu um erro inesperado."
+    }
+  },
+  "analytics": {
+    "title": "Análises de Escrita e Insights",
+    "description": "Entenda seus padrões de escrita para a história atual:",
+    "no_data": "Os dados aparecerão aqui quando você começar a escrever na história selecionada.",
+    "no_active_story_title": "Nenhuma História Ativa",
+    "no_active_story_desc_1": "Por favor, selecione ou crie uma história na",
+    "no_active_story_desc_2": "página de Histórias",
+    "no_active_story_desc_3": "para ver as análises.",
+    "word_count_today": {
+      "title": "Contagem de Palavras Hoje",
+      "description": "Palavras registradas no editor hoje com base nos salvamentos para esta história.",
+      "footer": "Baseado em salvamentos automáticos. Tendências diárias/semanais mais detalhadas em breve.",
+      "no_story": "0 palavras (Nenhuma história selecionada)",
+      "no_words": "0 palavras registradas hoje",
+      "words_recorded": "{{count}} palavras registradas no editor hoje"
+    },
+    "productive_times": {
+      "title": "Horários Produtivos Hoje",
+      "description": "Hora com mais salvamentos no editor hoje para esta história.",
+      "footer": "Baseado em salvamentos automáticos. Análise mais aprofundada em breve.",
+      "no_story": "Nenhuma atividade (Nenhuma história selecionada)",
+      "no_activity": "Nenhuma atividade registrada hoje",
+      "not_enough_data": "Não há dados suficientes para hoje.",
+      "most_active": "Mais ativo: {{start_hour}}:00 - {{end_hour}}:00 ({{saves}} salvamento(s))"
+    },
+    "advanced": {
+      "section_title": "Insights Avançados de Escrita (Em Breve)",
+      "writing_pattern_title": "Análise de Padrão de Escrita",
+      "writing_pattern_desc": "Analise o comprimento da frase, frases comuns e hábitos de escrita.",
+      "vocabulary_richness_title": "Análise de Riqueza de Vocabulário",
+      "vocabulary_richness_desc": "Avalie a diversidade e complexidade do seu uso de palavras.",
+      "narrative_pacing_title": "Análise Profunda de Ritmo e Estrutura Narrativa",
+      "narrative_pacing_desc": "Obtenha insights detalhados sobre o fluxo estrutural e a tensão da sua história."
+    },
+    "general": {
+      "section_title": "Estatísticas Gerais de Escrita (Em Breve)",
+      "analysis_pending": "análise pendente",
+      "dialogue_ratio_title": "Proporção de Diálogo",
+      "dialogue_ratio_desc": "Analise o equilíbrio entre diálogo e narrativa.",
+      "chapter_length_title": "Consistência do Comprimento dos Capítulos",
+      "chapter_length_desc": "Monitore a consistência do comprimento dos seus capítulos.",
+      "reading_difficulty_title": "Dificuldade de Leitura",
+      "reading_difficulty_desc": "Meça a legibilidade do seu texto."
+    },
+    "overall_progress": {
+      "title": "Visão Geral do Progresso",
+      "description": "Um resumo visual da sua jornada de escrita para esta história.",
+      "footer": "Gráficos e tabelas detalhados estão a caminho para ajudá-lo a visualizar seu progresso."
+    }
+  },
+  "word_goal": {
+    "title": "Meta de Contagem de Palavras",
+    "description": "Defina uma meta para a história atual e acompanhe o progresso.",
+    "no_story_desc": "Selecione uma história para definir e acompanhar metas de palavras.",
+    "go_to_stories": "Ir para Histórias",
+    "placeholder": "Digite a meta de palavras",
+    "set_button": "Definir",
+    "goal_prefix": "Meta",
+    "words": "palavras",
+    "progress": "Progresso Atual",
+    "complete": "{{progress}}% completo",
+    "footer": "Sua meta é salva para esta história no seu navegador."
+  },
+  "characters": {
+    "title": "Desenvolvimento de Personagens",
+    "description": "Crie, gerencie e explore os personagens da sua história.",
+    "no_active_story_title": "Nenhuma História Ativa",
+    "no_active_story_desc_1": "Por favor, selecione ou crie uma história na",
+    "no_active_story_desc_2": "página de Histórias",
+    "no_active_story_desc_3": "para gerenciar personagens.",
+    "export_button": "Exportar",
+    "export_as_json": "Exportar como JSON",
+    "export_as_text": "Exportar como Texto",
+    "create_button": "Criar Novo Perfil",
+    "no_characters": "Nenhum perfil de personagem para esta história ainda. Comece criando um!",
+    "view_sheet_button": "Ver Ficha",
+    "delete_dialog": {
+      "title": "Tem certeza absoluta?",
+      "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente o perfil do personagem",
+      "description_2": "Os dados detalhados da ficha do personagem também serão excluídos permanentemente."
+    },
+    "edit_dialog": {
+      "title": "Editar Perfil do Personagem",
+      "description": "Atualize os detalhes para este personagem."
+    },
+    "create_dialog": {
+      "title": "Criar Novo Perfil de Personagem",
+      "description": "Preencha os detalhes para seu novo personagem."
+    },
+    "fields": {
+      "name": "Nome",
+      "role": "Papel",
+      "role_placeholder": "ex: Protagonista, Antagonista, Mentor",
+      "image_url": "URL da Imagem",
+      "image_hint": "Dica da Imagem",
+      "image_hint_placeholder": "Palavras-chave para IA (ex: mago homem)",
+      "description": "Descrição",
+      "description_placeholder": "Um breve resumo do personagem.",
+      "backstory": "História de Fundo",
+      "backstory_placeholder": "História e antecedentes detalhados."
+    },
+    "export": {
+      "name": "Nome",
+      "role": "Papel",
+      "description": "Descrição",
+      "backstory": "História de Fundo",
+      "image_url": "URL da Imagem"
+    },
+    "relationship_map": {
+      "title": "Mapa de Relacionamentos",
+      "description": "Uma ferramenta visual para mapear conexões, alianças e conflitos entre seus personagens está a caminho!"
+    }
+  },
+  "character_sheet": {
+    "loading": "Carregando ficha do personagem...",
+    "no_active_story_title": "Nenhuma História Ativa",
+    "no_active_story_desc_1": "Por favor, selecione uma história na",
+    "no_active_story_desc_2": "página de Histórias",
+    "no_active_story_desc_3": "para ver as fichas dos personagens.",
+    "not_found_title": "Personagem Não Encontrado",
+    "not_found_desc": "O personagem que você está procurando não existe na história ativa.",
+    "back_to_characters": "Voltar para Todos os Personagens",
+    "title": "Ficha de Personagem",
+    "autosave_notice": "Todas as alterações são salvas automaticamente. Último salvamento:",
+    "autosave_na": "N/D",
+    "export_button": "Exportar Ficha",
+    "field_placeholder": "Detalhes sobre {{label}}...",
+    "export": {
+      "title_prefix": "FICHA DE PERSONAGEM:",
+      "role": "PAPEL",
+      "description": "DESCRIÇÃO",
+      "backstory": "HISTÓRIA DE FUNDO"
+    },
+    "sections": {
+      "demographics": "Dados Demográficos",
+      "physical_appearance": "Aparência Física",
+      "history": "História",
+      "psychological_traits": "Traços Psicológicos",
+      "communication": "Comunicação",
+      "strengths_weaknesses_abilities": "Forças, Fraquezas e Habilidades",
+      "relationships": "Relacionamentos",
+      "character_growth": "Desenvolvimento do Personagem"
+    },
+    "fields": {
+      "name": "Nome (do perfil)",
+      "age": "Idade",
+      "sex_gender": "Sexo/Gênero",
+      "ethnicity": "Etnia",
+      "occupation": "Ocupação",
+      "socioeconomic_status": "Status Socioeconômico",
+      "education": "Educação",
+      "other_notes": "Outras Notas",
+      "eye_color": "Cor dos Olhos",
+      "skin_color": "Cor da Pele",
+      "hair_color": "Cor do Cabelo",
+      "height": "Altura",
+      "weight": "Peso",
+      "body_type": "Tipo de Corpo",
+      "fitness_level": "Nível de Aptidão Física",
+      "tattoos": "Tatuagens",
+      "scars_birthmarks": "Cicatrizes/Marcas de Nascimento",
+      "distinguishing_features": "Outras Características Marcantes",
+      "disabilities": "Deficiências",
+      "fashion_style": "Estilo de Moda",
+      "accessories": "Acessórios",
+      "grooming": "Limpeza/Aparência",
+      "posture_gait": "Postura/Andar",
+      "tics": "Tiques",
+      "coordination": "Coordenação (ou falta dela)",
+      "physical_weaknesses": "Fraquezas Físicas",
+      "birth_date": "Data de Nascimento",
+      "place_of_birth": "Local de Nascimento",
+      "family_members": "Membros Importantes da Família",
+      "notable_events": "Eventos/Marcos Notáveis",
+      "criminal_record": "Ficha Criminal",
+      "affiliations": "Afiliações",
+      "skeletons": "Segredos Sombrios",
+      "personality_type": "Tipo de Personalidade (ex: Myers-Briggs)",
+      "traits": "Traços de Personalidade",
+      "temperament": "Temperamento",
+      "introvert_extrovert": "Introvertido/Extrovertido",
+      "mannerisms": "Maneirismos",
+      "hobbies": "Hobbies",
+      "skills": "Habilidades/Talentos",
+      "loves": "Ama",
+      "morals": "Moral/Virtudes",
+      "phobias": "Fobias/Medos",
+      "angered_by": "Fica Irritado com",
+      "pet_peeves": "Manhas",
+      "obsessed_with": "Obcecado por",
+      "routines": "Rotinas",
+      "bad_habits": "Maus Hábitos",
+      "desires": "Desejos",
+      "flaws": "Defeitos",
+      "quirks": "Peculiaridades",
+      "favorite_sayings": "Ditos Favoritos",
+      "secrets": "Segredos",
+      "regrets": "Arrependimentos",
+      "accomplishments": "Realizações",
+      "memories": "Memórias",
+      "languages": "Línguas Conhecidas",
+      "comm_methods": "Métodos de Comunicação Preferidos",
+      "accent": "Sotaque",
+      "speech_style": "Estilo e Ritmo da Fala",
+      "pitch": "Tom de Voz",
+      "laughter": "Risada",
+      "smile": "Sorriso",
+      "gestures": "Uso de Gestos",
+      "facial_expressions": "Expressões Faciais",
+      "verbal_expressions": "Expressões Verbais",
+      "physical_strengths": "Forças Físicas",
+      "physical_weaknesses_2": "Fraquezas Físicas",
+      "intellectual_strengths": "Forças Intelectuais",
+      "intellectual_weaknesses": "Fraquezas Intelectuais",
+      "interpersonal_strengths": "Forças Interpessoais",
+      "interpersonal_weaknesses": "Fraquezas Interpessoais",
+      "abilities": "Habilidades Físicas/Mágicas",
+      "physical_conditions": "Doenças/Condições Físicas",
+      "mental_conditions": "Doenças/Condições Mentais",
+      "partners": "Parceiro(s)/Outros Significativos",
+      "family": "Família (Pais, Filhos, etc.)",
+      "friends": "Amigos e Melhores Amigos",
+      "rivals_enemies": "Rivais e Inimigos",
+      "colleagues": "Colegas e Mentores",
+      "social_media": "Presença nas Redes Sociais",
+      "public_perception": "Percepção Pública",
+      "archetype": "Arquétipo do Personagem",
+      "arc": "Arco do Personagem",
+      "core_values": "Valores Essenciais",
+      "internal_conflicts": "Conflitos Internos",
+      "external_conflicts": "Conflitos Externos",
+      "goals": "Objetivos",
+      "motivations": "Motivações",
+      "epiphanies": "Epifanias",
+      "significant_events": "Eventos Significativos/Pontos da Trama"
+    }
+  },
+  "feedback": {
+    "title": "Feedback, Sugestões e Suporte",
+    "description": "Sua contribuição é valiosa para tornar o OpenWritingKit melhor para todos.",
+    "form": {
+      "title": "Envie Seu Feedback",
+      "description": "Tem uma sugestão, encontrou um bug ou quer dar um feedback geral? Nos diga!",
+      "type_label": "Tipo de Feedback",
+      "type_placeholder": "Selecione um tipo",
+      "types": {
+        "general": "Feedback Geral",
+        "bug": "Relatório de Bug",
+        "suggestion": "Sugestão de Recurso"
+      },
+      "page_label": "Página Relacionada (Opcional)",
+      "page_placeholder": "Selecione uma página",
+      "pages": {
+        "general": "Geral / Não relacionado"
+      },
+      "message_label": "Sua Mensagem",
+      "message_placeholder": "Diga-nos o que está em sua mente...",
+      "submit_button": "Enviar Feedback"
+    },
+    "toast": {
+      "empty_title": "Mensagem está vazia",
+      "empty_desc": "Por favor, escreva algo antes de enviar.",
+      "success_title": "Feedback Enviado!",
+      "success_desc": "Obrigado pela sua valiosa contribuição. Esta é uma demonstração e os dados foram registrados no console."
+    },
+    "contribute": {
+      "title": "Contribua no GitHub",
+      "description": "O OpenWritingKit é um projeto de código aberto. Se você é um desenvolvedor, pode contribuir diretamente para o código, corrigir bugs ou adicionar novos recursos.",
+      "button": "Ver no GitHub"
+    },
+    "support": {
+      "title": "Apoie o Projeto",
+      "description": "Se você acha esta ferramenta útil, considere apoiar seu desenvolvimento. Sua contribuição ajuda a cobrir custos e impulsiona melhorias futuras.",
+      "button": "Me Pague um Café"
+    }
+  },
+    "resources": {
+    "title": "Recursos de Escrita",
+    "description": "Uma lista curada de artigos, ferramentas e comunidades úteis para escritores.",
+    "visit_site": "Visitar Site",
+    "suggestion_box": {
+      "title": "Tem uma sugestão?",
+      "description": "Este é um projeto de código aberto. Se você tem um recurso que adoraria ver aqui, considere contribuir no GitHub!"
+    },
+    "types": {
+      "article": "Artigo",
+      "podcast": "Podcast",
+      "tool": "Ferramenta",
+      "guide": "Guia"
+    },
+    "list": {
+      "nanowrimo": {
+        "title": "NaNoWriMo",
+        "description": "Participe do desafio do Mês Nacional de Escrita de Romances. Uma ótima comunidade para motivação."
+      },
+      "reedsy": {
+        "title": "Blog da Reedsy",
+        "description": "Uma vasta gama de artigos sobre escrita, edição e publicação."
+      },
+      "writing_excuses": {
+        "title": "Podcast Writing Excuses",
+        "description": "Quinze minutos de duração, porque você está com pressa, e nós não somos tão espertos."
+      },
+      "creative_penn": {
+        "title": "The Creative Penn",
+        "description": "Artigos, podcast e recursos para autores sobre escrita e o negócio da escrita."
+      },
+      "helping_writers": {
+        "title": "Helping Writers Become Authors",
+        "description": "O site de K.M. Weiland oferece insights profundos sobre estrutura de história e arcos de personagem."
+      },
+      "one_stop": {
+        "title": "One Stop for Writers",
+        "description": "Uma potência de ferramentas e recursos para escritores, incluindo dicionários de sinônimos e construtores de personagens."
+      }
     }
   }
 }

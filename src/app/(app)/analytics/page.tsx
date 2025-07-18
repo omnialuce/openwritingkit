@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InsightCardProps {
   title: string;
@@ -26,6 +27,7 @@ interface ActivityLogEntry {
 }
 
 function InsightCard({ title, description, icon: Icon, value, unit, children, comingSoon }: InsightCardProps) {
+  const { t } = useLanguage();
   return (
     <Card className={cn(comingSoon && "opacity-70")}>
       <CardHeader>
@@ -45,10 +47,10 @@ function InsightCard({ title, description, icon: Icon, value, unit, children, co
         )}
         {children && <div>{children}</div>}
         {!value && !children && !comingSoon && (
-          <p className="text-muted-foreground">Data will appear here once you start writing in the selected story.</p>
+          <p className="text-muted-foreground">{t('analytics.no_data')}</p>
         )}
         {comingSoon && (
-          <p className="text-sm text-primary font-semibold">Coming Soon</p>
+          <p className="text-sm text-primary font-semibold">{t('common.coming_soon')}</p>
         )}
       </CardContent>
     </Card>
@@ -56,11 +58,12 @@ function InsightCard({ title, description, icon: Icon, value, unit, children, co
 }
 
 export default function AnalyticsPage() {
-  const { activeStoryId, activeStoryName } = useStoryContext(); // HOOK 1: Call once at the top
-  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]); // HOOK 2
-  const [isMounted, setIsMounted] = useState(false); // HOOK 3
+  const { t } = useLanguage();
+  const { activeStoryId, activeStoryName } = useStoryContext();
+  const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => { // HOOK 4
+  useEffect(() => {
     setIsMounted(true);
     if (typeof window !== 'undefined' && activeStoryId) {
       const activityLogStorageKey = getActivityLogKey(activeStoryId);
@@ -83,22 +86,22 @@ export default function AnalyticsPage() {
   const getTodayISOString = () => new Date().toISOString().split('T')[0];
 
   const calculateWordCountTrends = () => {
-    if (!activeStoryId) return "0 words (No story selected)";
+    if (!activeStoryId) return t('analytics.word_count_today.no_story');
     const todayISO = getTodayISOString();
     const todayEntries = activityLog.filter(entry => entry.timestamp.startsWith(todayISO));
     
-    if (todayEntries.length === 0) return "0 words recorded today";
+    if (todayEntries.length === 0) return t('analytics.word_count_today.no_words');
 
     const lastEntryToday = todayEntries[todayEntries.length - 1];
-    return `${lastEntryToday.wordCount.toLocaleString()} words recorded in editor today`;
+    return t('analytics.word_count_today.words_recorded', { count: lastEntryToday.wordCount.toLocaleString() });
   };
 
   const calculateProductiveTimes = () => {
-    if (!activeStoryId) return "No activity (No story selected)";
+    if (!activeStoryId) return t('analytics.productive_times.no_story');
     const todayISO = getTodayISOString();
     const todayEntries = activityLog.filter(entry => entry.timestamp.startsWith(todayISO));
 
-    if (todayEntries.length === 0) return "No activity logged today";
+    if (todayEntries.length === 0) return t('analytics.productive_times.no_activity');
 
     const savesByHour: Record<string, number> = {};
     todayEntries.forEach(entry => {
@@ -114,22 +117,26 @@ export default function AnalyticsPage() {
         mostActiveHour = parseInt(hour, 10);
       }
     }
-    if(mostActiveHour === -1) return "Not enough data for today."
+    if(mostActiveHour === -1) return t('analytics.productive_times.not_enough_data');
     
-    return `Most active: ${mostActiveHour.toString().padStart(2, '0')}:00 - ${(mostActiveHour + 1).toString().padStart(2,'0')}:00 (${maxSaves} save(s))`;
+    return t('analytics.productive_times.most_active', { 
+        start_hour: mostActiveHour.toString().padStart(2, '0'), 
+        end_hour: (mostActiveHour + 1).toString().padStart(2,'0'), 
+        saves: maxSaves.toString() 
+    });
   };
 
 
   const advancedInsights = [
-    { title: "Writing Pattern Analysis", description: "Analyze sentence length, common phrases, and writing habits.", icon: AlignLeft, comingSoon: true },
-    { title: "Vocabulary Richness Analysis", description: "Assess the diversity and complexity of your word usage.", icon: SpellCheck2, comingSoon: true },
-    { title: "Narrative Pacing & Structure Deep Dive", description: "Get detailed insights into your story's structural flow and tension.", icon: GitMerge, comingSoon: true },
+    { title: t('analytics.advanced.writing_pattern_title'), description: t('analytics.advanced.writing_pattern_desc'), icon: AlignLeft, comingSoon: true },
+    { title: t('analytics.advanced.vocabulary_richness_title'), description: t('analytics.advanced.vocabulary_richness_desc'), icon: SpellCheck2, comingSoon: true },
+    { title: t('analytics.advanced.narrative_pacing_title'), description: t('analytics.advanced.narrative_pacing_desc'), icon: GitMerge, comingSoon: true },
   ];
   
   const generalInsights = [
-    { title: "Dialogue Ratio", description: "Analyze dialogue vs. narrative balance.", icon: Users, value: "N/A", unit: "analysis pending" },
-    { title: "Chapter Length Consistency", description: "Monitor the consistency of your chapter lengths.", icon: FileText, value: "N/A", unit: "analysis pending" },
-    { title: "Reading Difficulty", description: "Gauge the readability of your text.", icon: Percent, value: "N/A", unit: "analysis pending" },
+    { title: t('analytics.general.dialogue_ratio_title'), description: t('analytics.general.dialogue_ratio_desc'), icon: Users, value: "N/A", unit: t('analytics.general.analysis_pending') },
+    { title: t('analytics.general.chapter_length_title'), description: t('analytics.general.chapter_length_desc'), icon: FileText, value: "N/A", unit: t('analytics.general.analysis_pending') },
+    { title: t('analytics.general.reading_difficulty_title'), description: t('analytics.general.reading_difficulty_desc'), icon: Percent, value: "N/A", unit: t('analytics.general.analysis_pending') },
   ];
 
 
@@ -139,10 +146,10 @@ export default function AnalyticsPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('analytics.no_active_story_title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to view analytics.</p>
+          <p className="text-muted-foreground">{t('analytics.no_active_story_desc_1')} <Link href="/stories" className="text-primary hover:underline">{t('analytics.no_active_story_desc_2')}</Link> {t('analytics.no_active_story_desc_3')}</p>
         </CardContent>
       </Card>
     );
@@ -151,24 +158,24 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Writing Analytics & Insights</h1>
-        <p className="text-muted-foreground">Understand your writing patterns for the current story: <span className="font-semibold text-primary">{activeStoryName || ''}</span></p>
+        <h1 className="text-3xl font-bold mb-2">{t('analytics.title')}</h1>
+        <p className="text-muted-foreground">{t('analytics.description')} <span className="font-semibold text-primary">{activeStoryName || ''}</span></p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         <WordGoalCard /> 
-        <InsightCard title="Word Count Today" description="Words recorded in the editor today based on saves for this story." icon={TrendingUp}>
+        <InsightCard title={t('analytics.word_count_today.title')} description={t('analytics.word_count_today.description')} icon={TrendingUp}>
            <p className="text-2xl font-bold">{calculateWordCountTrends()}</p>
-           <p className="text-xs text-muted-foreground mt-1">Based on auto-saves. More detailed daily/weekly trends coming soon.</p>
+           <p className="text-xs text-muted-foreground mt-1">{t('analytics.word_count_today.footer')}</p>
         </InsightCard>
-        <InsightCard title="Productive Times Today" description="Hour with most saves in the editor today for this story." icon={CalendarClock}>
+        <InsightCard title={t('analytics.productive_times.title')} description={t('analytics.productive_times.description')} icon={CalendarClock}>
            <p className="text-2xl font-bold">{calculateProductiveTimes()}</p>
-           <p className="text-xs text-muted-foreground mt-1">Based on auto-saves. Deeper analysis coming soon.</p>
+           <p className="text-xs text-muted-foreground mt-1">{t('analytics.productive_times.footer')}</p>
         </InsightCard>
       </div>
       
       <div className="mt-10">
-        <h2 className="text-2xl font-semibold mb-6">Advanced Writing Insights (Coming Soon)</h2>
+        <h2 className="text-2xl font-semibold mb-6">{t('analytics.advanced.section_title')}</h2>
          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {advancedInsights.map((insight) => (
             <InsightCard key={insight.title} {...insight} />
@@ -177,7 +184,7 @@ export default function AnalyticsPage() {
       </div>
       
       <div className="mt-10">
-        <h2 className="text-2xl font-semibold mb-6">General Writing Statistics (Coming Soon)</h2>
+        <h2 className="text-2xl font-semibold mb-6">{t('analytics.general.section_title')}</h2>
          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {generalInsights.map((insight) => (
             <InsightCard key={insight.title} {...insight} />
@@ -187,12 +194,12 @@ export default function AnalyticsPage() {
 
       <Card className="mt-12">
         <CardHeader>
-          <CardTitle>Overall Progress Overview</CardTitle>
-          <CardDescription>A visual summary of your writing journey for this story.</CardDescription>
+          <CardTitle>{t('analytics.overall_progress.title')}</CardTitle>
+          <CardDescription>{t('analytics.overall_progress.description')}</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
            <Image src="/comingsoon.svg" alt="Illustration of building site with the words 'coming soon'." width={800} height={300} className="mx-auto rounded-md dark:invert" />
-          <p className="text-muted-foreground mt-4">Detailed charts and graphs are coming soon to help you visualize your progress.</p>
+          <p className="text-muted-foreground mt-4">{t('analytics.overall_progress.footer')}</p>
         </CardContent>
       </Card>
     </div>

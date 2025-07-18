@@ -1,4 +1,3 @@
-
 // src/components/analytics/WordGoalCard.tsx
 'use client';
 
@@ -10,12 +9,14 @@ import { Progress } from '@/components/ui/progress';
 import { Target, Edit3, Save, AlertTriangle } from 'lucide-react';
 import { useStoryContext, getWordGoalKey, getEditorContentKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DocumentData {
   current: string;
 }
 
 export function WordGoalCard() {
+  const { t } = useLanguage();
   const { activeStoryId } = useStoryContext();
   const wordGoalStorageKey = getWordGoalKey(activeStoryId);
   const editorDocStorageKey = getEditorContentKey(activeStoryId);
@@ -58,18 +59,16 @@ export function WordGoalCard() {
         setGoal(numGoal);
         setInputValue(numGoal.toString());
       } else {
-        // Reset to default if no saved goal for this story
         setGoal(1000);
         setInputValue("1000");
       }
       updateCurrentWords(); 
     } else if (!activeStoryId) {
-      // Reset when no story is active
       setGoal(1000);
       setInputValue("1000");
       setCurrentWords(0);
     }
-  }, [activeStoryId, wordGoalStorageKey]); // Depend on activeStoryId and the derived key
+  }, [activeStoryId, wordGoalStorageKey]);
 
   useEffect(() => {
     if (goal > 0) {
@@ -81,7 +80,6 @@ export function WordGoalCard() {
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      // Listen to changes on the specific story's editor content key
       if (event.key === editorDocStorageKey) {
         updateCurrentWords();
       }
@@ -96,7 +94,7 @@ export function WordGoalCard() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [editorDocStorageKey, wordGoalStorageKey]); // Re-attach listener if key changes
+  }, [editorDocStorageKey, wordGoalStorageKey]);
 
   const handleGoalChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -114,7 +112,7 @@ export function WordGoalCard() {
     }
   };
 
-  if (!isMounted) return null; // Or a loading skeleton
+  if (!isMounted) return null;
 
   if (!activeStoryId) {
      return (
@@ -122,16 +120,16 @@ export function WordGoalCard() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Target className="h-6 w-6 text-primary" />
-            <CardTitle>Word Count Goal</CardTitle>
+            <CardTitle>{t('word_goal.title')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center text-muted-foreground">
             <AlertTriangle className="mr-2 h-5 w-5 text-destructive" />
-            Select a story to set and track word goals.
+            {t('word_goal.no_story_desc')}
           </div>
            <Link href="/stories" passHref className="mt-2">
-            <Button variant="link" className="p-0">Go to Stories</Button>
+            <Button variant="link" className="p-0">{t('word_goal.go_to_stories')}</Button>
           </Link>
         </CardContent>
       </Card>
@@ -144,13 +142,13 @@ export function WordGoalCard() {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <Target className="h-6 w-6 text-primary" />
-            <CardTitle>Word Count Goal</CardTitle>
+            <CardTitle>{t('word_goal.title')}</CardTitle>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)} title={isEditingGoal ? "Save Goal" : "Edit Goal"}>
+          <Button variant="ghost" size="icon" onClick={() => setIsEditingGoal(!isEditingGoal)} title={isEditingGoal ? t('common.save') : t('common.edit')}>
             {isEditingGoal ? <Save className="h-5 w-5" /> : <Edit3 className="h-5 w-5" />}
           </Button>
         </div>
-        <CardDescription>Set a target for the current story and track progress.</CardDescription>
+        <CardDescription>{t('word_goal.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isEditingGoal ? (
@@ -159,27 +157,27 @@ export function WordGoalCard() {
               type="number"
               value={inputValue}
               onChange={handleGoalChange}
-              placeholder="Enter word goal"
+              placeholder={t('word_goal.placeholder')}
               min="1"
             />
-            <Button onClick={handleSetGoal}>Set</Button>
+            <Button onClick={handleSetGoal}>{t('word_goal.set_button')}</Button>
           </div>
         ) : (
           <p className="text-2xl font-semibold">
-            Goal: {goal.toLocaleString()} words
+            {t('word_goal.goal_prefix')}: {goal.toLocaleString()} {t('word_goal.words')}
           </p>
         )}
         <div>
           <div className="flex justify-between text-sm text-muted-foreground mb-1">
-            <span>Current Progress</span>
-            <span>{currentWords.toLocaleString()} / {goal.toLocaleString()} words</span>
+            <span>{t('word_goal.progress')}</span>
+            <span>{currentWords.toLocaleString()} / {goal.toLocaleString()} {t('word_goal.words')}</span>
           </div>
           <Progress value={progress} className="w-full h-3" />
-          <p className="text-right text-sm text-primary font-semibold mt-1">{progress.toFixed(0)}% complete</p>
+          <p className="text-right text-sm text-primary font-semibold mt-1">{t('word_goal.complete', { progress: progress.toFixed(0) })}</p>
         </div>
       </CardContent>
       <CardFooter>
-        <p className="text-xs text-muted-foreground">Your goal is saved for this story in your browser.</p>
+        <p className="text-xs text-muted-foreground">{t('word_goal.footer')}</p>
       </CardFooter>
     </Card>
   );
