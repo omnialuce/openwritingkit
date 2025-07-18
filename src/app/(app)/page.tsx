@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <section className="bg-card p-6 md:p-8 rounded-none border">
+      <section className="bg-card p-6 md:p-8 rounded-lg border">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
              <h1 className="text-4xl font-bold mb-4 text-primary">
@@ -118,7 +118,7 @@ export default function DashboardPage() {
                 : "Select a story or create a new one to get started!"}
             </p>
             <Link href={activeStoryId ? "/editor" : "/stories"} passHref>
-              <Button size="lg" className="rounded-none">
+              <Button size="lg" className="rounded-md">
                 {activeStoryId ? "Open Editor" : "Go to Stories"} <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
               alt="OpenWritingKit illustrative banner" 
               width={300} 
               height={300}
-              className="rounded-none dark:invert"
+              className="rounded-md dark:invert"
             />
           </div>
         </div>
@@ -195,10 +195,16 @@ export default function DashboardPage() {
                                 </AlertDescription>
                             </Alert>
                         </div>
+                        <div className="flex justify-end pt-2">
+                           <DialogClose asChild>
+                              <Button type="button" variant="secondary">
+                                Close
+                              </Button>
+                            </DialogClose>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>
-            
           </CardContent>
         </Card>
       )}
@@ -209,7 +215,7 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {quickActions.map((action) => (
-                <Card key={action.title} className="hover:shadow-md transition-shadow duration-300 rounded-none border">
+                <Card key={action.title} className="hover:shadow-md transition-shadow duration-300 rounded-lg border">
                   <CardHeader>
                     <div className="flex items-start gap-3 mb-2">
                       <action.icon className="h-7 w-7 text-primary mt-1" />
@@ -221,7 +227,7 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardFooter>
                     <Link href={action.href} passHref className="w-full">
-                      <Button variant="outline" className="w-full rounded-none" disabled={!activeStoryId && !['/stories', '/settings', '/ai-tools'].includes(action.href) }>
+                      <Button variant="outline" className="w-full rounded-md" disabled={!activeStoryId && !['/stories', '/settings', '/ai-tools'].includes(action.href) }>
                         {action.cta} <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </Link>
@@ -232,7 +238,7 @@ export default function DashboardPage() {
           </section>
 
           <section className="grid md:grid-cols-2 gap-6">
-            <Card className="rounded-none border">
+            <Card className="rounded-lg border">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-6 w-6 text-primary" />
@@ -248,7 +254,7 @@ export default function DashboardPage() {
                  {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">Select a story to see its streak.</p>}
               </CardContent>
             </Card>
-            <Card className="rounded-none border">
+            <Card className="rounded-lg border">
               <CardHeader>
                  <div className="flex items-center gap-2">
                   <TrendingUp className="h-6 w-6 text-primary" />
