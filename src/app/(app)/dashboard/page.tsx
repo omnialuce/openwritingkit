@@ -121,11 +121,11 @@ export default function DashboardPage() {
               </Button>
             </Link>
           </div>
-          <div className="hidden md:block">
+          <div className="flex justify-center items-center">
             <Image 
-              src="/writer.svg" 
+              src="/typewriter.svg" 
               alt="OpenWritingKit illustrative banner" 
-              width={500} 
+              width={300} 
               height={300}
               className="rounded-none dark:invert"
             />
