@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ROUTES = ['/dashboard', '/editor', '/documents', '/outline', '/characters', '/plot-tools', '/ai-tools', '/analytics', '/settings', '/resources', '/feedback', '/stories'];
+const PROTECTED_ROUTES = ['/', '/editor', '/documents', '/outline', '/characters', '/plot-tools', '/ai-tools', '/analytics', '/settings', '/resources', '/feedback', '/stories'];
 const PUBLIC_ROUTES = ['/login'];
 
 export function middleware(request: NextRequest) {
@@ -11,19 +11,24 @@ export function middleware(request: NextRequest) {
   // Handle the root path redirect
   if (pathname === '/') {
     if (sessionToken) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      // If user is at root and logged in, let them stay (new dashboard)
+      return NextResponse.next();
     }
+    // If user is at root and not logged in, send to login
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Redirect unauthenticated users from protected routes to login
   if (!sessionToken && PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    // Exception for root, which is handled above
+    if (pathname !== '/') {
+        return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
   
   // Redirect authenticated users from public routes (like login) to dashboard
   if (sessionToken && PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();

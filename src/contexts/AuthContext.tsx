@@ -30,6 +30,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      if (user) {
+        user.getIdToken().then((token) => {
+            // Set cookie for server-side rendering/middleware
+            document.cookie = `firebaseIdToken=${token}; path=/; max-age=3600`; // 1 hour expiration
+        });
+      } else {
+         // Clear cookie on logout
+         document.cookie = 'firebaseIdToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
       setLoading(false);
     });
 
@@ -44,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           title: "Welcome Back!",
           description: "You have successfully signed in."
       });
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       console.error("Firebase Login Error: ", error);
       toast({
@@ -94,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   if(user && isPublicPage) {
      if (typeof window !== 'undefined') {
-        router.push('/dashboard');
+        router.push('/');
      }
       return (
        <div className="flex h-screen w-full items-center justify-center bg-background">

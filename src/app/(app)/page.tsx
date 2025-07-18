@@ -1,4 +1,4 @@
-// src/app/(app)/dashboard/page.tsx
+// src/app/(app)/page.tsx
 'use client';
 
 import { useEffect, useState, useCallback } from "react";

@@ -48,7 +48,7 @@ export function AppSidebar() {
      <SidebarMenuItem key={item.href}>
         <SidebarMenuButton
           asChild
-          isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+          isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
           disabled={item.disabled}
           aria-disabled={item.disabled}
           tooltip={{ 
@@ -71,7 +71,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/dashboard" className={cn(
+        <Link href="/" className={cn(
             "flex items-center gap-2",
             "group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:justify-center" 
           )}>
