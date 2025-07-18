@@ -5,7 +5,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -162,14 +162,14 @@ export default function DashboardPage() {
                             <Info className="mr-2 h-4 w-4" /> How to Use This App
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
+                    <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
                             <DialogTitle className="text-2xl">Welcome to OpenWritingKit!</DialogTitle>
                             <DialogDescription>
                                 Here's a quick guide to get you started.
                             </DialogDescription>
                         </DialogHeader>
-                        <ScrollArea className="flex-grow pr-4 -mr-4">
+                        <ScrollArea className="max-h-[70vh] pr-6">
                           <div className="space-y-4 py-4 text-sm">
                               <div>
                                   <h3 className="font-semibold mb-2">Main Features</h3>
@@ -197,15 +197,16 @@ export default function DashboardPage() {
                                       <p className="mt-2">To prevent data loss, please connect to Google Drive in the sidebar or **always save a backup copy** of your work elsewhere using the export features.</p>
                                   </AlertDescription>
                               </Alert>
+
+                              <div className="flex justify-end pt-4">
+                                  <DialogClose asChild>
+                                      <Button type="button" variant="secondary">
+                                          Close
+                                      </Button>
+                                  </DialogClose>
+                              </div>
                           </div>
                         </ScrollArea>
-                        <DialogFooter className="pt-2 shrink-0">
-                           <DialogClose asChild>
-                              <Button type="button" variant="secondary">
-                                Close
-                              </Button>
-                            </DialogClose>
-                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -281,3 +282,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
