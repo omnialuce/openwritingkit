@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type } from 'lucide-react';
 import useAutosave from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -23,7 +23,9 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-  DropdownMenuPortal
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -38,8 +40,15 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 type EditorTheme = 'light' | 'dark';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
-const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
-type EditorFontSize = "sm" | "base" | "lg";
+
+interface EditorSettings {
+  fontFamily: 'sans' | 'serif';
+  fontSize: 'sm' | 'base' | 'lg';
+  lineHeight: 'tight' | 'normal' | 'loose';
+  paragraphSpacing: 'sm' | 'base' | 'lg';
+}
+
+const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings';
 
 type DocumentType = "folder" | "chapter" | "scene" | "file";
 type DocumentStatus = "Draft" | "Revised" | "Complete";
@@ -63,13 +72,15 @@ interface DocumentItem {
 export function WritingArea() {
   const { t } = useLanguage();
   const { activeStoryId, documentToOpen, consumeDocumentToOpen } = useStoryContext();
-  const editorStorageKey = getEditorContentKey(activeStoryId);
-  const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+  
+  const editorStorageKey = getEditorContentKey(activeStoryId, activeDocumentId);
 
   const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(
-    activeDocumentId ? `openwritingkit-story-${activeStoryId}-doc-${activeDocumentId}` : editorStorageKey,
-    '<p></p>'
+    editorStorageKey,
+    '<p></p>',
+    2000,
+    !!documentToOpen // Prevent autoload when a document is about to be opened
   );
   
   const [wordCount, setWordCount] = useState(0);
@@ -90,7 +101,13 @@ export function WritingArea() {
   const [feedbackTimestamp, setFeedbackTimestamp] = useState<number | null>(null);
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>("base");
+  
+  const [editorSettings, setEditorSettings] = useState<EditorSettings>({
+    fontFamily: 'sans',
+    fontSize: 'base',
+    lineHeight: 'normal',
+    paragraphSpacing: 'base',
+  });
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
   const [newDocFilename, setNewDocFilename] = useState('');
@@ -98,16 +115,7 @@ export function WritingArea() {
   const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([]);
   const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
 
-
-  const getEditorClassNames = useCallback((size: EditorFontSize) => {
-    const baseClasses = 'prose dark:prose-invert focus:outline-none w-full h-full p-6 leading-relaxed';
-    const sizeMap: Record<EditorFontSize, string> = {
-      sm: 'prose-sm',
-      base: 'prose-base',
-      lg: 'prose-lg',
-    };
-    return cn(baseClasses, sizeMap[size]);
-  }, []);
+  const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
 
   const editor = useEditor({
     extensions: [
@@ -117,7 +125,7 @@ export function WritingArea() {
         },
       }),
     ],
-    content: '<p></p>',
+    content: savedContent,
     immediatelyRender: false,
     onUpdate: ({ editor: currentEditor }) => {
       if (activeStoryId) {
@@ -126,11 +134,11 @@ export function WritingArea() {
     },
     editorProps: {
       attributes: {
-        class: getEditorClassNames(editorFontSize),
+        class: 'prose dark:prose-invert focus:outline-none w-full h-full p-6'
       },
     },
   });
-  
+
   const findDocumentRecursive = (items: DocumentItem[], docId: string): DocumentItem | null => {
     for (const item of items) {
       if (item.id === docId) {
@@ -166,9 +174,22 @@ export function WritingArea() {
       };
   }, [loadAllDocuments, documentsStorageKey]);
 
+
+  const openDocument = useCallback((doc: DocumentItem) => {
+    if (editor) {
+      const content = doc.content || '<p></p>';
+      setActiveDocumentId(doc.id);
+      setActiveDocumentName(doc.name);
+      // Directly set editor content without triggering autosave's load
+      setSavedContent(content); 
+      editor.commands.setContent(content, false);
+    }
+  }, [editor, setSavedContent]);
+
+
   useEffect(() => {
     if (editor && documentToOpen) {
-      const docToLoadId = consumeDocumentToOpen(); // Consume the ID
+      const docToLoadId = consumeDocumentToOpen();
       if (docToLoadId) {
         const docToLoad = findDocumentRecursive(allDocuments, docToLoadId);
         if (docToLoad) {
@@ -176,7 +197,15 @@ export function WritingArea() {
         }
       }
     }
-  }, [documentToOpen, editor, allDocuments, consumeDocumentToOpen]);
+  }, [documentToOpen, editor, allDocuments, consumeDocumentToOpen, openDocument]);
+  
+
+  useEffect(() => {
+    if (editor && savedContent !== editor.getHTML()) {
+      editor.commands.setContent(savedContent, false);
+    }
+  }, [savedContent, editor]);
+
 
   const saveCurrentContentToDocument = useCallback((content: string, docId: string) => {
     if (!activeStoryId) return;
@@ -210,20 +239,11 @@ export function WritingArea() {
     }
   }, [savedContent, activeDocumentId, saveCurrentContentToDocument]);
 
-  const openDocument = (doc: DocumentItem) => {
-      if(editor) {
-        setActiveDocumentId(doc.id);
-        setActiveDocumentName(doc.name);
-        editor.commands.setContent(doc.content || '<p></p>');
-      }
-  };
-
   const closeDocument = () => {
     if(editor && activeDocumentId) {
         saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
         setActiveDocumentId(null);
         setActiveDocumentName(null);
-        editor.commands.setContent(savedContent || '<p></p>'); // Revert to scratchpad
     }
   }
 
@@ -233,61 +253,59 @@ export function WritingArea() {
       const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
       setAiFeaturesEnabled(storedAIPref === 'true');
       
-      const storedFontSize = localStorage.getItem(EDITOR_FONT_SIZE_KEY) as EditorFontSize | null;
-      if (storedFontSize) {
-        setEditorFontSize(storedFontSize);
+      const storedSettings = localStorage.getItem(EDITOR_SETTINGS_KEY);
+      if (storedSettings) {
+        try {
+          setEditorSettings(JSON.parse(storedSettings));
+        } catch(e) { /* use default */ }
       }
 
       const handleStorageChange = (event: StorageEvent) => {
         if (event.key === AI_OPT_IN_KEY) {
           setAiFeaturesEnabled(event.newValue === 'true');
         }
-        if (event.key === EDITOR_FONT_SIZE_KEY) {
-          setEditorFontSize((event.newValue as EditorFontSize) || "base");
-        }
       };
       window.addEventListener('storage', handleStorageChange);
       
-      const handleEditorSettingsChange = (event: Event) => {
-        const detail = (event as CustomEvent).detail;
-        if (detail.fontSize) {
-          setEditorFontSize(detail.fontSize);
-        }
-      };
-      window.addEventListener('editorSettingsChanged', handleEditorSettingsChange);
-
       return () => {
         window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('editorSettingsChanged', handleEditorSettingsChange);
       };
     }
   }, []);
 
+  const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
+    const updatedSettings = { ...editorSettings, ...newSettings };
+    setEditorSettings(updatedSettings);
+    localStorage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updatedSettings));
+  };
+  
   useEffect(() => {
-    if (editor) {
-      editor.setOptions({
-        editorProps: {
-          attributes: {
-            class: getEditorClassNames(editorFontSize),
-          },
-        },
-      });
-    }
-  }, [editorFontSize, editor, getEditorClassNames]);
+    const root = document.documentElement;
+    const fontMap = {
+      sans: "'PT Sans', sans-serif",
+      serif: "'Georgia', serif",
+    };
+    const sizeMap = { sm: '0.9rem', base: '1rem', lg: '1.1rem' };
+    const lineHeightMap = { tight: '1.5', normal: '1.7', loose: '1.9' };
+    const paraSpacingMap = { sm: '0.75rem', base: '1rem', lg: '1.5rem' };
+
+    root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily]);
+    root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize]);
+    root.style.setProperty('--editor-line-height', lineHeightMap[editorSettings.lineHeight]);
+    root.style.setProperty('--editor-paragraph-spacing', paraSpacingMap[editorSettings.paragraphSpacing]);
+  }, [editorSettings]);
+
 
   useEffect(() => {
-    if (editor && !activeDocumentId) {
-      if (savedContent !== editor.getHTML()) {
-        editor.commands.setContent(savedContent, false);
+    if (editor) {
+      if (!activeStoryId) {
+        editor.commands.setContent(`<p>${t('editor.no_story_message')}</p>`, false);
+        editor.setEditable(false);
+      } else {
+        editor.setEditable(true);
       }
-    } else if (editor && !activeStoryId) {
-      editor.commands.setContent(`<p>${t('editor.no_story_message')}</p>`, false);
-      editor.setEditable(false);
     }
-     if (editor && activeStoryId) {
-      editor.setEditable(true);
-    }
-  }, [savedContent, editor, activeStoryId, activeDocumentId, t]);
+  }, [activeStoryId, editor, t]);
 
   useEffect(() => {
     if (editor) {
@@ -546,7 +564,7 @@ export function WritingArea() {
         >
           <Minimize className="h-5 w-5" />
         </Button>
-        <EditorContent editor={editor} className={cn("flex-grow overflow-y-auto", editorContainerClasses[editorTheme], getEditorClassNames(editorFontSize))} />
+        <EditorContent editor={editor} className={cn("flex-grow overflow-y-auto", editorContainerClasses[editorTheme])} />
       </div>
     );
   }
@@ -616,6 +634,56 @@ export function WritingArea() {
                   </Tooltip>
                 </div>
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" title={t('editor.customize_view_title')}>
+                        <Palette className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-none w-64">
+                      <DropdownMenuLabel>{t('editor.customize_view.editor_theme')}</DropdownMenuLabel>
+                      <DropdownMenuRadioGroup value={editorTheme} onValueChange={(v) => applyEditorTheme(v as EditorTheme)}>
+                        <DropdownMenuRadioItem value="light"><Sun className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_light')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="dark"><Moon className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_dark')}</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                      
+                      <DropdownMenuSeparator />
+                      
+                      <DropdownMenuLabel>{t('editor.customize_view.font_family')}</DropdownMenuLabel>
+                       <DropdownMenuRadioGroup value={editorSettings.fontFamily} onValueChange={(v) => updateEditorSettings({ fontFamily: v as EditorSettings['fontFamily'] })}>
+                        <DropdownMenuRadioItem value="sans"><Type className="mr-2 h-4 w-4" />{t('editor.customize_view.font_sans')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="serif"><CaseSensitive className="mr-2 h-4 w-4" />{t('editor.customize_view.font_serif')}</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuLabel>{t('editor.customize_view.font_size')}</DropdownMenuLabel>
+                       <DropdownMenuRadioGroup value={editorSettings.fontSize} onValueChange={(v) => updateEditorSettings({ fontSize: v as EditorSettings['fontSize'] })}>
+                        <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="lg">{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+
+                       <DropdownMenuSeparator />
+
+                      <DropdownMenuLabel>{t('editor.customize_view.line_height')}</DropdownMenuLabel>
+                       <DropdownMenuRadioGroup value={editorSettings.lineHeight} onValueChange={(v) => updateEditorSettings({ lineHeight: v as EditorSettings['lineHeight'] })}>
+                        <DropdownMenuRadioItem value="tight">{t('editor.customize_view.line_height_tight')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="normal">{t('editor.customize_view.line_height_normal')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="loose">{t('editor.customize_view.line_height_loose')}</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+
+                       <DropdownMenuSeparator />
+
+                      <DropdownMenuLabel>{t('editor.customize_view.paragraph_spacing')}</DropdownMenuLabel>
+                       <DropdownMenuRadioGroup value={editorSettings.paragraphSpacing} onValueChange={(v) => updateEditorSettings({ paragraphSpacing: v as EditorSettings['paragraphSpacing'] })}>
+                        <DropdownMenuRadioItem value="sm"><Pilcrow className="mr-2 h-4 w-4" />{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="base"><Pilcrow className="mr-2 h-4 w-4" />{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="lg"><Pilcrow className="mr-2 h-4 w-4" />{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                   <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? t('editor.pause_session') : t('editor.start_session')} disabled={!activeStoryId}>
                     {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
                   </Button>
@@ -626,23 +694,7 @@ export function WritingArea() {
                   <Button variant="ghost" size="icon" onClick={toggleFocusMode} title={t('editor.focus_mode')} disabled={!activeStoryId}>
                     <Expand className="h-5 w-5 text-muted-foreground" />
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title={t('editor.customize_theme_title')}>
-                        <Palette className="h-5 w-5 text-muted-foreground" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-none">
-                      <DropdownMenuLabel>{t('editor.editor_theme')}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => applyEditorTheme('light')}>
-                        <Sun className="mr-2 h-4 w-4" /> {t('editor.theme_light')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => applyEditorTheme('dark')}>
-                        <Moon className="mr-2 h-4 w-4" /> {t('editor.theme_dark')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  
                 </div>
               </div>
               <EditorToolbar editor={editor} />
@@ -650,7 +702,7 @@ export function WritingArea() {
           )}
           <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
             <ScrollArea className="h-full w-full">
-              <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme], getEditorClassNames(editorFontSize))}/>
+              <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
             </ScrollArea>
           </CardContent>
           {!isFocusMode && (

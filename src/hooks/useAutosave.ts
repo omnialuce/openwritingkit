@@ -24,7 +24,8 @@ interface ActivityLogEntry {
 function useAutosave<T extends string>( 
   dynamicStorageKey: string, 
   initialValue: T,
-  saveInterval: number = 2000
+  saveInterval: number = 2000,
+  preventAutoload: boolean = false
 ): [T, (value: T) => void, boolean, () => void, Date | null] {
   const { toast } = useToast(); 
   const { t } = useLanguage();
@@ -37,10 +38,13 @@ function useAutosave<T extends string>(
 
   const getStorageKeyWithUser = useCallback((baseKey: string) => {
     if (!user) return null;
-    return `${baseKey}-${user.uid}`;
+    // The key from StoryContext already includes the storyId, so we just add the user.
+    // This assumes baseKey is unique per document.
+    return `${baseKey}-user-${user.uid}`;
   }, [user]);
 
   useEffect(() => {
+    if (preventAutoload) return;
     const key = getStorageKeyWithUser(dynamicStorageKey);
     const loadData = async () => {
       if (key) {
@@ -72,7 +76,7 @@ function useAutosave<T extends string>(
       }
     };
     loadData();
-  }, [dynamicStorageKey, initialValue, getStorageKeyWithUser]);
+  }, [dynamicStorageKey, initialValue, getStorageKeyWithUser, preventAutoload]);
 
   const logActivity = useCallback(async (textToSave: T) => {
     const activityKey = getStorageKeyWithUser(getActivityLogKey(activeStoryId));
@@ -177,18 +181,20 @@ function useAutosave<T extends string>(
 
     const handler = setTimeout(async () => {
       let storedCurrent: T | undefined = initialValue;
-      const item = await storage.getItem<string | DocumentData<T>>(key);
-      if (item) {
-        try {
-          if (typeof item === 'string') {
-            storedCurrent = item as T;
-          } else {
-            storedCurrent = item.current;
-          }
-        } catch {}
-      }
-      if (currentText !== storedCurrent) {
-        await saveDocument(currentText);
+      try {
+        const item = await storage.getItem<string | DocumentData<T>>(key);
+        if (item) {
+            if (typeof item === 'string') {
+              storedCurrent = item as T;
+            } else {
+              storedCurrent = item.current;
+            }
+        }
+        if (currentText !== storedCurrent) {
+          await saveDocument(currentText);
+        }
+      } catch(e) {
+        // Could be a race condition on initial load, ignore.
       }
     }, saveInterval);
 

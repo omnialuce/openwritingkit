@@ -50,6 +50,12 @@
     --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 0 0% 88%;
     --sidebar-ring: 0 0% 50%;
+
+    /* Editor Typography Variables */
+    --editor-font-family: 'PT Sans', sans-serif;
+    --editor-font-size: 1rem;
+    --editor-line-height: 1.7;
+    --editor-paragraph-spacing: 1rem;
   }
 
   .dark {
@@ -117,9 +123,12 @@
   /* TipTap basic content styling */
   .ProseMirror {
     @apply min-h-full;
+    font-family: var(--editor-font-family);
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height);
   }
   .ProseMirror p {
-    @apply mb-4;
+    margin-bottom: var(--editor-paragraph-spacing);
   }
   .ProseMirror h1 {
     @apply text-4xl font-bold mt-8 mb-4;
@@ -150,6 +159,9 @@
   }
   .ProseMirror hr {
     @apply border-border my-8;
+  }
+  .ProseMirror:focus {
+    outline: none;
   }
 
   /* Dark mode for TipTap content */

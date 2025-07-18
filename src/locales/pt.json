@@ -196,7 +196,7 @@
     "delete_dialog": {
       "title": "Tem certeza absoluta?",
       "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente a história:",
-      "description_2": "Dados associados (personagens, roteiros, etc.) a esta história se tornarão inacessíveis se não forem reassociados.",
+      "description_2": "e todos os dados associados (documentos, personagens, etc.) serão permanentemente perdidos.",
       "confirm_button": "Excluir História"
     },
     "edit_dialog": {
@@ -614,6 +614,21 @@
     "focus_mode": "Modo Foco",
     "exit_focus_mode": "Sair do Modo Foco",
     "customize_theme_title": "Personalizar Tema",
+    "customize_view_title": "Personalizar Visualização",
+     "customize_view": {
+      "editor_theme": "Tema do Editor",
+      "theme_light": "Claro",
+      "theme_dark": "Escuro",
+      "font_family": "Família da Fonte",
+      "font_sans": "Sem Serifa",
+      "font_serif": "Com Serifa",
+      "font_size": "Tamanho da Fonte",
+      "line_height": "Altura da Linha",
+      "line_height_tight": "Apertado",
+      "line_height_normal": "Normal",
+      "line_height_loose": "Solto",
+      "paragraph_spacing": "Espaçamento do Parágrafo"
+    },
     "editor_theme": "Tema do Editor",
     "theme_light": "Claro",
     "theme_dark": "Escuro",

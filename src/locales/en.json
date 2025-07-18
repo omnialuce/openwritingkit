@@ -196,7 +196,7 @@
     "delete_dialog": {
       "title": "Are you absolutely sure?",
       "description_1": "This action cannot be undone. This will permanently delete the story:",
-      "description_2": "Associated data (characters, outlines, etc.) for this story will become inaccessible if not re-associated.",
+      "description_2": "and all associated data (documents, characters, etc.) will be permanently lost.",
       "confirm_button": "Delete Story"
     },
     "edit_dialog": {
@@ -594,209 +594,224 @@
   },
   "editor": {
     "loading": "Loading editor...",
-    "no_story_title": "Nenhuma História Ativa",
-    "no_story_description": "O editor está desativado até que uma história seja selecionada.",
-    "no_story_message": "Por favor, selecione uma história para começar a escrever.",
-    "go_to_stories": "Ir para a Página de Histórias",
-    "initializing": "Inicializando editor...",
-    "open_doc_button": "Abrir Documento",
-    "open_doc_button_title": "Abrir Documento",
-    "close_doc_button_title": "Fechar Documento",
-    "save_button_title": "Salvar (salvo automaticamente)",
-    "save_as_new_button_title": "Salvar conteúdo atual como Novo Documento",
-    "import_button_title": "Importar Arquivo",
-    "export_button_title": "Exportar",
-    "export_txt": "Exportar como TXT",
-    "export_html": "Exportar como HTML",
-    "export_pdf": "Exportar como PDF (em breve)",
-    "clear_content_button_title": "Limpar Conteúdo",
-    "clear_content_confirm": "Tem certeza de que deseja limpar todo o conteúdo? Esta ação não pode ser desfeita.",
-    "focus_mode": "Modo Foco",
-    "exit_focus_mode": "Sair do Modo Foco",
-    "customize_theme_title": "Personalizar Tema",
-    "editor_theme": "Tema do Editor",
-    "theme_light": "Claro",
-    "theme_dark": "Escuro",
-    "start_session": "Iniciar Sessão",
-    "pause_session": "Pausar Sessão",
-    "reset_session": "Reiniciar Cronômetro da Sessão",
-    "editing": "Editando: {{name}}",
-    "editing_scratchpad": "Editando Bloco de Rascunho",
-    "words": "Palavras",
-    "chars": "Caracteres",
-    "not_yet_saved": "Ainda não salvo",
-    "no_active_story_footer": "Nenhuma história ativa",
-    "no_documents_in_folder": "Nenhum documento nesta pasta",
-    "no_documents_found": "Nenhum documento encontrado",
-    "toast": {
-      "no_story_title": "Nenhuma História Ativa",
-      "no_story_import": "Por favor, selecione uma história antes de importar conteúdo.",
-      "import_success_title": "Sucesso",
-      "import_success_desc": "Conteúdo do arquivo importado.",
-      "import_error_read": "Falha ao ler o arquivo.",
-      "import_error_type": "Por favor, selecione um arquivo .txt, .html ou .md.",
-      "ai_disabled_title": "Recursos de IA Desativados",
-      "ai_disabled_desc": "Por favor, ative os recursos de IA nas configurações para usar isto.",
-      "empty_content_title": "Conteúdo Vazio",
-      "empty_content_desc": "Por favor, escreva algum texto antes de solicitar feedback.",
-      "feedback_error_title": "Erro de Feedback da IA",
-      "feedback_error_desc": "Não foi possível recuperar o feedback.",
-      "doc_saved_title": "Documento Salvo",
-      "doc_saved_desc": "\"{{name}}\" foi salvo em seus documentos.",
-      "doc_save_error": "Não foi possível salvar o arquivo nos documentos."
+    "no_story_title": "No Active Story",
+    "no_story_description": "The editor is disabled until a story is selected.",
+    "no_story_message": "Please select a story to start writing.",
+    "go_to_stories": "Go to Stories Page",
+    "initializing": "Initializing editor...",
+    "open_doc_button": "Open Document",
+    "open_doc_button_title": "Open Document",
+    "close_doc_button_title": "Close Document",
+    "save_button_title": "Save (auto-saved)",
+    "save_as_new_button_title": "Save Current Content as New Document",
+    "import_button_title": "Import File",
+    "export_button_title": "Export",
+    "export_txt": "Export as TXT",
+    "export_html": "Export as HTML",
+    "export_pdf": "Export as PDF (coming soon)",
+    "clear_content_button_title": "Clear Content",
+    "clear_content_confirm": "Are you sure you want to clear all content? This action cannot be undone.",
+    "focus_mode": "Focus Mode",
+    "exit_focus_mode": "Exit Focus Mode",
+    "customize_theme_title": "Customize Theme",
+    "customize_view_title": "Customize View",
+    "customize_view": {
+      "editor_theme": "Editor Theme",
+      "theme_light": "Light",
+      "theme_dark": "Dark",
+      "font_family": "Font Family",
+      "font_sans": "Sans-Serif",
+      "font_serif": "Serif",
+      "font_size": "Font Size",
+      "line_height": "Line Height",
+      "line_height_tight": "Tight",
+      "line_height_normal": "Normal",
+      "line_height_loose": "Loose",
+      "paragraph_spacing": "Paragraph Spacing"
     },
-    "tooltip_no_story": "Selecione uma história primeiro",
-    "tooltip_get_feedback": "Obter Feedback de Escrita",
-    "tooltip_ai_disabled": "Recursos de IA desativados nas Configurações",
+    "editor_theme": "Editor Theme",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "start_session": "Start Session",
+    "pause_session": "Pause Session",
+    "reset_session": "Reset Session Timer",
+    "editing": "Editing: {{name}}",
+    "editing_scratchpad": "Editing Scratchpad",
+    "words": "Words",
+    "chars": "Characters",
+    "not_yet_saved": "Not yet saved",
+    "no_active_story_footer": "No active story",
+    "no_documents_in_folder": "No documents in this folder",
+    "no_documents_found": "No documents found",
+    "toast": {
+      "no_story_title": "No Active Story",
+      "no_story_import": "Please select a story before importing content.",
+      "import_success_title": "Success",
+      "import_success_desc": "File content imported.",
+      "import_error_read": "Failed to read the file.",
+      "import_error_type": "Please select a .txt, .html, or .md file.",
+      "ai_disabled_title": "AI Features Disabled",
+      "ai_disabled_desc": "Please enable AI features in settings to use this.",
+      "empty_content_title": "Empty Content",
+      "empty_content_desc": "Please write some text before requesting feedback.",
+      "feedback_error_title": "AI Feedback Error",
+      "feedback_error_desc": "Could not retrieve feedback.",
+      "doc_saved_title": "Document Saved",
+      "doc_saved_desc": "\"{{name}}\" has been saved to your documents.",
+      "doc_save_error": "Could not save the file to documents."
+    },
+    "tooltip_no_story": "Select a story first",
+    "tooltip_get_feedback": "Get Writing Feedback",
+    "tooltip_ai_disabled": "AI features disabled in Settings",
     "feedback": {
-      "title": "Feedback de Escrita da IA",
-      "close_button_title": "Fechar Painel de Feedback",
-      "overall_assessment_title": "Avaliação Geral",
-      "readability_title": "Legibilidade",
-      "readability_score": "Pontuação",
-      "readability_assessment": "Avaliação",
-      "grammar_title": "Sugestões de Gramática e Ortografia",
+      "title": "AI Writing Feedback",
+      "close_button_title": "Close Feedback Panel",
+      "overall_assessment_title": "Overall Assessment",
+      "readability_title": "Readability",
+      "readability_score": "Score",
+      "readability_assessment": "Assessment",
+      "grammar_title": "Grammar & Spelling Suggestions",
       "grammar_original": "Original",
-      "grammar_suggested": "Sugerido",
-      "grammar_none_found": "Nenhum problema específico de gramática ou ortografia encontrado pela IA."
+      "grammar_suggested": "Suggested",
+      "grammar_none_found": "No specific grammar or spelling issues found by the AI."
     },
     "save_as_dialog": {
-      "title": "Salvar em Documentos",
-      "description": "Digite um nome de arquivo para salvar o conteúdo atual do editor como um novo arquivo em seus documentos.",
-      "filename_label": "Nome do Arquivo",
-      "filename_placeholder": "ex: Rascunho do Capítulo 1",
-      "save_button": "Salvar Documento"
+      "title": "Save to Documents",
+      "description": "Enter a filename to save the current editor content as a new file in your documents.",
+      "filename_label": "Filename",
+      "filename_placeholder": "e.g., Chapter 1 Draft",
+      "save_button": "Save Document"
     }
   },
   "outline": {
-    "title": "Construtor de Estrutura",
-    "description": "Estruture sua história. Arraste itens para reordenar ou aninhar dentro de itens do tipo 'Capítulo'.",
-    "export_button": "Exportar Estrutura",
-    "add_button": "Adicionar Novo Item",
-    "drag_handle_title": "Arraste para reordenar/aninhar",
-    "edit_item_title": "Editar Item",
-    "delete_item_title": "Excluir Item",
+    "title": "Outline Builder",
+    "description": "Structure your story. Drag items to reorder or nest within 'Chapter' type items.",
+    "export_button": "Export Outline",
+    "add_button": "Add New Item",
+    "drag_handle_title": "Drag to reorder/nest",
+    "edit_item_title": "Edit Item",
+    "delete_item_title": "Delete Item",
     "no_active_story": {
-      "title": "Nenhuma História Ativa",
-      "description_1": "Por favor, selecione ou crie uma história na",
-      "description_2": "página de Histórias",
-      "description_3": "para construir uma estrutura."
+      "title": "No Active Story",
+      "description_1": "Please select or create a story on the",
+      "description_2": "Stories page",
+      "description_3": "to build an outline."
     },
     "types": {
-      "chapter": "Capítulo",
-      "scene": "Cena",
-      "plot_point": "Ponto da Trama/Notas"
+      "chapter": "Chapter",
+      "scene": "Scene",
+      "plot_point": "Plot Point/Notes"
     },
     "delete_dialog": {
-      "title": "Tem certeza?",
-      "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente o item da estrutura:",
-      "description_2": "e todos os seus sub-itens."
+      "title": "Are you sure?",
+      "description_1": "This action cannot be undone. This will permanently delete the outline item:",
+      "description_2": "and all of its sub-items."
     },
     "add_dialog": {
-      "title": "Adicionar Novo Item à Estrutura",
-      "description": "Escolha um tipo, adicione um título e notas opcionais. Novos itens são adicionados no nível superior.",
-      "add_button": "Adicionar Item"
+      "title": "Add New Outline Item",
+      "description": "Choose a type, add a title and optional notes. New items are added at the top level.",
+      "add_button": "Add Item"
     },
     "edit_form": {
-      "title": "Editar Item",
-      "description": "Modificando"
+      "title": "Editing Item",
+      "description": "Modifying"
     },
     "fields": {
-      "type": "Tipo",
-      "type_placeholder": "Selecione o tipo do item",
-      "title": "Título",
-      "title_placeholder": "ex: A Descoberta",
-      "notes": "Notas (Opcional)",
-      "notes_placeholder": "Adicione notas breves ou um resumo..."
+      "type": "Type",
+      "type_placeholder": "Select item type",
+      "title": "Title",
+      "title_placeholder": "e.g., The Discovery",
+      "notes": "Notes (Optional)",
+      "notes_placeholder": "Add brief notes or a summary..."
     },
     "structure": {
-      "title": "Sua Estrutura de Roteiro",
-      "description_items": "Arraste e solte para reordenar itens ou aninhá-los em itens do tipo 'Capítulo'.",
-      "description_no_items": "Sua estrutura está vazia para esta história.",
-      "empty": "Nenhum item na estrutura ainda. Clique em \"Adicionar Novo Item\" para começar."
+      "title": "Your Story Outline",
+      "description_items": "Drag and drop to reorder items or nest them under 'Chapter' type items.",
+      "description_no_items": "Your outline is empty for this story.",
+      "empty": "No items in the outline yet. Click 'Add New Item' to start."
     },
     "new_feature": {
-      "alt": "Ilustração de novo recurso",
-      "title": "Estruturação Avançada",
-      "description": "Agora você pode arrastar itens para reordená-los ou aninhá-los dentro de itens do tipo 'Capítulo'."
+      "alt": "New feature illustration",
+      "title": "Advanced Outlining",
+      "description": "You can now drag items to re-order them or nest them under 'Chapter' type items."
     },
     "export": {
-      "notes": "Notas"
+      "notes": "Notes"
     }
   },
   "plot_tools": {
-    "title": "Ferramentas de Desenvolvimento de Enredo",
-    "description": "Estruture sua narrativa, acompanhe pontos-chave e construa sua linha do tempo para a história atual.",
-    "export_button": "Exportar Tudo",
+    "title": "Plot Development Tools",
+    "description": "Structure your narrative, track key points, and build your timeline for the current story.",
+    "export_button": "Export All",
     "no_story": {
-      "title": "Nenhuma História Ativa",
-      "description_1": "Por favor, selecione ou crie uma história na",
-      "description_2": "página de Histórias",
-      "description_3": "para usar as ferramentas de enredo."
+      "title": "No Active Story",
+      "description_1": "Please select or create a story on the",
+      "description_2": "Stories page",
+      "description_3": "to use the plot tools."
     },
     "plot_points": {
-      "title": "Rastreador de Pontos da Trama",
-      "description": "Descreva os momentos-chave da sua história usando uma estrutura comum. Descreva o que acontece em cada ponto.",
-      "placeholder": "Descreva a/o {{name}} da sua história...",
-      "loading": "Carregando pontos da trama ou nenhum ponto definido para esta história ainda.",
+      "title": "Plot Point Tracker",
+      "description": "Outline your story's key moments using a common structure. Describe what happens at each point.",
+      "placeholder": "Describe your story's {{name}}...",
+      "loading": "Loading plot points or no points defined for this story yet.",
       "template": {
-        "exposition": "Exposição / Configuração",
-        "inciting_incident": "Incidente Incitante",
-        "rising_action_1": "Ação Ascendente 1 (Ponto de virada 1)",
-        "rising_action_2": "Ação Ascendente 2 (Ponto médio)",
-        "rising_action_3": "Ação Ascendente 3 (Ponto de virada 2)",
-        "climax": "Clímax",
-        "falling_action": "Ação Descendente",
-        "resolution": "Resolução / Desfecho"
+        "exposition": "Exposition / Setup",
+        "inciting_incident": "Inciting Incident",
+        "rising_action_1": "Rising Action 1 (Turning point 1)",
+        "rising_action_2": "Rising Action 2 (Midpoint)",
+        "rising_action_3": "Rising Action 3 (Turning point 2)",
+        "climax": "Climax",
+        "falling_action": "Falling Action",
+        "resolution": "Resolution / Denouement"
       }
     },
     "timeline": {
-      "title": "Criador de Linha do Tempo",
-      "description": "Registre eventos importantes, cenas ou pontos históricos em ordem cronológica. Use o campo de data/hora de forma flexível.",
-      "add_button": "Adicionar Evento na Linha do Tempo",
-      "empty": "Nenhum evento na linha do tempo ainda para esta história. Adicione um para começar a construir.",
-      "edit_button_title": "Editar Evento",
-      "delete_button_title": "Excluir Evento",
+      "title": "Timeline Creator",
+      "description": "Log important events, scenes, or historical points in chronological order. Use the date/time field flexibly.",
+      "add_button": "Add Timeline Event",
+      "empty": "No timeline events yet for this story. Add one to start building.",
+      "edit_button_title": "Edit Event",
+      "delete_button_title": "Delete Event",
       "delete_dialog": {
-        "title": "Excluir Evento da Linha do Tempo?",
-        "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente o evento:",
+        "title": "Delete Timeline Event?",
+        "description_1": "This action cannot be undone. This will permanently delete the event:",
         "description_2": ""
       },
       "create_dialog": {
-        "title": "Criar Novo Evento na Linha do Tempo",
-        "description": "Adicione um novo evento à sua linha do tempo.",
-        "create_button": "Criar Evento"
+        "title": "Create New Timeline Event",
+        "description": "Add a new event to your timeline.",
+        "create_button": "Create Event"
       },
       "edit_dialog": {
-        "title": "Editar Evento da Linha do Tempo",
-        "description": "Atualize os detalhes deste evento."
+        "title": "Edit Timeline Event",
+        "description": "Update the details for this event."
       },
       "fields": {
-        "title": "Título",
-        "datetime": "Data/Hora",
-        "datetime_placeholder": "ex: Dia 1, Manhã; Capítulo 5; 20 ABY",
-        "description": "Descrição",
-        "description_placeholder": "Descreva o evento..."
+        "title": "Title",
+        "datetime": "Date/Time",
+        "datetime_placeholder": "e.g., Day 1, Morning; Chapter 5; 20 ABY",
+        "description": "Description",
+        "description_placeholder": "Describe the event..."
       }
     },
     "scenes": {
-      "title": "Resumos de Cena",
-      "description": "Revise os resumos de cenas individuais do seu Construtor de Estrutura.",
-      "empty_1": "Nenhuma cena encontrada no Construtor de Estrutura para esta história. Vá para o",
-      "empty_2": "Construtor de Estrutura",
-      "empty_3": "para adicionar algumas."
+      "title": "Scene Summaries",
+      "description": "Review individual scene summaries from your Outline Builder.",
+      "empty_1": "No scenes found in the Outline Builder for this story. Go to the",
+      "empty_2": "Outline Builder",
+      "empty_3": "to add some."
     },
     "export": {
-      "plot_points_header": "PONTOS DA TRAMA",
-      "no_description": "Sem descrição.",
-      "timeline_header": "EVENTOS DA LINHA DO TEMPO",
-      "event_title": "Evento",
-      "event_datetime": "Data/Hora",
-      "event_description": "Descrição",
-      "scenes_header": "RESUMOS DE CENA",
-      "scene_title": "Cena",
-      "scene_notes": "Notas",
-      "no_notes": "Sem notas."
+      "plot_points_header": "PLOT POINTS",
+      "no_description": "No description.",
+      "timeline_header": "TIMELINE EVENTS",
+      "event_title": "Event",
+      "event_datetime": "Date/Time",
+      "event_description": "Description",
+      "scenes_header": "SCENE SUMMARIES",
+      "scene_title": "Scene",
+      "scene_notes": "Notes",
+      "no_notes": "No notes."
     }
   }
 }

@@ -120,12 +120,25 @@ export function StoryProvider({ children }: { children: ReactNode }) {
         getOutlineStorageKey(storyId),
         getPlotPointsStorageKey(storyId),
         getTimelineEventsStorageKey(storyId),
-        getEditorContentKey(storyId),
+        getEditorContentKey(storyId, null), // remove scratchpad for story
         getWordGoalKey(storyId),
         getActivityLogKey(storyId),
         getDocumentsStorageKey(storyId),
     ];
-    // Also remove character sheets
+    // Also remove character sheets and individual documents
+    const documentsKey = getDocumentsStorageKey(storyId);
+    const storedDocuments = JSON.parse(localStorage.getItem(documentsKey) || '[]') as { id: string, children?: any[] }[];
+
+    const removeDocsRecursive = (docs: any[]) => {
+      docs.forEach(doc => {
+        keysToRemove.push(getEditorContentKey(storyId, doc.id));
+        if (doc.children) {
+          removeDocsRecursive(doc.children);
+        }
+      });
+    };
+    removeDocsRecursive(storedDocuments);
+    
     const charactersKey = getCharactersStorageKey(storyId);
     const storedCharacters = JSON.parse(localStorage.getItem(charactersKey) || '[]') as CharacterProfile[];
     for (const char of storedCharacters) {
@@ -181,8 +194,13 @@ export const getPlotPointsStorageKey = (storyId: string | null): string =>
 export const getTimelineEventsStorageKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-timeline-events` : 'openwritingkit-timeline-events-noactive';
   
-export const getEditorContentKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-active-document-content` : 'openwritingkit-active-document-content-noactive';
+export const getEditorContentKey = (storyId: string | null, docId: string | null): string => {
+  if (!storyId) return 'openwritingkit-scratchpad-noactive';
+  // If a docId is provided, use it. Otherwise, use a generic "scratchpad" key for the story.
+  return docId 
+    ? `openwritingkit-story-${storyId}-doc-${docId}`
+    : `openwritingkit-story-${storyId}-scratchpad`;
+}
 
 export const getWordGoalKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-word-goal` : 'openwritingkit-word-goal-noactive';
