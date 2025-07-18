@@ -1,0 +1,153 @@
+{
+  "common": {
+    "error": "Erro",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "saved": "Salvo",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "close": "Fechar",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "for": "para",
+    "search_placeholder": "Pesquisar...",
+    "coming_soon": "Em Breve"
+  },
+  "login": {
+    "description": "Faça login na sua conta",
+    "email_label": "Email / ID de Usuário",
+    "email_placeholder": "seu.melhor@email.com",
+    "password_label": "Senha",
+    "show_password": "Mostrar senha",
+    "hide_password": "Ocultar senha",
+    "sign_in_button": "Entrar"
+  },
+  "auth": {
+    "loading": "Carregando aplicação...",
+    "login_success_title": "Bem-vindo(a) de volta!",
+    "login_success_desc": "Você fez login com sucesso.",
+    "login_failed_title": "Falha no Login",
+    "login_error_default": "Ocorreu um erro inesperado. Por favor, tente novamente.",
+    "login_error_invalid_credential": "Email ou senha inválidos. Por favor, verifique suas credenciais e tente novamente.",
+    "login_error_too_many_requests": "O acesso a esta conta foi temporariamente desativado devido a muitas tentativas de login malsucedidas. Você pode redefinir sua senha ou tentar novamente mais tarde.",
+    "login_error_network": "Não foi possível conectar ao serviço de autenticação. Por favor, verifique sua conexão com a internet.",
+    "logout_success_title": "Sessão Encerrada",
+    "logout_success_desc": "Você saiu da sua conta com sucesso."
+  },
+  "autosave": {
+    "error_save_title": "Erro ao Salvar",
+    "error_save_desc": "Não foi possível salvar as alterações.",
+    "cleared_title": "Conteúdo Limpo",
+    "cleared_desc": "O conteúdo do documento e seu histórico foram limpos.",
+    "error_clear_desc": "Não foi possível limpar o conteúdo."
+  },
+  "header": {
+    "select_story": "Selecione uma História",
+    "no_stories": "Nenhuma história ainda.",
+    "switch_story": "Trocar de História",
+    "create_story": "Criar Nova História",
+    "manage_stories": "Gerenciar Histórias",
+    "signed_in": "Logado como"
+  },
+  "dashboard": {
+    "working_on": "Trabalhando em",
+    "welcome": "Bem-vindo(a)",
+    "writer": "Escritor(a)",
+    "welcome_back_active": "Continue sua jornada de escrita ou explore outras ferramentas.",
+    "welcome_back_inactive": "Selecione uma história ou crie uma nova para começar!",
+    "open_editor": "Abrir Editor",
+    "go_to_stories": "Ir para Histórias",
+    "no_story_selected_title": "Nenhuma História Selecionada",
+    "no_story_selected_desc": "Por favor, selecione uma história existente ou crie uma nova para começar a trabalhar. A maioria dos recursos está desativada até que uma história esteja ativa.",
+    "how_to_use_button": "Como Usar Este App",
+    "how_to_use_title": "Bem-vindo(a) ao OpenWritingKit!",
+    "how_to_use_desc": "Aqui está um guia rápido para você começar.",
+    "how_to_use_features_title": "Recursos Principais",
+    "how_to_use_feature_1_title": "Editor Sem Distrações",
+    "how_to_use_feature_1_desc": "Um espaço limpo para escrever sua obra-prima.",
+    "how_to_use_feature_2_title": "Organização de Histórias",
+    "how_to_use_feature_2_desc": "Gerencie múltiplas histórias, cada uma com seus próprios documentos, personagens e roteiros.",
+    "how_to_use_feature_3_title": "Desenvolvimento de Personagens",
+    "how_to_use_feature_3_desc": "Crie perfis e fichas de personagens detalhadas.",
+    "how_to_use_feature_4_title": "Construtor de Roteiros",
+    "how_to_use_feature_4_desc": "Estruture sua narrativa com um organizador de arrastar e soltar.",
+    "how_to_use_feature_5_title": "Ferramentas com IA",
+    "how_to_use_feature_5_desc": "Obtenha sugestões de escrita, feedback e análises (requer ativação nas Configurações).",
+    "how_to_use_beta_title": "Versão Beta",
+    "how_to_use_beta_desc": "Esta é uma versão preliminar. Recursos podem mudar e problemas inesperados podem ocorrer. Seu feedback é muito apreciado!",
+    "how_to_use_storage_title": "Importante: Como Seus Dados São Salvos",
+    "how_to_use_storage_desc_1": "Por padrão, todos os seus dados de escrita (histórias, personagens, etc.) são salvos **localmente apenas no seu navegador**. Isso significa que se você limpar os dados do seu navegador, usar um navegador diferente ou trocar de dispositivo, seu trabalho será perdido.",
+    "how_to_use_storage_desc_2": "Para evitar a perda de dados, por favor, conecte-se ao Google Drive na barra lateral ou **sempre salve uma cópia de segurança** do seu trabalho em outro lugar usando os recursos de exportação.",
+    "quick_actions_title": "Ações Rápidas",
+    "quick_actions": {
+      "editor_title": "Novo Documento",
+      "editor_desc": "Comece a escrever no editor.",
+      "editor_cta": "Abrir Editor",
+      "stories_title": "Minhas Histórias",
+      "stories_desc": "Gerencie suas histórias.",
+      "stories_cta": "Ver Histórias",
+      "ai_tools_title": "Ferramentas de IA",
+      "ai_tools_desc": "Explore sugestões de escrita e análises criativas.",
+      "ai_tools_cta": "Usar Ferramentas de IA",
+      "analytics_title": "Análises de Escrita",
+      "analytics_desc": "Acompanhe seu progresso e insights.",
+      "analytics_cta": "Ver Análises"
+    },
+    "writing_streak_title": "Sequência de Escrita Diária",
+    "writing_streak_desc": "Mantenha o ritmo! A sequência é por história.",
+    "day": "dia",
+    "days": "dias",
+    "select_story_for_streak": "Selecione uma história para ver sua sequência.",
+    "word_goal_title": "Meta de Palavras",
+    "word_goal_desc": "Defina e acompanhe suas metas diárias/semanais. (Ver em Análises)",
+    "word_goal_cta": "Definir e Ver Meta nas Análises",
+    "select_story_for_goal": "Selecione uma história primeiro."
+  },
+  "settings": {
+    "title": "Configurações",
+    "description": "Gerencie as preferências e a conta do seu aplicativo.",
+    "appearance": {
+      "title": "Aparência",
+      "description": "Personalize a aparência do aplicativo.",
+      "theme": "Tema",
+      "language": "Idioma"
+    },
+    "editor": {
+      "title": "Editor",
+      "description": "Ajuste seu ambiente de escrita.",
+      "font_size": "Tamanho da Fonte",
+      "font_size_small": "Pequeno",
+      "font_size_medium": "Médio",
+      "font_size_large": "Grande"
+    },
+    "security": {
+      "title": "Segurança",
+      "description": "Gerencie a segurança da sua conta.",
+      "change_password_button": "Alterar Senha",
+      "change_password_desc": "Isso enviará um link de redefinição de senha para o seu e-mail cadastrado."
+    },
+    "ai": {
+      "title": "Recursos de IA",
+      "description": "Ative ou desative as ferramentas de assistência de escrita com IA.",
+      "toggle_label": "Alternar Recursos de IA",
+      "enable_label": "Ativar Assistente de Escrita com IA",
+      "enable_desc": "Permitir que o aplicativo envie o texto selecionado para serviços de terceiros para análise e sugestões.",
+      "privacy_title": "Aviso de Privacidade",
+      "privacy_desc": "Ao ativar os recursos de IA, você reconhece que o texto que enviar para análise será enviado a modelos de IA externos para processamento. O OpenWritingKit não armazena esse texto e **seus dados não são usados para treinar os modelos de IA.** Você pode desativar este recurso a qualquer momento.",
+      "transparency_title": "Transparência do Serviço",
+      "transparency_desc": "Nossos recursos de IA são alimentados pelos modelos Gemini do Google. Para mais informações sobre como os dados são tratados, por favor, revise as políticas de privacidade relevantes.",
+      "google_policy_link": "Ver Política de Privacidade do Google"
+    },
+    "toast": {
+      "ai_updated_title": "Configurações de IA Atualizadas",
+      "ai_enabled_desc": "Os recursos de IA foram ativados.",
+      "ai_disabled_desc": "Os recursos de IA foram desativados.",
+      "must_be_logged_in": "Você deve estar logado para alterar sua senha.",
+      "password_reset_sent_title": "E-mail de Redefinição de Senha Enviado",
+      "password_reset_sent_desc": "Um e-mail foi enviado para",
+      "password_reset_error_title": "Erro ao Enviar E-mail de Redefinição",
+      "password_reset_error_desc": "Não foi possível enviar o e-mail de redefinição de senha. Por favor, tente novamente mais tarde."
+    }
+  }
+}

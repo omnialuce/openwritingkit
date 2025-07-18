@@ -13,8 +13,10 @@ import { useStoryContext } from "@/contexts/StoryContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const { activeStoryId, activeStoryName } = useStoryContext();
   const [writingStreak, setWritingStreak] = useState(0);
@@ -98,10 +100,10 @@ export default function DashboardPage() {
 
 
   const quickActions = [
-    { title: "New Document", description: "Start writing in the editor.", href: "/editor", icon: BookText, cta: "Open Editor" },
-    { title: "My Stories", description: "Manage your stories.", href: "/stories", icon: BookOpenCheck, cta: "View Stories"},
-    { title: "AI Tools", description: "Explore creative writing prompts and analysis.", href: "/ai-tools", icon: Cpu, cta: "Use AI Tools" },
-    { title: "Writing Analytics", description: "Track your progress and insights.", href: "/analytics", icon: BarChart3, cta: "See Analytics" },
+    { title: t('dashboard.quick_actions.editor_title'), description: t('dashboard.quick_actions.editor_desc'), href: "/editor", icon: BookText, cta: t('dashboard.quick_actions.editor_cta') },
+    { title: t('dashboard.quick_actions.stories_title'), description: t('dashboard.quick_actions.stories_desc'), href: "/stories", icon: BookOpenCheck, cta: t('dashboard.quick_actions.stories_cta')},
+    { title: t('dashboard.quick_actions.ai_tools_title'), description: t('dashboard.quick_actions.ai_tools_desc'), href: "/ai-tools", icon: Cpu, cta: t('dashboard.quick_actions.ai_tools_cta') },
+    { title: t('dashboard.quick_actions.analytics_title'), description: t('dashboard.quick_actions.analytics_desc'), href: "/analytics", icon: BarChart3, cta: t('dashboard.quick_actions.analytics_cta') },
   ];
   
   if (!isMounted) return null;
@@ -112,16 +114,16 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
              <h1 className="text-4xl font-bold mb-4 text-primary">
-              {activeStoryName ? `Working on: ${activeStoryName}` : `Welcome, ${user?.email?.split('@')[0] || 'Writer'}`}
+              {activeStoryName ? `${t('dashboard.working_on')}: ${activeStoryName}` : `${t('dashboard.welcome')}, ${user?.email?.split('@')[0] || t('dashboard.writer')}`}
             </h1>
             <p className="text-lg text-foreground mb-6">
               {activeStoryId 
-                ? "Continue your writing journey or explore other tools." 
-                : "Select a story or create a new one to get started!"}
+                ? t('dashboard.welcome_back_active')
+                : t('dashboard.welcome_back_inactive')}
             </p>
             <Link href={activeStoryId ? "/editor" : "/stories"} passHref>
               <Button size="lg" className="rounded-md">
-                {activeStoryId ? "Open Editor" : "Go to Stories"} <ArrowRight className="ml-2 h-5 w-5" />
+                {activeStoryId ? t('dashboard.open_editor') : t('dashboard.go_to_stories')} <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
@@ -142,66 +144,65 @@ export default function DashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-8 w-8 text-primary" />
-              <CardTitle className="text-xl text-primary">No Story Selected</CardTitle>
+              <CardTitle className="text-xl text-primary">{t('dashboard.no_story_selected_title')}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              Please select an existing story or create a new one to begin working. 
-              Most features are disabled until a story is active.
+              {t('dashboard.no_story_selected_desc')}
             </p>
             <div className="flex flex-wrap gap-2">
                 <Link href="/stories" passHref>
                   <Button variant="default">
-                    <BookOpenCheck className="mr-2 h-4 w-4" /> Go to Stories
+                    <BookOpenCheck className="mr-2 h-4 w-4" /> {t('dashboard.go_to_stories')}
                   </Button>
                 </Link>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="secondary">
-                            <Info className="mr-2 h-4 w-4" /> How to Use This App
+                            <Info className="mr-2 h-4 w-4" /> {t('dashboard.how_to_use_button')}
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg">
                         <DialogHeader>
-                            <DialogTitle className="text-2xl">Welcome to OpenWritingKit!</DialogTitle>
+                            <DialogTitle className="text-2xl">{t('dashboard.how_to_use_title')}</DialogTitle>
                             <DialogDescription>
-                                Here's a quick guide to get you started.
+                                {t('dashboard.how_to_use_desc')}
                             </DialogDescription>
                         </DialogHeader>
                         <ScrollArea className="max-h-[70vh] pr-6">
                           <div className="space-y-4 py-4 text-sm">
                               <div>
-                                  <h3 className="font-semibold mb-2">Main Features</h3>
+                                  <h3 className="font-semibold mb-2">{t('dashboard.how_to_use_features_title')}</h3>
                                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                                      <li><span className="font-semibold text-foreground">Distraction-Free Editor:</span> A clean space to write your masterpiece.</li>
-                                      <li><span className="font-semibold text-foreground">Story Organization:</span> Manage multiple stories, each with its own documents, characters, and outlines.</li>
-                                      <li><span className="font-semibold text-foreground">Character Development:</span> Create detailed character profiles and sheets.</li>
-                                      <li><span className="font-semibold text-foreground">Outline Builder:</span> Structure your narrative with a drag-and-drop outliner.</li>
-                                      <li><span className="font-semibold text-foreground">AI-Powered Tools:</span> Get writing prompts, feedback, and analysis (opt-in required in Settings).</li>
+                                      <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_1_title')}:</span> {t('dashboard.how_to_use_feature_1_desc')}</li>
+                                      <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_2_title')}:</span> {t('dashboard.how_to_use_feature_2_desc')}</li>
+                                      <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_3_title')}:</span> {t('dashboard.how_to_use_feature_3_desc')}</li>
+                                      <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_4_title')}:</span> {t('dashboard.how_to_use_feature_4_desc')}</li>
+                                      <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_5_title')}:</span> {t('dashboard.how_to_use_feature_5_desc')}</li>
                                   </ul>
                               </div>
                               
                                <Alert variant="default" className="bg-primary/5 border-primary/20">
                                   <AlertTriangle className="h-4 w-4 text-primary" />
                                   <AlertDescription>
-                                      <span className="font-semibold">Beta Release:</span> This is a preliminary release. Features may change and unexpected issues may occur. Your feedback is greatly appreciated!
+                                      <span className="font-semibold">{t('dashboard.how_to_use_beta_title')}:</span> {t('dashboard.how_to_use_beta_desc')}
                                   </AlertDescription>
                               </Alert>
 
                               <Alert variant="destructive">
                                   <AlertTriangle className="h-4 w-4" />
                                   <AlertDescription>
-                                      <h4 className="font-bold mb-1">Important: How Your Data is Saved</h4>
-                                      <p>By default, all your writing data (stories, characters, etc.) is stored **locally in your web browser only**. This means if you clear your browser's data, use a different browser, or switch devices, your work will be lost.</p>
-                                      <p className="mt-2">To prevent data loss, please connect to Google Drive in the sidebar or **always save a backup copy** of your work elsewhere using the export features.</p>
+                                      <h4 className="font-bold mb-1">{t('dashboard.how_to_use_storage_title')}</h4>
+                                      <p>{t('dashboard.how_to_use_storage_desc_1')}</p>
+                                      <p className="mt-2">{t('dashboard.how_to_use_storage_desc_2')}</p>
                                   </AlertDescription>
                               </Alert>
 
                               <div className="flex justify-end pt-4">
                                   <DialogClose asChild>
                                       <Button type="button" variant="secondary">
-                                          Close
+                                          {t('common.close')}
                                       </Button>
                                   </DialogClose>
                               </div>
@@ -217,7 +218,7 @@ export default function DashboardPage() {
       {activeStoryId && isMounted && (
         <>
           <section>
-            <h2 className="text-2xl font-semibold mb-6">Quick Actions</h2>
+            <h2 className="text-2xl font-semibold mb-6">{t('dashboard.quick_actions_title')}</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
               {quickActions.map((action) => (
                 <Card key={action.title} className="hover:shadow-md transition-shadow duration-300 rounded-lg border">
@@ -247,32 +248,32 @@ export default function DashboardPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-6 w-6 text-primary" />
-                  <CardTitle>Daily Writing Streak {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
+                  <CardTitle>{t('dashboard.writing_streak_title')} {activeStoryName ? `(${t('common.for')} ${activeStoryName})` : ''}</CardTitle>
                 </div>
-                <CardDescription>Keep your momentum going! Streak is per story.</CardDescription>
+                <CardDescription>{t('dashboard.writing_streak_desc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center">
                   <p className="text-6xl font-bold text-primary">{activeStoryId ? writingStreak : "-"}</p>
-                  <p className="text-muted-foreground">{writingStreak === 1 ? "day" : "days"}</p>
+                  <p className="text-muted-foreground">{writingStreak === 1 ? t('dashboard.day') : t('dashboard.days')}</p>
                 </div>
-                 {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">Select a story to see its streak.</p>}
+                 {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">{t('dashboard.select_story_for_streak')}</p>}
               </CardContent>
             </Card>
             <Card className="rounded-lg border">
               <CardHeader>
                  <div className="flex items-center gap-2">
                   <TrendingUp className="h-6 w-6 text-primary" />
-                  <CardTitle>Word Count Goal {activeStoryName ? `(for ${activeStoryName})` : ''}</CardTitle>
+                  <CardTitle>{t('dashboard.word_goal_title')} {activeStoryName ? `(${t('common.for')} ${activeStoryName})` : ''}</CardTitle>
                 </div>
-                <CardDescription>Set and track your daily/weekly targets. (View in Analytics)</CardDescription>
+                <CardDescription>{t('dashboard.word_goal_desc')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-muted-foreground text-center py-4">
                     <Link href="/analytics" passHref>
-                        <Button variant="link" disabled={!activeStoryId}>Set & View Goal in Analytics</Button>
+                        <Button variant="link" disabled={!activeStoryId}>{t('dashboard.word_goal_cta')}</Button>
                     </Link>
-                    {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-1">Select a story first.</p>}
+                    {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-1">{t('dashboard.select_story_for_goal')}</p>}
                 </div>
               </CardContent>
             </Card>
@@ -282,5 +283,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

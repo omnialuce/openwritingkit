@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { StoryProvider } from '@/contexts/StoryContext';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 
 export const metadata: Metadata = {
@@ -32,13 +33,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <StoryProvider>
-              <MainLayout>
-                {children}
-              </MainLayout>
-            </StoryProvider>
-          </AuthProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <StoryProvider>
+                <MainLayout>
+                  {children}
+                </MainLayout>
+              </StoryProvider>
+            </AuthProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -19,8 +19,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function AppHeader() {
+  const { t } = useLanguage();
   const { activeStoryId, activeStoryName, stories, setActiveStory } = useStoryContext();
   const { user, logout } = useAuth();
 
@@ -34,17 +36,17 @@ export function AppHeader() {
             <Button variant="ghost" className="flex items-center gap-1 px-2 -ml-2" disabled={!user}>
               <BookOpenCheck className="h-5 w-5 text-primary" />
               <span className={cn("truncate max-w-xs", activeStoryName ? "text-foreground" : "text-muted-foreground")}>
-                {activeStoryName || "Select a Story"}
+                {activeStoryName || t('header.select_story')}
               </span>
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64 rounded-none">
             {stories.length === 0 ? (
-               <DropdownMenuLabel className="text-muted-foreground text-center py-2">No stories yet.</DropdownMenuLabel>
+               <DropdownMenuLabel className="text-muted-foreground text-center py-2">{t('header.no_stories')}</DropdownMenuLabel>
             ) : (
               <>
-                <DropdownMenuLabel>Switch Story</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('header.switch_story')}</DropdownMenuLabel>
                 <DropdownMenuRadioGroup value={activeStoryId || ""} onValueChange={setActiveStory}>
                   {stories.map((story) => (
                     <DropdownMenuRadioItem key={story.id} value={story.id} className="truncate">
@@ -58,13 +60,13 @@ export function AppHeader() {
             <Link href="/stories" passHref>
               <DropdownMenuItem>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                <span>Create New Story</span>
+                <span>{t('header.create_story')}</span>
               </DropdownMenuItem>
             </Link>
             <Link href="/stories" passHref>
               <DropdownMenuItem>
                 <FolderKanban className="mr-2 h-4 w-4" />
-                <span>Manage Stories</span>
+                <span>{t('header.manage_stories')}</span>
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
@@ -85,7 +87,7 @@ export function AppHeader() {
             <DropdownMenuContent className="w-56 rounded-none" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Signed In</p>
+                  <p className="text-sm font-medium leading-none">{t('header.signed_in')}</p>
                   <p className="text-xs leading-none text-muted-foreground truncate">
                     {user.email}
                   </p>
@@ -95,13 +97,13 @@ export function AppHeader() {
               <Link href="/settings" passHref>
                 <DropdownMenuItem>
                   <SettingsIcon className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                  <span>{t('common.settings')}</span>
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{t('common.logout')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

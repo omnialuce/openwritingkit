@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,16 +33,16 @@ export default function LoginPage() {
         <CardHeader className="text-center">
             <Image src="/logo.png" alt="OpenWritingKit Logo" width={64} height={64} className="mx-auto mb-4 rounded-lg" />
             <CardTitle className="text-2xl">OpenWritingKit</CardTitle>
-            <CardDescription>Sign in to your account</CardDescription>
+            <CardDescription>{t('login.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email / User ID</Label>
+              <Label htmlFor="email">{t('login.email_label')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="yournicest@email.com"
+                placeholder={t('login.email_placeholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -48,7 +50,7 @@ export default function LoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('login.password_label')}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -66,7 +68,7 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-0 h-full w-10 text-muted-foreground"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t('login.hide_password') : t('login.show_password')}
                 >
                   {showPassword ? <EyeOff /> : <Eye />}
                 </Button>
@@ -74,7 +76,7 @@ export default function LoginPage() {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              {t('login.sign_in_button')}
             </Button>
           </form>
         </CardContent>

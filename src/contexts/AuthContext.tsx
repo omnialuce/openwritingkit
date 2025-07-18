@@ -1,12 +1,13 @@
 // src/contexts/AuthContext.tsx
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { getAuth, onAuthStateChanged, User, signOut, signInWithEmailAndPassword, AuthError } from 'firebase/auth';
 import { app as firebaseApp } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from './LanguageContext';
 
 interface AuthContextType {
   user: User | null;
@@ -23,20 +24,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-  const [isMounted, setIsMounted] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
-    setIsMounted(true);
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (user) {
         user.getIdToken().then((token) => {
-            // Set cookie for server-side rendering/middleware
-            document.cookie = `firebaseIdToken=${token}; path=/; max-age=3600`; // 1 hour expiration
+            document.cookie = `firebaseIdToken=${token}; path=/; max-age=3600`;
         });
       } else {
-         // Clear cookie on logout
          document.cookie = 'firebaseIdToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       }
       setLoading(false);
@@ -46,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
   
   useEffect(() => {
-    if (!isMounted || loading) return;
+    if (loading) return;
 
     const isPublicPage = ['/login'].includes(pathname);
 
@@ -57,40 +55,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user && isPublicPage) {
       router.push('/');
     }
-  }, [user, loading, pathname, router, isMounted]);
+  }, [user, loading, pathname, router]);
 
   const login = async (email: string, pass: string) => {
     const auth = getAuth(firebaseApp);
     try {
       await signInWithEmailAndPassword(auth, email, pass);
       toast({
-          title: "Welcome Back!",
-          description: "You have successfully signed in."
+          title: t('auth.login_success_title'),
+          description: t('auth.login_success_desc')
       });
       router.push('/');
     } catch (error) {
       console.error("Firebase Login Error: ", error);
-      let errorMessage = "An unexpected error occurred. Please try again.";
+      let errorMessage = t('auth.login_error_default');
       const errorCode = (error as AuthError).code;
       
       switch (errorCode) {
         case 'auth/invalid-credential':
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-          errorMessage = "Invalid email or password. Please check your credentials and try again.";
+          errorMessage = t('auth.login_error_invalid_credential');
           break;
         case 'auth/too-many-requests':
-          errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can reset your password or try again later.";
+          errorMessage = t('auth.login_error_too_many_requests');
           break;
         case 'auth/network-request-failed':
-          errorMessage = "Could not connect to the authentication service. Please check your internet connection.";
+          errorMessage = t('auth.login_error_network');
           break;
-        default:
-          errorMessage = "Login failed. Please try again later.";
       }
       
       toast({
-          title: "Login Failed",
+          title: t('auth.login_failed_title'),
           description: errorMessage,
           variant: 'destructive'
       });
@@ -104,18 +100,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     router.push('/login');
     toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out."
+        title: t('auth.logout_success_title'),
+        description: t('auth.logout_success_desc')
     });
   };
 
   const value = { user, loading, logout, login };
   
-  if (!isMounted || loading) {
+  if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading application...</p>
+        <p className="ml-2">{t('auth.loading')}</p>
       </div>
     );
   }

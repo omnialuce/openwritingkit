@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext'; 
 import { storage } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const MAX_HISTORY_LENGTH = 20; 
 
@@ -26,6 +27,7 @@ function useAutosave<T extends string>(
   saveInterval: number = 2000
 ): [T, (value: T) => void, boolean, () => void, Date | null] {
   const { toast } = useToast(); 
+  const { t } = useLanguage();
   const { activeStoryId } = useStoryContext();
   const { user } = useAuth();
 
@@ -160,13 +162,13 @@ function useAutosave<T extends string>(
 
         } catch (error) {
           console.error(`Error saving to storage key "${key}":`, error);
-          toast({ title: "Save Error", description: "Could not save changes.", variant: "destructive" });
+          toast({ title: t('autosave.error_save_title'), description: t('autosave.error_save_desc'), variant: "destructive" });
         } finally {
           setTimeout(() => setIsSaving(false), 500); 
         }
       }
     },
-    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId, getStorageKeyWithUser, user]
+    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId, getStorageKeyWithUser, user, t]
   );
   
   useEffect(() => {
@@ -200,13 +202,13 @@ function useAutosave<T extends string>(
         await storage.removeItem(key);
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
-        toast({ title: "Content Cleared", description: "The document content and its history have been cleared." });
+        toast({ title: t('autosave.cleared_title'), description: t('autosave.cleared_desc') });
       } catch (error) {
         console.error(`Error clearing storage key "${key}":`, error);
-        toast({ title: "Error", description: "Could not clear content.", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('autosave.error_clear_desc'), variant: "destructive" });
       }
     }
-  }, [dynamicStorageKey, initialValue, toast, getStorageKeyWithUser]);
+  }, [dynamicStorageKey, initialValue, toast, getStorageKeyWithUser, t]);
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);

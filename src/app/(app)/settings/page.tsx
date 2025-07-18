@@ -1,4 +1,3 @@
-
 // src/app/(app)/settings/page.tsx
 'use client';
 
@@ -8,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle, Info } from 'lucide-react';
+import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle, Info, Languages } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
@@ -23,6 +24,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { language, setLanguage, t } = useLanguage();
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>('base');
@@ -44,8 +46,8 @@ export default function SettingsPage() {
     localStorage.setItem(AI_OPT_IN_KEY, String(checked));
     window.dispatchEvent(new StorageEvent('storage', { key: AI_OPT_IN_KEY, newValue: String(checked) }));
     toast({
-      title: "AI Settings Updated",
-      description: `AI features have been ${checked ? 'enabled' : 'disabled'}.`,
+      title: t('settings.toast.ai_updated_title'),
+      description: checked ? t('settings.toast.ai_enabled_desc') : t('settings.toast.ai_disabled_desc'),
     });
   };
 
@@ -58,8 +60,8 @@ export default function SettingsPage() {
   const handleChangePassword = async () => {
     if (!user || !user.email) {
       toast({
-        title: "Error",
-        description: "You must be logged in to change your password.",
+        title: t('common.error'),
+        description: t('settings.toast.must_be_logged_in'),
         variant: "destructive",
       });
       return;
@@ -69,14 +71,14 @@ export default function SettingsPage() {
       const auth = getAuth();
       await sendPasswordResetEmail(auth, user.email);
       toast({
-        title: "Password Reset Email Sent",
-        description: `An email has been sent to ${user.email} with instructions to reset your password.`,
+        title: t('settings.toast.password_reset_sent_title'),
+        description: `${t('settings.toast.password_reset_sent_desc')} ${user.email}.`,
       });
     } catch (error) {
       console.error("Password reset error:", error);
       toast({
-        title: "Error Sending Reset Email",
-        description: "Could not send the password reset email. Please try again later.",
+        title: t('settings.toast.password_reset_error_title'),
+        description: t('settings.toast.password_reset_error_desc'),
         variant: "destructive",
       });
     }
@@ -91,21 +93,21 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2 flex items-center">
           <SettingsIcon className="mr-3 h-8 w-8 text-primary" />
-          Settings
+          {t('settings.title')}
         </h1>
-        <p className="text-muted-foreground">Manage your application preferences and account.</p>
+        <p className="text-muted-foreground">{t('settings.description')}</p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {/* Appearance Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Sun className="h-5 w-5"/> Appearance</CardTitle>
-            <CardDescription>Customize the look and feel of the application.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Sun className="h-5 w-5"/> {t('settings.appearance.title')}</CardTitle>
+            <CardDescription>{t('settings.appearance.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="theme-switcher">Theme</Label>
+              <Label htmlFor="theme-switcher">{t('settings.appearance.theme')}</Label>
               <div className="flex items-center gap-2">
                 <Button variant={theme === 'light' ? 'default' : 'ghost'} size="icon" onClick={() => setTheme('light')}>
                   <Sun className="h-5 w-5" />
@@ -115,17 +117,29 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
+            <div className="flex items-center justify-between">
+                <Label htmlFor="language-switcher">{t('settings.appearance.language')}</Label>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger id="language-switcher" className="w-[180px]">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="pt">Português (Brasil)</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
           </CardContent>
         </Card>
         
         {/* Editor Settings Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5"/> Editor</CardTitle>
-            <CardDescription>Adjust your writing environment.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5"/> {t('settings.editor.title')}</CardTitle>
+            <CardDescription>{t('settings.editor.description')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Label>Font Size</Label>
+            <Label>{t('settings.editor.font_size')}</Label>
             <RadioGroup 
               value={editorFontSize} 
               onValueChange={handleFontSizeChange} 
@@ -133,15 +147,15 @@ export default function SettingsPage() {
             >
               <Label htmlFor="font-sm" className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="sm" id="font-sm" />
-                Small
+                {t('settings.editor.font_size_small')}
               </Label>
               <Label htmlFor="font-base" className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="base" id="font-base" />
-                Medium
+                {t('settings.editor.font_size_medium')}
               </Label>
               <Label htmlFor="font-lg" className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="lg" id="font-lg" />
-                Large
+                {t('settings.editor.font_size_large')}
               </Label>
             </RadioGroup>
           </CardContent>
@@ -151,15 +165,15 @@ export default function SettingsPage() {
         {/* Security Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5"/> Security</CardTitle>
-            <CardDescription>Manage your account security.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5"/> {t('settings.security.title')}</CardTitle>
+            <CardDescription>{t('settings.security.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={handleChangePassword} className="w-full">
-              Change Password
+              {t('settings.security.change_password_button')}
             </Button>
              <p className="text-xs text-muted-foreground mt-2">
-              This will send a password reset link to your registered email address.
+              {t('settings.security.change_password_desc')}
             </p>
           </CardContent>
         </Card>
@@ -169,8 +183,8 @@ export default function SettingsPage() {
       {/* AI Features Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5"/> AI Features</CardTitle>
-          <CardDescription>Enable or disable AI-powered writing assistance tools.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5"/> {t('settings.ai.title')}</CardTitle>
+          <CardDescription>{t('settings.ai.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-start gap-4 p-4 border bg-background rounded-lg">
@@ -178,14 +192,14 @@ export default function SettingsPage() {
               id="ai-features"
               checked={aiFeaturesEnabled}
               onCheckedChange={handleAiOptInChange}
-              aria-label="Toggle AI Features"
+              aria-label={t('settings.ai.toggle_label')}
             />
             <div className="flex-1">
               <Label htmlFor="ai-features" className="text-base font-medium">
-                Enable AI Writing Assistant
+                {t('settings.ai.enable_label')}
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Allow the app to send selected text to third-party services for analysis and suggestions.
+                {t('settings.ai.enable_desc')}
               </p>
             </div>
           </div>
@@ -193,22 +207,22 @@ export default function SettingsPage() {
           <div className="mt-4 p-4 border-l-4 border-destructive bg-destructive/10 rounded-r-lg">
             <div className="flex items-center gap-2">
                <AlertCircle className="h-5 w-5 text-destructive" />
-               <h4 className="font-semibold text-destructive">Privacy Disclaimer</h4>
+               <h4 className="font-semibold text-destructive">{t('settings.ai.privacy_title')}</h4>
             </div>
             <p className="text-sm text-destructive/90 mt-2">
-              By enabling AI features, you acknowledge that the text you submit for analysis will be sent to external AI models for processing. OpenWritingKit does not store this text, and **your data is not used for training the AI models.** You can disable this feature at any time.
+              {t('settings.ai.privacy_desc')}
             </p>
           </div>
            <div className="mt-4 p-4 border-l-4 border-primary bg-primary/10 rounded-r-lg">
             <div className="flex items-center gap-2">
                <Info className="h-5 w-5 text-primary" />
-               <h4 className="font-semibold text-primary">Service Transparency</h4>
+               <h4 className="font-semibold text-primary">{t('settings.ai.transparency_title')}</h4>
             </div>
             <p className="text-sm text-primary/90 mt-2">
-              Our AI features are powered by Google's Gemini models. For more information on how data is handled, please review the relevant privacy policies.
+              {t('settings.ai.transparency_desc')}
             </p>
              <Link href="https://policies.google.com/privacy" passHref target="_blank" rel="noopener noreferrer">
-              <Button variant="link" className="p-0 h-auto mt-2 text-sm">View Google Privacy Policy</Button>
+              <Button variant="link" className="p-0 h-auto mt-2 text-sm">{t('settings.ai.google_policy_link')}</Button>
             </Link>
           </div>
         </CardContent>
