@@ -14,6 +14,7 @@ import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download }
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // --- Plot Point Tracker ---
 interface PlotPoint {
@@ -21,17 +22,6 @@ interface PlotPoint {
   name: string; 
   description: string;
 }
-
-const initialPlotPointTemplate: PlotPoint[] = [
-  { id: 'pp1', name: 'Exposition / Setup', description: '' },
-  { id: 'pp2', name: 'Inciting Incident', description: '' },
-  { id: 'pp3', name: 'Rising Action 1 (Plot Point 1)', description: '' },
-  { id: 'pp4', name: 'Rising Action 2 (Midpoint)', description: '' },
-  { id: 'pp5', name: 'Rising Action 3 (Plot Point 2)', description: '' },
-  { id: 'pp6', name: 'Climax', description: '' },
-  { id: 'pp7', name: 'Falling Action', description: '' },
-  { id: 'pp8', name: 'Resolution / Denouement', description: '' },
-];
 
 // --- Timeline Creator ---
 interface TimelineEvent {
@@ -54,6 +44,7 @@ interface OutlineItem {
 
 export default function PlotToolsPage() {
   const { activeStoryId } = useStoryContext();
+  const { t } = useLanguage();
 
   // Plot Point State
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
@@ -68,6 +59,18 @@ export default function PlotToolsPage() {
   
   // Scene Summaries State
   const [sceneSummaries, setSceneSummaries] = useState<OutlineItem[]>([]);
+  
+  const getPlotPointTemplate = useCallback((): PlotPoint[] => [
+    { id: 'pp1', name: t('plot_tools.plot_points.template.exposition'), description: '' },
+    { id: 'pp2', name: t('plot_tools.plot_points.template.inciting_incident'), description: '' },
+    { id: 'pp3', name: t('plot_tools.plot_points.template.rising_action_1'), description: '' },
+    { id: 'pp4', name: t('plot_tools.plot_points.template.rising_action_2'), description: '' },
+    { id: 'pp5', name: t('plot_tools.plot_points.template.rising_action_3'), description: '' },
+    { id: 'pp6', name: t('plot_tools.plot_points.template.climax'), description: '' },
+    { id: 'pp7', name: t('plot_tools.plot_points.template.falling_action'), description: '' },
+    { id: 'pp8', name: t('plot_tools.plot_points.template.resolution'), description: '' },
+  ], [t]);
+
 
   // Load Plot Points
   useEffect(() => {
@@ -77,14 +80,14 @@ export default function PlotToolsPage() {
       if (storedPlotPoints) {
         setPlotPoints(JSON.parse(storedPlotPoints));
       } else {
-        // If no plot points for this story, initialize with template and save
-        setPlotPoints(initialPlotPointTemplate);
-        localStorage.setItem(plotPointsStorageKey, JSON.stringify(initialPlotPointTemplate));
+        const initialTemplate = getPlotPointTemplate();
+        setPlotPoints(initialTemplate);
+        localStorage.setItem(plotPointsStorageKey, JSON.stringify(initialTemplate));
       }
     } else if (!activeStoryId) {
       setPlotPoints([]); // Clear if no active story
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, getPlotPointTemplate]);
 
   // Load Timeline Events
   useEffect(() => {
@@ -214,23 +217,23 @@ export default function PlotToolsPage() {
   
   const handleExport = () => {
     if (!activeStoryId) return;
-    let textContent = '--- PLOT POINTS ---\n\n';
+    let textContent = `--- ${t('plot_tools.export.plot_points_header')} ---\n\n`;
     plotPoints.forEach(pp => {
       textContent += `[${pp.name}]\n`;
-      textContent += `${pp.description || 'No description.'}\n\n`;
+      textContent += `${pp.description || t('plot_tools.export.no_description')}\n\n`;
     });
 
-    textContent += '\n--- TIMELINE EVENTS ---\n\n';
+    textContent += `\n--- ${t('plot_tools.export.timeline_header')} ---\n\n`;
     timelineEvents.forEach(event => {
-      textContent += `Event: ${event.title}\n`;
-      textContent += `Date/Time: ${event.dateTime || 'N/A'}\n`;
-      textContent += `Description: ${event.description || 'No description.'}\n\n`;
+      textContent += `${t('plot_tools.export.event_title')}: ${event.title}\n`;
+      textContent += `${t('plot_tools.export.event_datetime')}: ${event.dateTime || 'N/A'}\n`;
+      textContent += `${t('plot_tools.export.event_description')}: ${event.description || t('plot_tools.export.no_description')}\n\n`;
     });
     
-    textContent += '\n--- SCENE SUMMARIES ---\n\n';
+    textContent += `\n--- ${t('plot_tools.export.scenes_header')} ---\n\n`;
     sceneSummaries.forEach(scene => {
-        textContent += `Scene: ${scene.title}\n`;
-        textContent += `Notes: ${scene.notes || 'No notes.'}\n\n`;
+        textContent += `${t('plot_tools.export.scene_title')}: ${scene.title}\n`;
+        textContent += `${t('plot_tools.export.scene_notes')}: ${scene.notes || t('plot_tools.export.no_notes')}\n\n`;
     });
 
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
@@ -249,10 +252,10 @@ export default function PlotToolsPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('plot_tools.no_story.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to use plot tools.</p>
+          <p className="text-muted-foreground">{t('plot_tools.no_story.description_1')} <Link href="/stories" className="text-primary hover:underline">{t('plot_tools.no_story.description_2')}</Link> {t('plot_tools.no_story.description_3')}</p>
         </CardContent>
       </Card>
     );
@@ -263,20 +266,20 @@ export default function PlotToolsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2 flex items-center">
-            <Network className="mr-3 h-8 w-8 text-primary" /> Plot Development Tools
+            <Network className="mr-3 h-8 w-8 text-primary" /> {t('plot_tools.title')}
           </h1>
-          <p className="text-muted-foreground">Structure your narrative, track key points, and build your timeline for the current story.</p>
+          <p className="text-muted-foreground">{t('plot_tools.description')}</p>
         </div>
         <Button variant="outline" onClick={handleExport} disabled={!activeStoryId}>
-          <Download className="mr-2 h-5 w-5" /> Export All
+          <Download className="mr-2 h-5 w-5" /> {t('plot_tools.export_button')}
         </Button>
       </div>
 
       {/* Plot Point Tracker Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Plot Point Tracker</CardTitle>
-          <CardDescription>Outline the key moments of your story using a common structure. Describe what happens at each point.</CardDescription>
+          <CardTitle>{t('plot_tools.plot_points.title')}</CardTitle>
+          <CardDescription>{t('plot_tools.plot_points.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {plotPoints.map(pp => (
@@ -286,7 +289,7 @@ export default function PlotToolsPage() {
                 id={`plotpoint-${pp.id}`}
                 value={pp.description}
                 onChange={(e) => handlePlotPointChange(pp.id, e.target.value)}
-                placeholder={`Describe the ${pp.name.toLowerCase()} of your story...`}
+                placeholder={t('plot_tools.plot_points.placeholder', { name: pp.name.toLowerCase() })}
                 rows={4}
                 className="text-sm"
                 disabled={!activeStoryId}
@@ -294,7 +297,7 @@ export default function PlotToolsPage() {
             </div>
           ))}
            {plotPoints.length === 0 && activeStoryId && (
-             <p className="text-muted-foreground">Loading plot points or no plot points defined for this story yet.</p>
+             <p className="text-muted-foreground">{t('plot_tools.plot_points.loading')}</p>
            )}
         </CardContent>
       </Card>
@@ -304,17 +307,17 @@ export default function PlotToolsPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <div>
-                <CardTitle>Timeline Creator</CardTitle>
-                <CardDescription>Log important events, scenes, or historical points in chronological order. Use the date/time field flexibly.</CardDescription>
+                <CardTitle>{t('plot_tools.timeline.title')}</CardTitle>
+                <CardDescription>{t('plot_tools.timeline.description')}</CardDescription>
             </div>
             <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0" disabled={!activeStoryId}>
-              <PlusCircle className="mr-2 h-5 w-5" /> Add Timeline Event
+              <PlusCircle className="mr-2 h-5 w-5" /> {t('plot_tools.timeline.add_button')}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {timelineEvents.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No timeline events yet for this story. Add one to start building your timeline.</p>
+            <p className="text-muted-foreground text-center py-4">{t('plot_tools.timeline.empty')}</p>
           ) : (
             <ScrollArea className="h-auto max-h-[60vh]">
               <div className="space-y-4 pr-3">
@@ -327,26 +330,26 @@ export default function PlotToolsPage() {
                             {event.dateTime && <p className="text-xs text-muted-foreground font-medium">{event.dateTime}</p>}
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditEventDialog(event)} title="Edit Event" disabled={!activeStoryId}>
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditEventDialog(event)} title={t('plot_tools.timeline.edit_button_title')} disabled={!activeStoryId}>
                             <Edit className="h-4 w-4" />
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" title="Delete Event" disabled={!activeStoryId}>
+                              <Button variant="ghost" size="icon" title={t('plot_tools.timeline.delete_button_title')} disabled={!activeStoryId}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Timeline Event?</AlertDialogTitle>
+                                <AlertDialogTitle>{t('plot_tools.timeline.delete_dialog.title')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  This action cannot be undone. This will permanently delete the event: "{event.title}".
+                                  {t('plot_tools.timeline.delete_dialog.description_1')} "{event.title}". {t('plot_tools.timeline.delete_dialog.description_2')}
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => handleDeleteEvent(event.id)} className="bg-destructive hover:bg-destructive/90">
-                                  Delete
+                                  {t('common.delete')}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -370,15 +373,15 @@ export default function PlotToolsPage() {
       {/* Scene Summaries Section (Integrated) */}
       <Card>
         <CardHeader>
-          <CardTitle>Scene Summaries</CardTitle>
-          <CardDescription>Review summaries of individual scenes from your Outline Builder.</CardDescription>
+          <CardTitle>{t('plot_tools.scenes.title')}</CardTitle>
+          <CardDescription>{t('plot_tools.scenes.description')}</CardDescription>
         </CardHeader>
         <CardContent>
            {sceneSummaries.length === 0 ? (
                 <div className="text-center py-8">
                   <AlignLeft className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">
-                    No scenes found in the Outline Builder for this story. Go to the <Link href="/outline" className="text-primary hover:underline">Outline Builder</Link> to add some.
+                    {t('plot_tools.scenes.empty_1')} <Link href="/outline" className="text-primary hover:underline">{t('plot_tools.scenes.empty_2')}</Link> {t('plot_tools.scenes.empty_3')}
                   </p>
                 </div>
             ) : (
@@ -411,35 +414,35 @@ export default function PlotToolsPage() {
           <ScrollArea className="max-h-[80vh]">
             <div className="p-1 pr-3">
               <DialogHeader>
-                <DialogTitle>{editingEvent ? 'Edit Timeline Event' : 'Create New Timeline Event'}</DialogTitle>
+                <DialogTitle>{editingEvent ? t('plot_tools.timeline.edit_dialog.title') : t('plot_tools.timeline.create_dialog.title')}</DialogTitle>
                 <DialogDescription>
-                  {editingEvent ? 'Update the details for this event.' : 'Add a new event to your timeline.'}
+                  {editingEvent ? t('plot_tools.timeline.edit_dialog.description') : t('plot_tools.timeline.create_dialog.description')}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleEventSubmit} className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="event-title" className="text-right">Title</Label>
+                  <Label htmlFor="event-title" className="text-right">{t('plot_tools.timeline.fields.title')}</Label>
                   <Input id="event-title" value={eventTitle} onChange={(e) => setEventTitle(e.target.value)} className="col-span-3" required />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="event-datetime" className="text-right">Date/Time</Label>
+                  <Label htmlFor="event-datetime" className="text-right">{t('plot_tools.timeline.fields.datetime')}</Label>
                   <Input 
                     id="event-datetime" 
                     value={eventDateTime} 
                     onChange={(e) => setEventDateTime(e.target.value)} 
                     className="col-span-3" 
-                    placeholder="e.g., Day 1, Morning; Chapter 5; 20 BBY"
+                    placeholder={t('plot_tools.timeline.fields.datetime_placeholder')}
                   />
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="event-description" className="text-right pt-2">Description</Label>
-                  <Textarea id="event-description" value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="col-span-3" rows={5} placeholder="Describe the event..."/>
+                  <Label htmlFor="event-description" className="text-right pt-2">{t('plot_tools.timeline.fields.description')}</Label>
+                  <Textarea id="event-description" value={eventDescription} onChange={(e) => setEventDescription(e.target.value)} className="col-span-3" rows={5} placeholder={t('plot_tools.timeline.fields.description_placeholder')}/>
                 </div>
                 <DialogFooter className="mt-4">
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
+                    <Button type="button" variant="outline">{t('common.cancel')}</Button>
                   </DialogClose>
-                  <Button type="submit">{editingEvent ? 'Save Changes' : 'Create Event'}</Button>
+                  <Button type="submit">{editingEvent ? t('common.save') : t('plot_tools.timeline.create_dialog.create_button')}</Button>
                 </DialogFooter>
               </form>
             </div>

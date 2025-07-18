@@ -589,5 +589,212 @@
         "description": "Uma potência de ferramentas e recursos para escritores, incluindo dicionários de sinônimos e construtores de personagens."
       }
     }
+  },
+  "editor": {
+    "loading": "Carregando editor...",
+    "no_story_title": "Nenhuma História Ativa",
+    "no_story_description": "O editor está desativado até que uma história seja selecionada.",
+    "no_story_message": "Por favor, selecione uma história para começar a escrever.",
+    "go_to_stories": "Ir para a Página de Histórias",
+    "initializing": "Inicializando editor...",
+    "open_doc_button": "Abrir Documento",
+    "open_doc_button_title": "Abrir Documento",
+    "close_doc_button_title": "Fechar Documento",
+    "save_button_title": "Salvar (salvo automaticamente)",
+    "save_as_new_button_title": "Salvar conteúdo atual como Novo Documento",
+    "import_button_title": "Importar Arquivo",
+    "export_button_title": "Exportar",
+    "export_txt": "Exportar como TXT",
+    "export_html": "Exportar como HTML",
+    "export_pdf": "Exportar como PDF (em breve)",
+    "clear_content_button_title": "Limpar Conteúdo",
+    "clear_content_confirm": "Tem certeza de que deseja limpar todo o conteúdo? Esta ação não pode ser desfeita.",
+    "focus_mode": "Modo Foco",
+    "exit_focus_mode": "Sair do Modo Foco",
+    "customize_theme_title": "Personalizar Tema",
+    "editor_theme": "Tema do Editor",
+    "theme_light": "Claro",
+    "theme_dark": "Escuro",
+    "start_session": "Iniciar Sessão",
+    "pause_session": "Pausar Sessão",
+    "reset_session": "Reiniciar Cronômetro da Sessão",
+    "editing": "Editando: {{name}}",
+    "editing_scratchpad": "Editando Bloco de Rascunho",
+    "words": "Palavras",
+    "chars": "Caracteres",
+    "not_yet_saved": "Ainda não salvo",
+    "no_active_story_footer": "Nenhuma história ativa",
+    "no_documents_in_folder": "Nenhum documento nesta pasta",
+    "no_documents_found": "Nenhum documento encontrado",
+    "toast": {
+      "no_story_title": "Nenhuma História Ativa",
+      "no_story_import": "Por favor, selecione uma história antes de importar conteúdo.",
+      "import_success_title": "Sucesso",
+      "import_success_desc": "Conteúdo do arquivo importado.",
+      "import_error_read": "Falha ao ler o arquivo.",
+      "import_error_type": "Por favor, selecione um arquivo .txt, .html ou .md.",
+      "ai_disabled_title": "Recursos de IA Desativados",
+      "ai_disabled_desc": "Por favor, ative os recursos de IA nas configurações para usar isto.",
+      "empty_content_title": "Conteúdo Vazio",
+      "empty_content_desc": "Por favor, escreva algum texto antes de solicitar feedback.",
+      "feedback_error_title": "Erro de Feedback da IA",
+      "feedback_error_desc": "Não foi possível recuperar o feedback.",
+      "doc_saved_title": "Documento Salvo",
+      "doc_saved_desc": "\"{{name}}\" foi salvo em seus documentos.",
+      "doc_save_error": "Não foi possível salvar o arquivo nos documentos."
+    },
+    "tooltip_no_story": "Selecione uma história primeiro",
+    "tooltip_get_feedback": "Obter Feedback de Escrita",
+    "tooltip_ai_disabled": "Recursos de IA desativados nas Configurações",
+    "feedback": {
+      "title": "Feedback de Escrita da IA",
+      "close_button_title": "Fechar Painel de Feedback",
+      "overall_assessment_title": "Avaliação Geral",
+      "readability_title": "Legibilidade",
+      "readability_score": "Pontuação",
+      "readability_assessment": "Avaliação",
+      "grammar_title": "Sugestões de Gramática e Ortografia",
+      "grammar_original": "Original",
+      "grammar_suggested": "Sugerido",
+      "grammar_none_found": "Nenhum problema específico de gramática ou ortografia encontrado pela IA."
+    },
+    "save_as_dialog": {
+      "title": "Salvar em Documentos",
+      "description": "Digite um nome de arquivo para salvar o conteúdo atual do editor como um novo arquivo em seus documentos.",
+      "filename_label": "Nome do Arquivo",
+      "filename_placeholder": "ex: Rascunho do Capítulo 1",
+      "save_button": "Salvar Documento"
+    }
+  },
+  "outline": {
+    "title": "Construtor de Estrutura",
+    "description": "Estruture sua história. Arraste itens para reordenar ou aninhar dentro de itens do tipo 'Capítulo'.",
+    "export_button": "Exportar Estrutura",
+    "add_button": "Adicionar Novo Item",
+    "drag_handle_title": "Arraste para reordenar/aninhar",
+    "edit_item_title": "Editar Item",
+    "delete_item_title": "Excluir Item",
+    "no_active_story": {
+      "title": "Nenhuma História Ativa",
+      "description_1": "Por favor, selecione ou crie uma história na",
+      "description_2": "página de Histórias",
+      "description_3": "para construir uma estrutura."
+    },
+    "types": {
+      "chapter": "Capítulo",
+      "scene": "Cena",
+      "plot_point": "Ponto da Trama/Notas"
+    },
+    "delete_dialog": {
+      "title": "Tem certeza?",
+      "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente o item da estrutura:",
+      "description_2": "e todos os seus sub-itens."
+    },
+    "add_dialog": {
+      "title": "Adicionar Novo Item à Estrutura",
+      "description": "Escolha um tipo, adicione um título e notas opcionais. Novos itens são adicionados no nível superior.",
+      "add_button": "Adicionar Item"
+    },
+    "edit_form": {
+      "title": "Editar Item",
+      "description": "Modificando"
+    },
+    "fields": {
+      "type": "Tipo",
+      "type_placeholder": "Selecione o tipo do item",
+      "title": "Título",
+      "title_placeholder": "ex: A Descoberta",
+      "notes": "Notas (Opcional)",
+      "notes_placeholder": "Adicione notas breves ou um resumo..."
+    },
+    "structure": {
+      "title": "Sua Estrutura de Roteiro",
+      "description_items": "Arraste e solte para reordenar itens ou aninhá-los em itens do tipo 'Capítulo'.",
+      "description_no_items": "Sua estrutura está vazia para esta história.",
+      "empty": "Nenhum item na estrutura ainda. Clique em \"Adicionar Novo Item\" para começar."
+    },
+    "new_feature": {
+      "alt": "Ilustração de novo recurso",
+      "title": "Estruturação Avançada",
+      "description": "Agora você pode arrastar itens para reordená-los ou aninhá-los dentro de itens do tipo 'Capítulo'."
+    },
+    "export": {
+      "notes": "Notas"
+    }
+  },
+  "plot_tools": {
+    "title": "Ferramentas de Desenvolvimento de Enredo",
+    "description": "Estruture sua narrativa, acompanhe pontos-chave e construa sua linha do tempo para a história atual.",
+    "export_button": "Exportar Tudo",
+    "no_story": {
+      "title": "Nenhuma História Ativa",
+      "description_1": "Por favor, selecione ou crie uma história na",
+      "description_2": "página de Histórias",
+      "description_3": "para usar as ferramentas de enredo."
+    },
+    "plot_points": {
+      "title": "Rastreador de Pontos da Trama",
+      "description": "Descreva os momentos-chave da sua história usando uma estrutura comum. Descreva o que acontece em cada ponto.",
+      "placeholder": "Descreva a/o {{name}} da sua história...",
+      "loading": "Carregando pontos da trama ou nenhum ponto definido para esta história ainda.",
+      "template": {
+        "exposition": "Exposição / Configuração",
+        "inciting_incident": "Incidente Incitante",
+        "rising_action_1": "Ação Ascendente 1 (Ponto de virada 1)",
+        "rising_action_2": "Ação Ascendente 2 (Ponto médio)",
+        "rising_action_3": "Ação Ascendente 3 (Ponto de virada 2)",
+        "climax": "Clímax",
+        "falling_action": "Ação Descendente",
+        "resolution": "Resolução / Desfecho"
+      }
+    },
+    "timeline": {
+      "title": "Criador de Linha do Tempo",
+      "description": "Registre eventos importantes, cenas ou pontos históricos em ordem cronológica. Use o campo de data/hora de forma flexível.",
+      "add_button": "Adicionar Evento na Linha do Tempo",
+      "empty": "Nenhum evento na linha do tempo ainda para esta história. Adicione um para começar a construir.",
+      "edit_button_title": "Editar Evento",
+      "delete_button_title": "Excluir Evento",
+      "delete_dialog": {
+        "title": "Excluir Evento da Linha do Tempo?",
+        "description_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente o evento:",
+        "description_2": ""
+      },
+      "create_dialog": {
+        "title": "Criar Novo Evento na Linha do Tempo",
+        "description": "Adicione um novo evento à sua linha do tempo.",
+        "create_button": "Criar Evento"
+      },
+      "edit_dialog": {
+        "title": "Editar Evento da Linha do Tempo",
+        "description": "Atualize os detalhes deste evento."
+      },
+      "fields": {
+        "title": "Título",
+        "datetime": "Data/Hora",
+        "datetime_placeholder": "ex: Dia 1, Manhã; Capítulo 5; 20 ABY",
+        "description": "Descrição",
+        "description_placeholder": "Descreva o evento..."
+      }
+    },
+    "scenes": {
+      "title": "Resumos de Cena",
+      "description": "Revise os resumos de cenas individuais do seu Construtor de Estrutura.",
+      "empty_1": "Nenhuma cena encontrada no Construtor de Estrutura para esta história. Vá para o",
+      "empty_2": "Construtor de Estrutura",
+      "empty_3": "para adicionar algumas."
+    },
+    "export": {
+      "plot_points_header": "PONTOS DA TRAMA",
+      "no_description": "Sem descrição.",
+      "timeline_header": "EVENTOS DA LINHA DO TEMPO",
+      "event_title": "Evento",
+      "event_datetime": "Data/Hora",
+      "event_description": "Descrição",
+      "scenes_header": "RESUMOS DE CENA",
+      "scene_title": "Cena",
+      "scene_notes": "Notas",
+      "no_notes": "Sem notas."
+    }
   }
 }

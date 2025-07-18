@@ -34,6 +34,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { formatDistanceToNow } from 'date-fns';
 import { useStoryContext, getEditorContentKey, getDocumentsStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type EditorTheme = 'light' | 'dark';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -60,6 +61,7 @@ interface DocumentItem {
 
 
 export function WritingArea() {
+  const { t } = useLanguage();
   const { activeStoryId, documentToOpen, consumeDocumentToOpen } = useStoryContext();
   const editorStorageKey = getEditorContentKey(activeStoryId);
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
@@ -279,13 +281,13 @@ export function WritingArea() {
         editor.commands.setContent(savedContent, false);
       }
     } else if (editor && !activeStoryId) {
-      editor.commands.setContent("<p>Please select a story to start writing.</p>", false);
+      editor.commands.setContent(`<p>${t('editor.no_story_message')}</p>`, false);
       editor.setEditable(false);
     }
      if (editor && activeStoryId) {
       editor.setEditable(true);
     }
-  }, [savedContent, editor, activeStoryId, activeDocumentId]);
+  }, [savedContent, editor, activeStoryId, activeDocumentId, t]);
 
   useEffect(() => {
     if (editor) {
@@ -352,7 +354,7 @@ export function WritingArea() {
 
   const handleImportClick = () => {
      if (!activeStoryId) {
-      toast({ title: "No Active Story", description: "Please select a story before importing content.", variant: "destructive" });
+      toast({ title: t('editor.toast.no_story_title'), description: t('editor.toast.no_story_import'), variant: "destructive" });
       return;
     }
     fileInputRef.current?.click();
@@ -366,14 +368,14 @@ export function WritingArea() {
         reader.onload = (e) => {
           const fileContent = e.target?.result as string;
           editor.commands.setContent(fileContent); 
-          toast({ title: "Success", description: "File content imported." });
+          toast({ title: t('editor.toast.import_success_title'), description: t('editor.toast.import_success_desc') });
         };
         reader.onerror = () => {
-          toast({ title: "Error", description: "Failed to read file.", variant: "destructive" });
+          toast({ title: t('common.error'), description: t('editor.toast.import_error_read'), variant: "destructive" });
         }
         reader.readAsText(file);
       } else {
-        toast({ title: "Error", description: "Please select a .txt, .html, or .md file.", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('editor.toast.import_error_type'), variant: "destructive" });
       }
       event.target.value = ''; 
     }
@@ -398,12 +400,12 @@ export function WritingArea() {
   const handleGetFeedback = async () => {
     if (!editor || !activeStoryId) return;
     if (!aiFeaturesEnabled) {
-      toast({ title: "AI Features Disabled", description: "Please enable AI features in settings to use this."});
+      toast({ title: t('editor.toast.ai_disabled_title'), description: t('editor.toast.ai_disabled_desc')});
       return;
     }
     const textContent = editor.getText();
     if (!textContent.trim()) {
-      toast({ title: "Empty Content", description: "Please write some text before requesting feedback." });
+      toast({ title: t('editor.toast.empty_content_title'), description: t('editor.toast.empty_content_desc') });
       return;
     }
 
@@ -425,7 +427,7 @@ export function WritingArea() {
       setIsFeedbackPanelOpen(true);
     } catch (error) {
       console.error("Error getting writing feedback:", error);
-      toast({ title: "AI Feedback Error", description: (error as Error).message || "Could not retrieve feedback.", variant: "destructive" });
+      toast({ title: t('editor.toast.feedback_error_title'), description: (error as Error).message || t('editor.toast.feedback_error_desc'), variant: "destructive" });
       setIsFeedbackPanelOpen(false);
     } finally {
       setIsFetchingFeedback(false);
@@ -457,12 +459,12 @@ export function WritingArea() {
         documents.push(newFile);
         localStorage.setItem(documentsStorageKey, JSON.stringify(documents));
         
-        toast({ title: 'Document Saved', description: `"${newDocFilename}" has been saved to your documents.` });
+        toast({ title: t('editor.toast.doc_saved_title'), description: t('editor.toast.doc_saved_desc', { name: newDocFilename }) });
         setIsSaveToDocDialogOpen(false);
         setNewDocFilename('');
       } catch (error) {
         console.error("Failed to save to documents:", error);
-        toast({ title: "Save Error", description: "Could not save file to documents.", variant: "destructive" });
+        toast({ title: t('common.error'), description: t('editor.toast.doc_save_error'), variant: "destructive" });
       }
   }
 
@@ -476,7 +478,7 @@ export function WritingArea() {
                 <DropdownMenuSubContent>
                   {item.children && item.children.length > 0
                     ? renderDocumentMenuItems(item.children)
-                    : <DropdownMenuItem disabled>No documents in this folder</DropdownMenuItem>
+                    : <DropdownMenuItem disabled>{t('editor.no_documents_in_folder')}</DropdownMenuItem>
                   }
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
@@ -499,7 +501,7 @@ export function WritingArea() {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading editor...</p>
+        <p className="ml-2">{t('editor.loading')}</p>
       </div>
     );
   }
@@ -508,12 +510,12 @@ export function WritingArea() {
     return (
       <Card className="m-auto">
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('editor.no_story_title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground mb-4">The editor is disabled until a story is selected.</p>
+          <p className="text-muted-foreground mb-4">{t('editor.no_story_description')}</p>
           <Link href="/stories" passHref>
-            <Button variant="default">Go to Stories Page</Button>
+            <Button variant="default">{t('editor.go_to_stories')}</Button>
           </Link>
         </CardContent>
       </Card>
@@ -524,7 +526,7 @@ export function WritingArea() {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Initializing editor...</p>
+        <p className="ml-2">{t('editor.initializing')}</p>
       </div>
     );
   }
@@ -540,7 +542,7 @@ export function WritingArea() {
           size="icon"
           onClick={toggleFocusMode}
           className="absolute top-4 right-4 z-10"
-          title="Exit Focus Mode"
+          title={t('editor.exit_focus_mode')}
         >
           <Minimize className="h-5 w-5" />
         </Button>
@@ -560,46 +562,46 @@ export function WritingArea() {
                   
                    <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="px-2" title="Open Document" disabled={!activeStoryId}>
+                      <Button variant="ghost" size="sm" className="px-2" title={t('editor.open_doc_button_title')} disabled={!activeStoryId}>
                         <FolderOpen className="h-5 w-5 mr-2 text-muted-foreground" />
-                        <span className="text-muted-foreground">Open Document</span>
+                        <span className="text-muted-foreground">{t('editor.open_doc_button')}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="rounded-none">
-                       {allDocuments.length > 0 ? renderDocumentMenuItems(allDocuments) : <DropdownMenuItem disabled>No documents found</DropdownMenuItem>}
+                       {allDocuments.length > 0 ? renderDocumentMenuItems(allDocuments) : <DropdownMenuItem disabled>{t('editor.no_documents_found')}</DropdownMenuItem>}
                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   {activeDocumentId && (
-                     <Button variant="ghost" size="sm" className="px-2" title="Close Document" onClick={closeDocument}>
+                     <Button variant="ghost" size="sm" className="px-2" title={t('editor.close_doc_button_title')} onClick={closeDocument}>
                        <XCircle className="h-5 w-5 mr-2 text-destructive" />
-                       <span className="text-destructive">Close</span>
+                       <span className="text-destructive">{t('common.close')}</span>
                      </Button>
                   )}
 
-                  <Button variant="ghost" size="icon" title="Save (auto-saved)" disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" title={t('editor.save_button_title')} disabled={!activeStoryId}>
                     <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title="Save current content as New Document" disabled={!activeStoryId || activeDocumentId !== null}>
+                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title={t('editor.save_as_new_button_title')} disabled={!activeStoryId || activeDocumentId !== null}>
                     <FileUp className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md" style={{ display: 'none' }} />
-                  <Button variant="ghost" size="icon" onClick={handleImportClick} title="Import File" disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={handleImportClick} title={t('editor.import_button_title')} disabled={!activeStoryId}>
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title="Export" disabled={!activeStoryId}>
+                      <Button variant="ghost" size="icon" title={t('editor.export_button_title')} disabled={!activeStoryId}>
                         <Download className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="rounded-none">
-                      <DropdownMenuItem onClick={handleExportTXT} disabled={!activeStoryId}>Export as TXT</DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportHTML} disabled={!activeStoryId}>Export as HTML</DropdownMenuItem>
-                      <DropdownMenuItem disabled>Export as PDF (soon)</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportTXT} disabled={!activeStoryId}>{t('editor.export_txt')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportHTML} disabled={!activeStoryId}>{t('editor.export_html')}</DropdownMenuItem>
+                      <DropdownMenuItem disabled>{t('editor.export_pdf')}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm('Are you sure you want to clear all content? This cannot be undone.')) { editor?.commands.clearContent(true); if(!activeDocumentId) clearSavedContent();} }} title="Clear Content" disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm(t('editor.clear_content_confirm'))) { editor?.commands.clearContent(true); if(!activeDocumentId) clearSavedContent();} }} title={t('editor.clear_content_button_title')} disabled={!activeStoryId}>
                     <Trash2 className="h-5 w-5 text-destructive" />
                   </Button>
                   <Tooltip>
@@ -609,35 +611,35 @@ export function WritingArea() {
                       </Button>
                     </TooltipTrigger>
                      <TooltipContent>
-                      <p>{!activeStoryId ? "Select a story first" : (aiFeaturesEnabled && isMounted ? "Get Writing Feedback" : "AI features disabled in Settings")}</p>
+                      <p>{!activeStoryId ? t('editor.tooltip_no_story') : (aiFeaturesEnabled && isMounted ? t('editor.tooltip_get_feedback') : t('editor.tooltip_ai_disabled'))}</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
-                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? "Pause Session" : "Start Session"} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? t('editor.pause_session') : t('editor.start_session')} disabled={!activeStoryId}>
                     {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title="Reset Session Timer" disabled={!activeStoryId || (sessionTime === 0 && !isTimerRunning)}>
+                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title={t('editor.reset_session')} disabled={!activeStoryId || (sessionTime === 0 && !isTimerRunning)}>
                     <RotateCcw className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <span className="text-xs md:text-sm text-muted-foreground min-w-[60px] md:min-w-[70px] text-center px-1"><TimerIcon className="inline h-4 w-4 mr-0.5 md:mr-1" />{formatTime(sessionTime)}</span>
-                  <Button variant="ghost" size="icon" onClick={toggleFocusMode} title="Focus Mode" disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={toggleFocusMode} title={t('editor.focus_mode')} disabled={!activeStoryId}>
                     <Expand className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title="Customize Theme">
+                      <Button variant="ghost" size="icon" title={t('editor.customize_theme_title')}>
                         <Palette className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="rounded-none">
-                      <DropdownMenuLabel>Editor Theme</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t('editor.editor_theme')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => applyEditorTheme('light')}>
-                        <Sun className="mr-2 h-4 w-4" /> Light
+                        <Sun className="mr-2 h-4 w-4" /> {t('editor.theme_light')}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => applyEditorTheme('dark')}>
-                        <Moon className="mr-2 h-4 w-4" /> Dark
+                        <Moon className="mr-2 h-4 w-4" /> {t('editor.theme_dark')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -654,13 +656,13 @@ export function WritingArea() {
           {!isFocusMode && (
             <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <div className="flex-1 truncate">
-                <span>{activeDocumentId ? `Editing: ${activeDocumentName}` : 'Editing Scratchpad'}</span>
+                <span>{activeDocumentId ? t('editor.editing', { name: activeDocumentName }) : t('editor.editing_scratchpad')}</span>
               </div>
               <div className="flex-1 text-center">
-                <span>Words: {activeStoryId ? wordCount : '-'} | Chars: {activeStoryId ? charCount : '-'}</span>
+                <span>{t('editor.words')}: {activeStoryId ? wordCount : '-'} | {t('editor.chars')}: {activeStoryId ? charCount : '-'}</span>
               </div>
               <div className="flex-1 text-right">
-                <span>{activeStoryId ? (isSaving ? "Saving..." : lastSavedTime ? `Saved: ${lastSavedTime.toLocaleTimeString()}` : "Not yet saved") : "No active story"}</span>
+                <span>{activeStoryId ? (isSaving ? t('common.saving') : lastSavedTime ? `${t('common.saved')}: ${lastSavedTime.toLocaleTimeString()}` : t('editor.not_yet_saved')) : t('editor.no_active_story_footer')}</span>
               </div>
             </CardFooter>
           )}
@@ -670,14 +672,14 @@ export function WritingArea() {
           <Card className={cn("hidden md:flex md:flex-col md:w-1/3 h-full border-l rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
             <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
               <div>
-                <CardTitle className="text-lg">AI Writing Feedback</CardTitle>
+                <CardTitle className="text-lg">{t('editor.feedback.title')}</CardTitle>
                 {feedbackTimestamp && (
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}
                   </p>
                 )}
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsFeedbackPanelOpen(false)} title="Close Feedback Panel">
+              <Button variant="ghost" size="icon" onClick={() => setIsFeedbackPanelOpen(false)} title={t('editor.feedback.close_button_title')}>
                 <X className="h-5 w-5" />
               </Button>
             </CardHeader>
@@ -686,7 +688,7 @@ export function WritingArea() {
                 <div className="space-y-4">
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-base">Overall Assessment</CardTitle>
+                      <CardTitle className="text-base">{t('editor.feedback.overall_assessment_title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
                       <p className="text-sm whitespace-pre-wrap">{feedbackResult.overallAssessment}</p>
@@ -695,25 +697,25 @@ export function WritingArea() {
 
                   <Card>
                     <CardHeader className="p-3">
-                      <CardTitle className="text-base">Readability</CardTitle>
+                      <CardTitle className="text-base">{t('editor.feedback.readability_title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0 space-y-1">
-                      <p className="text-sm"><strong>Score:</strong> {feedbackResult.readability.scoreDescription}</p>
-                      <p className="text-sm whitespace-pre-wrap"><strong>Assessment:</strong> {feedbackResult.readability.assessment}</p>
+                      <p className="text-sm"><strong>{t('editor.feedback.readability_score')}:</strong> {feedbackResult.readability.scoreDescription}</p>
+                      <p className="text-sm whitespace-pre-wrap"><strong>{t('editor.feedback.readability_assessment')}:</strong> {feedbackResult.readability.assessment}</p>
                     </CardContent>
                   </Card>
 
                   {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length > 0 && (
                     <Card>
                       <CardHeader className="p-3">
-                        <CardTitle className="text-base">Grammar & Spelling Suggestions</CardTitle>
+                        <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
                       </CardHeader>
                       <CardContent className="p-3 pt-0 space-y-3">
                         {feedbackResult.grammarSpellingSuggestions.map((suggestion, index) => (
                           <div key={index} className="p-2 border rounded-md bg-muted/30">
                             <p className="text-xs text-muted-foreground uppercase">{suggestion.issueType}</p>
-                            <p className="text-sm my-1">Original: <span className="line-through text-red-500 dark:text-red-400">{suggestion.originalText}</span></p>
-                            <p className="text-sm my-1">Suggested: <span className="text-green-600 dark:text-green-400 font-medium">{suggestion.suggestedCorrection}</span></p>
+                            <p className="text-sm my-1">{t('editor.feedback.grammar_original')}: <span className="line-through text-red-500 dark:text-red-400">{suggestion.originalText}</span></p>
+                            <p className="text-sm my-1">{t('editor.feedback.grammar_suggested')}: <span className="text-green-600 dark:text-green-400 font-medium">{suggestion.suggestedCorrection}</span></p>
                             {suggestion.explanation && (
                               <p className="text-xs text-muted-foreground italic mt-1">{suggestion.explanation}</p>
                             )}
@@ -725,10 +727,10 @@ export function WritingArea() {
                   {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length === 0 && (
                     <Card>
                       <CardHeader className="p-3">
-                        <CardTitle className="text-base">Grammar & Spelling</CardTitle>
+                        <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
                       </CardHeader>
                       <CardContent className="p-3 pt-0">
-                        <p className="text-sm">No specific grammar or spelling issues found by the AI.</p>
+                        <p className="text-sm">{t('editor.feedback.grammar_none_found')}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -742,28 +744,28 @@ export function WritingArea() {
        <Dialog open={isSaveToDocDialogOpen} onOpenChange={setIsSaveToDocDialogOpen}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Save to Documents</DialogTitle>
+                <DialogTitle>{t('editor.save_as_dialog.title')}</DialogTitle>
                 <DialogDescription>
-                    Enter a filename to save the current editor content as a new file in your documents.
+                    {t('editor.save_as_dialog.description')}
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSaveToDocuments}>
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="doc-filename" className="text-right">Filename</Label>
+                        <Label htmlFor="doc-filename" className="text-right">{t('editor.save_as_dialog.filename_label')}</Label>
                         <Input 
                             id="doc-filename" 
                             value={newDocFilename} 
                             onChange={(e) => setNewDocFilename(e.target.value)} 
                             className="col-span-3" 
                             required 
-                            placeholder="e.g., Chapter 1 Draft"
+                            placeholder={t('editor.save_as_dialog.filename_placeholder')}
                         />
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                    <Button type="submit">Save Document</Button>
+                    <DialogClose asChild><Button type="button" variant="outline">{t('common.cancel')}</Button></DialogClose>
+                    <Button type="submit">{t('editor.save_as_dialog.save_button')}</Button>
                 </DialogFooter>
             </form>
         </DialogContent>

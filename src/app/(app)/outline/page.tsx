@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { useStoryContext, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
 
@@ -83,6 +84,8 @@ interface OutlineItemDisplayProps {
 function OutlineItemDisplay({ 
   item, index, level, onEdit, onDelete 
 }: OutlineItemDisplayProps) {
+  const { t } = useLanguage();
+
   const getTypeBadgeVariant = (type: OutlineItemType) => {
     switch (type) {
       case 'Chapter': return 'default';
@@ -91,6 +94,15 @@ function OutlineItemDisplay({
       default: return 'outline';
     }
   };
+
+  const getTranslatedItemType = (type: OutlineItemType) => {
+    switch (type) {
+      case 'Chapter': return t('outline.types.chapter');
+      case 'Scene': return t('outline.types.scene');
+      case 'Plot Point/Notes': return t('outline.types.plot_point');
+      default: return type;
+    }
+  }
 
   const canHaveChildren = item.type === 'Chapter';
 
@@ -112,32 +124,32 @@ function OutlineItemDisplay({
         >
           <div className="flex justify-between items-start mb-2">
             <div className="flex items-center gap-2">
-              <div {...provided.dragHandleProps} title="Drag to reorder/nest">
+              <div {...provided.dragHandleProps} title={t('outline.drag_handle_title')}>
                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
               </div>
-              <Badge variant={getTypeBadgeVariant(item.type)} className="text-xs">{item.type}</Badge>
+              <Badge variant={getTypeBadgeVariant(item.type)} className="text-xs">{getTranslatedItemType(item.type)}</Badge>
             </div>
             <div className="flex gap-1 shrink-0">
-              <Button variant="ghost" size="icon" onClick={() => onEdit(item)} title="Edit Item">
+              <Button variant="ghost" size="icon" onClick={() => onEdit(item)} title={t('outline.edit_item_title')}>
                 <Edit3 className="h-4 w-4" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" title="Delete Item">
+                  <Button variant="ghost" size="icon" title={t('outline.delete_item_title')}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('outline.delete_dialog.title')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the outline item: "{item.title}" and all its sub-items.
+                      {t('outline.delete_dialog.description_1')} "{item.title}" {t('outline.delete_dialog.description_2')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => onDelete(item.id)} className="bg-destructive hover:bg-destructive/90">
-                      Delete
+                      {t('common.delete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -199,6 +211,7 @@ function OutlineItemDisplay({
 
 export default function OutlineBuilderPage() {
   const { activeStoryId } = useStoryContext();
+  const { t } = useLanguage();
   const [items, setItems] = useState<OutlineItem[]>([]);
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -399,7 +412,7 @@ export default function OutlineBuilderPage() {
     for (const item of itemsToFormat) {
       text += `${indent}- [${item.type}] ${item.title}\n`;
       if (item.notes) {
-        text += `${indent}  Notes: ${item.notes.replace(/\n/g, `\n${indent}  `)}\n`;
+        text += `${indent}  ${t('outline.export.notes')}: ${item.notes.replace(/\n/g, `\n${indent}  `)}\n`;
       }
       if (item.children && item.children.length > 0) {
         text += formatItemsAsText(item.children, indentLevel + 1);
@@ -427,10 +440,10 @@ export default function OutlineBuilderPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('outline.no_active_story.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to build an outline.</p>
+          <p className="text-muted-foreground">{t('outline.no_active_story.description_1')} <Link href="/stories" className="text-primary hover:underline">{t('outline.no_active_story.description_2')}</Link> {t('outline.no_active_story.description_3')}</p>
         </CardContent>
       </Card>
     );
@@ -442,16 +455,16 @@ export default function OutlineBuilderPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold mb-2 flex items-center">
-              <ListTree className="mr-3 h-8 w-8 text-primary" /> Outline Builder
+              <ListTree className="mr-3 h-8 w-8 text-primary" /> {t('outline.title')}
             </h1>
-            <p className="text-muted-foreground">Structure your story. Drag items to reorder or nest them within 'Chapter' type items.</p>
+            <p className="text-muted-foreground">{t('outline.description')}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport} disabled={!activeStoryId || items.length === 0}>
-                <Download className="mr-2 h-5 w-5" /> Export Outline
+                <Download className="mr-2 h-5 w-5" /> {t('outline.export_button')}
             </Button>
             <Button onClick={handleOpenAddDialog} disabled={!activeStoryId}>
-              <PlusCircle className="mr-2 h-5 w-5" /> Add New Outline Item
+              <PlusCircle className="mr-2 h-5 w-5" /> {t('outline.add_button')}
             </Button>
           </div>
         </div>
@@ -462,52 +475,52 @@ export default function OutlineBuilderPage() {
         }}>
           <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
-                <DialogTitle>Add New Outline Item</DialogTitle>
+                <DialogTitle>{t('outline.add_dialog.title')}</DialogTitle>
                 <DialogDescription>
-                  Choose a type, add a title, and optional notes. New items are added to the top level.
+                  {t('outline.add_dialog.description')}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleAddItem} className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="itemType" className="text-right">Type</Label>
+                  <Label htmlFor="itemType" className="text-right">{t('outline.fields.type')}</Label>
                   <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
                     <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select item type" />
+                      <SelectValue placeholder={t('outline.fields.type_placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {itemTypes.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
+                      <SelectItem value="Chapter">{t('outline.types.chapter')}</SelectItem>
+                      <SelectItem value="Scene">{t('outline.types.scene')}</SelectItem>
+                      <SelectItem value="Plot Point/Notes">{t('outline.types.plot_point')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="newItemTitleDialog" className="text-right">Title</Label>
+                  <Label htmlFor="newItemTitleDialog" className="text-right">{t('outline.fields.title')}</Label>
                   <Input 
                     id="newItemTitleDialog" 
                     value={newItemTitle} 
                     onChange={(e) => setNewItemTitle(e.target.value)} 
                     className="col-span-3" 
-                    placeholder="e.g., The Discovery"
+                    placeholder={t('outline.fields.title_placeholder')}
                     required 
                   />
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="newItemNotesDialog" className="text-right pt-2">Notes</Label>
+                  <Label htmlFor="newItemNotesDialog" className="text-right pt-2">{t('outline.fields.notes')}</Label>
                   <Textarea 
                     id="newItemNotesDialog" 
                     value={newItemNotes} 
                     onChange={(e) => setNewItemNotes(e.target.value)} 
                     className="col-span-3" 
                     rows={4}
-                    placeholder="Add brief notes or a summary..."
+                    placeholder={t('outline.fields.notes_placeholder')}
                   />
                 </div>
                 <DialogFooter className="mt-4">
                   <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
+                    <Button type="button" variant="outline">{t('common.cancel')}</Button>
                   </DialogClose>
-                  <Button type="submit">Add Item</Button>
+                  <Button type="submit">{t('outline.add_dialog.add_button')}</Button>
                 </DialogFooter>
               </form>
           </DialogContent>
@@ -516,13 +529,13 @@ export default function OutlineBuilderPage() {
         {editingItem && (
           <Card className="mt-6 border-primary border-2">
             <CardHeader>
-              <CardTitle>Edit Item: <span className="font-normal">{editingItem.title}</span></CardTitle>
-              <CardDescription>Modifying <Badge variant="outline">{editingItem.type}</Badge></CardDescription>
+              <CardTitle>{t('outline.edit_form.title')}: <span className="font-normal">{editingItem.title}</span></CardTitle>
+              <CardDescription>{t('outline.edit_form.description')} <Badge variant="outline">{editingItem.type}</Badge></CardDescription>
             </CardHeader>
             <form onSubmit={handleSaveEdit}>
               <CardContent className="space-y-4">
                 <div>
-                  <label htmlFor="editItemTitle" className="block text-sm font-medium mb-1">Title</label>
+                  <label htmlFor="editItemTitle" className="block text-sm font-medium mb-1">{t('outline.fields.title')}</label>
                   <Input
                     id="editItemTitle"
                     value={editTitle}
@@ -532,7 +545,7 @@ export default function OutlineBuilderPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="editItemNotes" className="block text-sm font-medium mb-1">Notes (Optional)</label>
+                  <label htmlFor="editItemNotes" className="block text-sm font-medium mb-1">{t('outline.fields.notes')}</label>
                   <Textarea
                     id="editItemNotes"
                     value={editNotes}
@@ -544,10 +557,10 @@ export default function OutlineBuilderPage() {
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={handleCancelEdit}>
-                  <XCircle className="mr-2 h-5 w-5" /> Cancel Edit
+                  <XCircle className="mr-2 h-5 w-5" /> {t('common.cancel')}
                 </Button>
                 <Button type="submit">
-                  <Save className="mr-2 h-5 w-5" /> Save Changes
+                  <Save className="mr-2 h-5 w-5" /> {t('common.save')}
                 </Button>
               </CardFooter>
             </form>
@@ -556,9 +569,9 @@ export default function OutlineBuilderPage() {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Your Outline Structure</CardTitle>
+            <CardTitle>{t('outline.structure.title')}</CardTitle>
             <CardDescription>
-              {items.length > 0 ? "Drag and drop to reorder items or nest them under 'Chapter' type items." : "Your outline is empty for this story."}
+              {items.length > 0 ? t('outline.structure.description_items') : t('outline.structure.description_no_items')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -590,16 +603,16 @@ export default function OutlineBuilderPage() {
                 </Droppable>
               </ScrollArea>
             ) : (
-              <p className="text-muted-foreground text-center py-6">No outline items yet. Click "Add New Outline Item" to begin.</p>
+              <p className="text-muted-foreground text-center py-6">{t('outline.structure.empty')}</p>
             )}
           </CardContent>
         </Card>
         
         <div className="text-center mt-12 p-6 bg-card border rounded-md">
-          <Image src="/newfeature.svg" alt="New feature illustration" width={300} height={150} className="mx-auto mb-4 rounded-md dark:invert" />
-          <h3 className="text-xl font-semibold mb-2">Advanced Outlining</h3>
+          <Image src="/newfeature.svg" alt={t('outline.new_feature.alt')} width={300} height={150} className="mx-auto mb-4 rounded-md dark:invert" />
+          <h3 className="text-xl font-semibold mb-2">{t('outline.new_feature.title')}</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
-            You can now drag items to reorder them or nest them inside 'Chapter' type items.
+            {t('outline.new_feature.description')}
           </p>
         </div>
 
