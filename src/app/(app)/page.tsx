@@ -4,11 +4,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useStoryContext } from "@/contexts/StoryContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -146,14 +148,57 @@ export default function DashboardPage() {
               Please select an existing story or create a new one to begin working. 
               Most features are disabled until a story is active.
             </p>
-            <Link href="/stories" passHref>
-              <Button variant="default">
-                <BookOpenCheck className="mr-2 h-4 w-4" /> Go to Stories
-              </Button>
-            </Link>
-            <p className="text-sm mt-3 text-muted-foreground">
-              From the Stories page, you can create your first project or select an existing one.
-            </p>
+            <div className="flex flex-wrap gap-2">
+                <Link href="/stories" passHref>
+                  <Button variant="default">
+                    <BookOpenCheck className="mr-2 h-4 w-4" /> Go to Stories
+                  </Button>
+                </Link>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="secondary">
+                            <Info className="mr-2 h-4 w-4" /> How to Use This App
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl">Welcome to OpenWritingKit!</DialogTitle>
+                            <DialogDescription>
+                                Here's a quick guide to get you started.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4 text-sm">
+                            <div>
+                                <h3 className="font-semibold mb-2">Main Features</h3>
+                                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                    <li><span className="font-semibold text-foreground">Distraction-Free Editor:</span> A clean space to write your masterpiece.</li>
+                                    <li><span className="font-semibold text-foreground">Story Organization:</span> Manage multiple stories, each with its own documents, characters, and outlines.</li>
+                                    <li><span className="font-semibold text-foreground">Character Development:</span> Create detailed character profiles and sheets.</li>
+                                    <li><span className="font-semibold text-foreground">Outline Builder:</span> Structure your narrative with a drag-and-drop outliner.</li>
+                                    <li><span className="font-semibold text-foreground">AI-Powered Tools:</span> Get writing prompts, feedback, and analysis (opt-in required in Settings).</li>
+                                </ul>
+                            </div>
+                            
+                             <Alert variant="default" className="bg-primary/5 border-primary/20">
+                                <AlertTriangle className="h-4 w-4 text-primary" />
+                                <AlertDescription>
+                                    <span className="font-semibold">Beta Release:</span> This is a preliminary release. Features may change and unexpected issues may occur. Your feedback is greatly appreciated!
+                                </AlertDescription>
+                            </Alert>
+
+                            <Alert variant="destructive">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription>
+                                    <h4 className="font-bold mb-1">Important: How Your Data is Saved</h4>
+                                    <p>By default, all your writing data (stories, characters, etc.) is stored **locally in your web browser only**. This means if you clear your browser's data, use a different browser, or switch devices, your work will be lost.</p>
+                                    <p className="mt-2">To prevent data loss, please connect to Google Drive in the sidebar or **always save a backup copy** of your work elsewhere using the export features.</p>
+                                </AlertDescription>
+                            </Alert>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            
           </CardContent>
         </Card>
       )}
