@@ -56,9 +56,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.push('/');
     } catch (error) {
       console.error("Firebase Login Error: ", error);
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      const errorCode = (error as AuthError).code;
+      
+      switch (errorCode) {
+        case 'auth/invalid-credential':
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+          errorMessage = "Invalid email or password. Please check your credentials and try again.";
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can reset your password or try again later.";
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = "Could not connect to the authentication service. Please check your internet connection.";
+          break;
+        default:
+          errorMessage = "Login failed. Please try again later.";
+      }
+      
       toast({
           title: "Login Failed",
-          description: (error as AuthError).message || "Invalid credentials. Please try again.",
+          description: errorMessage,
           variant: 'destructive'
       });
       return error as AuthError;
