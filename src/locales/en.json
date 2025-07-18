@@ -146,9 +146,15 @@
     },
     "security": {
       "title": "Security",
-      "description": "Manage your account security.",
-      "change_password_button": "Change Password",
-      "change_password_desc": "This will send a password reset link to your registered email address."
+      "description": "Manage your account security. You will be logged out after any change.",
+      "change_email_label": "Change Email Address",
+      "change_email_button": "Update Email",
+      "new_email_placeholder": "New email address",
+      "current_password_placeholder": "Current password",
+      "change_password_label": "Change Password",
+      "new_password_placeholder": "New password (min. 6 characters)",
+      "confirm_password_placeholder": "Confirm new password",
+      "change_password_button": "Update Password"
     },
     "data_management": {
       "title": "Data Management",
@@ -177,11 +183,10 @@
       "ai_updated_title": "AI Settings Updated",
       "ai_enabled_desc": "AI features have been enabled.",
       "ai_disabled_desc": "AI features have been disabled.",
-      "must_be_logged_in": "You must be logged in to change your password.",
-      "password_reset_sent_title": "Password Reset Email Sent",
-      "password_reset_sent_desc": "An email has been sent to",
-      "password_reset_error_title": "Error Sending Reset Email",
-      "password_reset_error_desc": "Could not send the password reset email. Please try again later."
+      "reauth_failed_desc": "Re-authentication failed. Please check your password and try again.",
+      "email_change_success_title": "Email Updated",
+      "password_change_success_title": "Password Updated",
+      "passwords_do_not_match": "The new passwords do not match."
     }
   },
   "stories": {

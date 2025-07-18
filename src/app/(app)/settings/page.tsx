@@ -7,34 +7,121 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload } from 'lucide-react';
+import { Moon, Sun, Wand2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStoryContext } from '@/contexts/StoryContext';
+import { Input } from '@/components/ui/input';
+import { changeEmail, changePassword } from '@/ai/flows/auth-flow';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
-  const { stories, activeStoryId } = useStoryContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  // State for security forms
+  const [newEmail, setNewEmail] = useState('');
+  const [currentPasswordForEmail, setCurrentPasswordForEmail] = useState('');
+  const [currentPasswordForPassword, setCurrentPasswordForPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const [showCurrentPasswordForEmail, setShowCurrentPasswordForEmail] = useState(false);
+  const [showCurrentPasswordForPassword, setShowCurrentPasswordForPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
 
   useEffect(() => {
     setIsMounted(true);
     const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
     setAiFeaturesEnabled(storedAIPref === 'true');
   }, []);
+  
+  const reauthenticateUser = async (password: string) => {
+    if (!user || !user.email) return null;
+    const credential = EmailAuthProvider.credential(user.email, password);
+    try {
+      await reauthenticateWithCredential(user, credential);
+      return true;
+    } catch (error) {
+      console.error("Re-authentication failed", error);
+      toast({ title: t('common.error'), description: t('settings.toast.reauth_failed_desc'), variant: 'destructive' });
+      return false;
+    }
+  };
+  
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !newEmail || !currentPasswordForEmail) return;
+    setIsChangingEmail(true);
+
+    const isReauthenticated = await reauthenticateUser(currentPasswordForEmail);
+    if (!isReauthenticated) {
+      setIsChangingEmail(false);
+      return;
+    }
+
+    const result = await changeEmail({ uid: user.uid, newEmail });
+
+    if (result.success) {
+      toast({ title: t('settings.toast.email_change_success_title'), description: result.message });
+      // Force logout after email change for security
+      await logout(); 
+    } else {
+      toast({ title: t('common.error'), description: result.message, variant: 'destructive' });
+    }
+    
+    setNewEmail('');
+    setCurrentPasswordForEmail('');
+    setIsChangingEmail(false);
+  };
+  
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !newPassword || !currentPasswordForPassword || newPassword !== confirmNewPassword) {
+      if (newPassword !== confirmNewPassword) {
+        toast({ title: t('common.error'), description: t('settings.toast.passwords_do_not_match'), variant: 'destructive' });
+      }
+      return;
+    }
+    setIsChangingPassword(true);
+    
+    const isReauthenticated = await reauthenticateUser(currentPasswordForPassword);
+    if (!isReauthenticated) {
+        setIsChangingPassword(false);
+        return;
+    }
+
+    const result = await changePassword({ uid: user.uid, newPassword });
+
+    if (result.success) {
+        toast({ title: t('settings.toast.password_change_success_title'), description: result.message });
+        await logout();
+    } else {
+        toast({ title: t('common.error'), description: result.message, variant: 'destructive' });
+    }
+
+    setCurrentPasswordForPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setIsChangingPassword(false);
+  };
+
 
   const handleAiOptInChange = (checked: boolean) => {
     setAiFeaturesEnabled(checked);
@@ -45,33 +132,6 @@ export default function SettingsPage() {
       description: checked ? t('settings.toast.ai_enabled_desc') : t('settings.toast.ai_disabled_desc'),
     });
   };
-
-  const handleChangePassword = async () => {
-    if (!user || !user.email) {
-      toast({
-        title: t('common.error'),
-        description: t('settings.toast.must_be_logged_in'),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const auth = getAuth();
-      await sendPasswordResetEmail(auth, user.email);
-      toast({
-        title: t('settings.toast.password_reset_sent_title'),
-        description: `${t('settings.toast.password_reset_sent_desc')} ${user.email}.`,
-      });
-    } catch (error) {
-      console.error("Password reset error:", error);
-      toast({
-        title: t('settings.toast.password_reset_error_title'),
-        description: t('settings.toast.password_reset_error_desc'),
-        variant: "destructive",
-      });
-    }
-  };
   
   const handleExportAllData = () => {
     if (!user) {
@@ -79,12 +139,15 @@ export default function SettingsPage() {
         return;
     }
     const backupData: { [key: string]: any } = {};
-    const userPrefix = `openwritingkit-user-${user.uid}`;
 
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('openwritingkit-story-') || key.startsWith('openwritingkit-user-'))) {
-            backupData[key] = JSON.parse(localStorage.getItem(key)!);
+        if (key && (key.startsWith('openwritingkit-story-') || key.startsWith('openwritingkit-user-') || key.startsWith('openwritingkit-language') || key.startsWith('openwritingkit-ai-opt-in') || key.startsWith('openwritingkit-editor-settings'))) {
+            try {
+                backupData[key] = JSON.parse(localStorage.getItem(key)!);
+            } catch(e) {
+                backupData[key] = localStorage.getItem(key);
+            }
         }
     }
 
@@ -126,7 +189,7 @@ export default function SettingsPage() {
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                 if (key && (key.startsWith('openwritingkit-story-') || key.startsWith('openwritingkit-user-'))) {
+                 if (key && (key.startsWith('openwritingkit-'))) {
                     keysToRemove.push(key);
                 }
             }
@@ -134,7 +197,7 @@ export default function SettingsPage() {
 
             for (const key in backupData) {
                 if (Object.prototype.hasOwnProperty.call(backupData, key)) {
-                   localStorage.setItem(key, JSON.stringify(backupData[key]));
+                   localStorage.setItem(key, typeof backupData[key] === 'string' ? backupData[key] : JSON.stringify(backupData[key]));
                 }
             }
             toast({ title: "Import Successful", description: "Data restored. The app will now reload." });
@@ -204,13 +267,79 @@ export default function SettingsPage() {
             <CardTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5"/> {t('settings.security.title')}</CardTitle>
             <CardDescription>{t('settings.security.description')}</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button onClick={handleChangePassword} className="w-full">
-              {t('settings.security.change_password_button')}
-            </Button>
-             <p className="text-xs text-muted-foreground mt-2">
-              {t('settings.security.change_password_desc')}
-            </p>
+          <CardContent className="space-y-6">
+            <form onSubmit={handleChangeEmail} className="space-y-3">
+              <Label htmlFor="new-email" className='font-semibold'>{t('settings.security.change_email_label')}</Label>
+              <Input
+                id="new-email"
+                type="email"
+                placeholder={t('settings.security.new_email_placeholder')}
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                disabled={isChangingEmail}
+                required
+              />
+              <div className="relative">
+                <Input
+                  id="current-password-email"
+                  type={showCurrentPasswordForEmail ? "text" : "password"}
+                  placeholder={t('settings.security.current_password_placeholder')}
+                  value={currentPasswordForEmail}
+                  onChange={(e) => setCurrentPasswordForEmail(e.target.value)}
+                  disabled={isChangingEmail}
+                  required
+                />
+                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPasswordForEmail(!showCurrentPasswordForEmail)}><span className="sr-only">Toggle password visibility</span>{showCurrentPasswordForEmail ? <EyeOff /> : <Eye />}</Button>
+              </div>
+              <Button type="submit" disabled={isChangingEmail} className="w-full">
+                {isChangingEmail && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('settings.security.change_email_button')}
+              </Button>
+            </form>
+            <hr/>
+            <form onSubmit={handleChangePassword} className="space-y-3">
+              <Label htmlFor="new-password" className='font-semibold'>{t('settings.security.change_password_label')}</Label>
+               <div className="relative">
+                <Input
+                  id="current-password-password"
+                  type={showCurrentPasswordForPassword ? "text" : "password"}
+                  placeholder={t('settings.security.current_password_placeholder')}
+                  value={currentPasswordForPassword}
+                  onChange={(e) => setCurrentPasswordForPassword(e.target.value)}
+                  disabled={isChangingPassword}
+                  required
+                />
+                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPasswordForPassword(!showCurrentPasswordForPassword)}><span className="sr-only">Toggle password visibility</span>{showCurrentPasswordForPassword ? <EyeOff /> : <Eye />}</Button>
+              </div>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder={t('settings.security.new_password_placeholder')}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={isChangingPassword}
+                  required
+                />
+                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowNewPassword(!showNewPassword)}><span className="sr-only">Toggle password visibility</span>{showNewPassword ? <EyeOff /> : <Eye />}</Button>
+              </div>
+              <div className="relative">
+                <Input
+                  id="confirm-new-password"
+                  type={showConfirmNewPassword ? "text" : "password"}
+                  placeholder={t('settings.security.confirm_password_placeholder')}
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  disabled={isChangingPassword}
+                  required
+                />
+                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}><span className="sr-only">Toggle password visibility</span>{showConfirmNewPassword ? <EyeOff /> : <Eye />}</Button>
+              </div>
+              <Button type="submit" disabled={isChangingPassword} className="w-full">
+                {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('settings.security.change_password_button')}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>

@@ -146,9 +146,15 @@
     },
     "security": {
       "title": "Segurança",
-      "description": "Gerencie a segurança da sua conta.",
-      "change_password_button": "Alterar Senha",
-      "change_password_desc": "Isso enviará um link de redefinição de senha para o seu e-mail cadastrado."
+      "description": "Gerencie a segurança da sua conta. Você será desconectado após qualquer alteração.",
+      "change_email_label": "Alterar Endereço de Email",
+      "change_email_button": "Atualizar Email",
+      "new_email_placeholder": "Novo endereço de email",
+      "current_password_placeholder": "Senha atual",
+      "change_password_label": "Alterar Senha",
+      "new_password_placeholder": "Nova senha (mín. 6 caracteres)",
+      "confirm_password_placeholder": "Confirmar nova senha",
+      "change_password_button": "Atualizar Senha"
     },
     "data_management": {
       "title": "Gerenciamento de Dados",
@@ -177,11 +183,10 @@
       "ai_updated_title": "Configurações de IA Atualizadas",
       "ai_enabled_desc": "Os recursos de IA foram ativados.",
       "ai_disabled_desc": "Os recursos de IA foram desativados.",
-      "must_be_logged_in": "Você deve estar logado para alterar sua senha.",
-      "password_reset_sent_title": "E-mail de Redefinição de Senha Enviado",
-      "password_reset_sent_desc": "Um e-mail foi enviado para",
-      "password_reset_error_title": "Erro ao Enviar E-mail de Redefinição",
-      "password_reset_error_desc": "Não foi possível enviar o e-mail de redefinição de senha. Por favor, tente novamente mais tarde."
+      "reauth_failed_desc": "A reautenticação falhou. Verifique sua senha e tente novamente.",
+      "email_change_success_title": "Email Atualizado",
+      "password_change_success_title": "Senha Atualizada",
+      "passwords_do_not_match": "As novas senhas não coincidem."
     }
   },
     "stories": {

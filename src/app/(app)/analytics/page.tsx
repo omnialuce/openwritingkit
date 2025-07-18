@@ -198,7 +198,7 @@ export default function AnalyticsPage() {
           <CardDescription>{t('analytics.overall_progress.description')}</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-           <Image src="/comingsoon.svg" alt="Illustration of building site with the words 'coming soon'." width={800} height={300} className="mx-auto rounded-md dark:invert" />
+           <Image src="/comingsoon.svg" alt="Illustration of building site with the words 'coming soon'." width={800} height={300} className="mx-auto rounded-md dark:invert max-w-sm w-full" />
           <p className="text-muted-foreground mt-4">{t('analytics.overall_progress.footer')}</p>
         </CardContent>
       </Card>

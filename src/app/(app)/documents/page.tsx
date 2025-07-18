@@ -580,7 +580,7 @@ export default function DocumentsPage() {
       )}
 
       <div className="text-center mt-12 p-6 bg-card border">
-        <Image src="/comingsoon.svg" alt="Illustration of a building site with the words 'coming soon'." width={300} height={150} className="mx-auto mb-4 dark:invert" />
+        <Image src="/comingsoon.svg" alt="Illustration of a building site with the words 'coming soon'." width={300} height={150} className="mx-auto mb-4 dark:invert w-full max-w-xs" />
         <h3 className="text-xl font-semibold mb-2">Streamlined Organization</h3>
         <p className="text-muted-foreground max-w-md mx-auto">
           Drag-and-drop reordering is planned for a future update.

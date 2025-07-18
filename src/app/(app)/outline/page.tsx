@@ -609,7 +609,7 @@ export default function OutlineBuilderPage() {
         </Card>
         
         <div className="text-center mt-12 p-6 bg-card border rounded-md">
-          <Image src="/newfeature.svg" alt={t('outline.new_feature.alt')} width={300} height={150} className="mx-auto mb-4 rounded-md dark:invert" />
+          <Image src="/newfeature.svg" alt={t('outline.new_feature.alt')} width={300} height={150} className="mx-auto mb-4 rounded-md dark:invert w-full max-w-xs" />
           <h3 className="text-xl font-semibold mb-2">{t('outline.new_feature.title')}</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
             {t('outline.new_feature.description')}
