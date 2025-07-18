@@ -4,7 +4,7 @@
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2 } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from '@/components/ui/textarea';
 import { useStoryContext, getDocumentsStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import mammoth from 'mammoth';
 import JSZip from 'jszip';
@@ -62,9 +63,10 @@ interface DocumentListItemProps {
   level?: number;
   onOpenDetails: (item: DocumentItem) => void;
   onDelete: (id: string) => void;
+  onEditInEditor: (id: string) => void;
 }
 
-function DocumentListItem({ item, level = 0, onOpenDetails, onDelete }: DocumentListItemProps) {
+function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEditor }: DocumentListItemProps) {
   const [isOpen, setIsOpen] = useState(level < 1);
   const { t } = useLanguage();
 
@@ -99,6 +101,8 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete }: Document
     }
   }
 
+  const isEditable = item.type === 'file' || item.type === 'scene';
+
   return (
     <>
       <li
@@ -126,6 +130,12 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete }: Document
           <div className="flex items-center gap-2 ml-2 shrink-0">
             {(item.type === "scene" || item.type === 'file') && item.status && (
               <Badge variant={getStatusVariant(item.status)} className="text-xs">{item.status}</Badge>
+            )}
+            {isEditable && (
+                <Button variant="default" size="sm" onClick={() => onEditInEditor(item.id)}>
+                    <Edit className="h-4 w-4 mr-1" />
+                    Edit
+                </Button>
             )}
             <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>Details</Button>
              <AlertDialog>
@@ -164,6 +174,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete }: Document
           level={level + 1}
           onOpenDetails={onOpenDetails}
           onDelete={onDelete}
+          onEditInEditor={onEditInEditor}
         />
       ))}
     </>
@@ -198,10 +209,11 @@ const deleteItemRecursive = (nodes: DocumentItem[], itemId: string): DocumentIte
 
 
 export default function DocumentsPage() {
-  const { activeStoryId } = useStoryContext();
+  const { activeStoryId, setDocumentToOpen } = useStoryContext();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -283,6 +295,11 @@ export default function DocumentsPage() {
     setEditedStatus(item.status);
     setEditedTagsString(item.tags?.join(', ') || '');
     setIsDetailDialogOpen(true);
+  };
+  
+  const handleEditInEditor = (docId: string) => {
+    setDocumentToOpen(docId);
+    router.push('/editor');
   };
 
   const handleSaveDetails = () => {
@@ -453,6 +470,7 @@ export default function DocumentsPage() {
                   item={doc}
                   onOpenDetails={handleOpenDetailsDialog}
                   onDelete={handleDeleteItem}
+                  onEditInEditor={handleEditInEditor}
                 />
               ))}
             </ul>

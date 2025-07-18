@@ -1,4 +1,3 @@
-
 // src/components/editor/WritingArea.tsx
 'use client';
 
@@ -61,13 +60,13 @@ interface DocumentItem {
 
 
 export function WritingArea() {
-  const { activeStoryId } = useStoryContext();
+  const { activeStoryId, documentToOpen, consumeDocumentToOpen } = useStoryContext();
   const editorStorageKey = getEditorContentKey(activeStoryId);
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
 
   const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(
-    activeDocumentId ? `doc-${activeDocumentId}` : editorStorageKey,
+    activeDocumentId ? `openwritingkit-story-${activeStoryId}-doc-${activeDocumentId}` : editorStorageKey,
     '<p></p>'
   );
   
@@ -129,6 +128,19 @@ export function WritingArea() {
       },
     },
   });
+  
+  const findDocumentRecursive = (items: DocumentItem[], docId: string): DocumentItem | null => {
+    for (const item of items) {
+      if (item.id === docId) {
+        return item;
+      }
+      if (item.children) {
+        const found = findDocumentRecursive(item.children, docId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
   const loadAllDocuments = useCallback(() => {
     if (activeStoryId) {
@@ -152,6 +164,17 @@ export function WritingArea() {
       };
   }, [loadAllDocuments, documentsStorageKey]);
 
+  useEffect(() => {
+    if (editor && documentToOpen) {
+      const docToLoadId = consumeDocumentToOpen(); // Consume the ID
+      if (docToLoadId) {
+        const docToLoad = findDocumentRecursive(allDocuments, docToLoadId);
+        if (docToLoad) {
+          openDocument(docToLoad);
+        }
+      }
+    }
+  }, [documentToOpen, editor, allDocuments, consumeDocumentToOpen]);
 
   const saveCurrentContentToDocument = useCallback((content: string, docId: string) => {
     if (!activeStoryId) return;
@@ -198,7 +221,7 @@ export function WritingArea() {
         saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
         setActiveDocumentId(null);
         setActiveDocumentName(null);
-        editor.commands.setContent('<p></p>');
+        editor.commands.setContent(savedContent || '<p></p>'); // Revert to scratchpad
     }
   }
 

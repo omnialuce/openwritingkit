@@ -21,6 +21,9 @@ interface StoryContextType {
   updateStory: (updatedStory: Story) => void;
   deleteStory: (storyId: string) => void;
   refreshStories: () => void;
+  documentToOpen: string | null;
+  setDocumentToOpen: (docId: string | null) => void;
+  consumeDocumentToOpen: () => string | null;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
@@ -35,9 +38,16 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const [activeStoryId, setActiveStoryIdState] = useState<string | null>(null);
   const [activeStoryName, setActiveStoryName] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [documentToOpen, setDocumentToOpen] = useState<string | null>(null);
 
   const storiesStorageKey = getStoriesStorageKey(user?.email); // Use email or another stable ID
   const activeStoryIdKey = user?.email ? `openwritingkit-user-${user.email}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
+
+  const consumeDocumentToOpen = (): string | null => {
+    const docId = documentToOpen;
+    setDocumentToOpen(null); // Consume it
+    return docId;
+  };
 
   const loadDataForUser = useCallback(async () => {
     if (!user) {
@@ -142,7 +152,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories }}>
+    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen }}>
       {children}
     </StoryContext.Provider>
   );
