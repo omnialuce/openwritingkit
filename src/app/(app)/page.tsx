@@ -1,3 +1,4 @@
+
 // src/app/(app)/page.tsx
 'use client';
 
@@ -11,6 +12,7 @@ import Image from "next/image";
 import { useStoryContext } from "@/contexts/StoryContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -160,48 +162,50 @@ export default function DashboardPage() {
                             <Info className="mr-2 h-4 w-4" /> How to Use This App
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg">
+                    <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
                         <DialogHeader>
                             <DialogTitle className="text-2xl">Welcome to OpenWritingKit!</DialogTitle>
                             <DialogDescription>
                                 Here's a quick guide to get you started.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="space-y-4 py-4 text-sm">
-                            <div>
-                                <h3 className="font-semibold mb-2">Main Features</h3>
-                                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                                    <li><span className="font-semibold text-foreground">Distraction-Free Editor:</span> A clean space to write your masterpiece.</li>
-                                    <li><span className="font-semibold text-foreground">Story Organization:</span> Manage multiple stories, each with its own documents, characters, and outlines.</li>
-                                    <li><span className="font-semibold text-foreground">Character Development:</span> Create detailed character profiles and sheets.</li>
-                                    <li><span className="font-semibold text-foreground">Outline Builder:</span> Structure your narrative with a drag-and-drop outliner.</li>
-                                    <li><span className="font-semibold text-foreground">AI-Powered Tools:</span> Get writing prompts, feedback, and analysis (opt-in required in Settings).</li>
-                                </ul>
-                            </div>
-                            
-                             <Alert variant="default" className="bg-primary/5 border-primary/20">
-                                <AlertTriangle className="h-4 w-4 text-primary" />
-                                <AlertDescription>
-                                    <span className="font-semibold">Beta Release:</span> This is a preliminary release. Features may change and unexpected issues may occur. Your feedback is greatly appreciated!
-                                </AlertDescription>
-                            </Alert>
+                        <ScrollArea className="flex-grow pr-4 -mr-4">
+                          <div className="space-y-4 py-4 text-sm">
+                              <div>
+                                  <h3 className="font-semibold mb-2">Main Features</h3>
+                                  <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                                      <li><span className="font-semibold text-foreground">Distraction-Free Editor:</span> A clean space to write your masterpiece.</li>
+                                      <li><span className="font-semibold text-foreground">Story Organization:</span> Manage multiple stories, each with its own documents, characters, and outlines.</li>
+                                      <li><span className="font-semibold text-foreground">Character Development:</span> Create detailed character profiles and sheets.</li>
+                                      <li><span className="font-semibold text-foreground">Outline Builder:</span> Structure your narrative with a drag-and-drop outliner.</li>
+                                      <li><span className="font-semibold text-foreground">AI-Powered Tools:</span> Get writing prompts, feedback, and analysis (opt-in required in Settings).</li>
+                                  </ul>
+                              </div>
+                              
+                               <Alert variant="default" className="bg-primary/5 border-primary/20">
+                                  <AlertTriangle className="h-4 w-4 text-primary" />
+                                  <AlertDescription>
+                                      <span className="font-semibold">Beta Release:</span> This is a preliminary release. Features may change and unexpected issues may occur. Your feedback is greatly appreciated!
+                                  </AlertDescription>
+                              </Alert>
 
-                            <Alert variant="destructive">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertDescription>
-                                    <h4 className="font-bold mb-1">Important: How Your Data is Saved</h4>
-                                    <p>By default, all your writing data (stories, characters, etc.) is stored **locally in your web browser only**. This means if you clear your browser's data, use a different browser, or switch devices, your work will be lost.</p>
-                                    <p className="mt-2">To prevent data loss, please connect to Google Drive in the sidebar or **always save a backup copy** of your work elsewhere using the export features.</p>
-                                </AlertDescription>
-                            </Alert>
-                        </div>
-                        <div className="flex justify-end pt-2">
+                              <Alert variant="destructive">
+                                  <AlertTriangle className="h-4 w-4" />
+                                  <AlertDescription>
+                                      <h4 className="font-bold mb-1">Important: How Your Data is Saved</h4>
+                                      <p>By default, all your writing data (stories, characters, etc.) is stored **locally in your web browser only**. This means if you clear your browser's data, use a different browser, or switch devices, your work will be lost.</p>
+                                      <p className="mt-2">To prevent data loss, please connect to Google Drive in the sidebar or **always save a backup copy** of your work elsewhere using the export features.</p>
+                                  </AlertDescription>
+                              </Alert>
+                          </div>
+                        </ScrollArea>
+                        <DialogFooter className="pt-2 shrink-0">
                            <DialogClose asChild>
                               <Button type="button" variant="secondary">
                                 Close
                               </Button>
                             </DialogClose>
-                        </div>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
