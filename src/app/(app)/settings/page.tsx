@@ -1,13 +1,13 @@
 // src/app/(app)/settings/page.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle, Info, Languages } from 'lucide-react';
+import { Moon, Sun, Wand2, KeyRound, Type, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useStoryContext } from '@/contexts/StoryContext';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
@@ -25,6 +26,8 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
+  const { stories, activeStoryId } = useStoryContext();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>('base');
@@ -83,6 +86,85 @@ export default function SettingsPage() {
       });
     }
   };
+  
+  const handleExportAllData = () => {
+    if (!user) {
+        toast({ title: "Error", description: "You must be logged in to export data.", variant: "destructive" });
+        return;
+    }
+    const backupData: { [key: string]: any } = {};
+    const userPrefix = `openwritingkit-user-${user.uid}`;
+
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(userPrefix)) {
+            backupData[key] = JSON.parse(localStorage.getItem(key)!);
+        }
+    }
+
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `openwritingkit_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({ title: "Export Successful", description: "Your data has been exported." });
+  };
+  
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) {
+        toast({ title: "Error", description: "No file selected or you are not logged in.", variant: "destructive" });
+        return;
+    }
+
+    if (!confirm(t('settings.data_management.import_confirm'))) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const content = e.target?.result as string;
+            const backupData = JSON.parse(content);
+            
+            // Clear existing user data first
+            const userPrefix = `openwritingkit-user-${user.uid}`;
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith(userPrefix)) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+
+            // Import new data
+            for (const key in backupData) {
+                if (key.startsWith(userPrefix)) {
+                    localStorage.setItem(key, JSON.stringify(backupData[key]));
+                }
+            }
+            toast({ title: "Import Successful", description: "Data restored. The app will now reload." });
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (error) {
+            console.error("Import error:", error);
+            toast({ title: "Import Failed", description: "The backup file is corrupted or not valid.", variant: "destructive" });
+        } finally {
+            event.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+  };
+
 
   if (!isMounted) {
     return null; // Or a loading skeleton
@@ -179,6 +261,39 @@ export default function SettingsPage() {
         </Card>
 
       </div>
+
+      <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Download className="h-5 w-5"/>{t('settings.data_management.title')}</CardTitle>
+            <CardDescription>{t('settings.data_management.description')}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+                <Button onClick={handleExportAllData} disabled={!user}>
+                    <Download className="mr-2 h-4 w-4" /> {t('settings.data_management.export_button')}
+                </Button>
+                <p className="text-xs text-muted-foreground">{t('settings.data_management.export_desc')}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+                 <input type="file" ref={fileInputRef} onChange={handleImportFile} accept=".json" className="hidden" />
+                 <Button variant="outline" onClick={handleImportClick} disabled={!user}>
+                    <Upload className="mr-2 h-4 w-4" /> {t('settings.data_management.import_button')}
+                </Button>
+                <p className="text-xs text-muted-foreground">{t('settings.data_management.import_desc')}</p>
+            </div>
+        </CardContent>
+         <CardContent>
+            <div className="mt-4 p-4 border-l-4 border-destructive bg-destructive/10 rounded-r-lg">
+                <div className="flex items-center gap-2">
+                   <AlertCircle className="h-5 w-5 text-destructive" />
+                   <h4 className="font-semibold text-destructive">{t('settings.data_management.import_warning_title')}</h4>
+                </div>
+                <p className="text-sm text-destructive/90 mt-2">
+                  {t('settings.data_management.import_warning_desc')}
+                </p>
+            </div>
+        </CardContent>
+      </Card>
       
       {/* AI Features Card */}
       <Card>

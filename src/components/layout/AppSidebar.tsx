@@ -17,7 +17,7 @@ import {
 import { getMainNavItems, getSecondaryNavItems, type NavItem } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Coffee, DatabaseZap, Cloud } from 'lucide-react';
+import { Coffee, CloudOff } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,20 +30,6 @@ export function AppSidebar() {
   
   const mainNavItems = getMainNavItems(t);
   const secondaryNavItems = getSecondaryNavItems(t);
-
-  const [isDriveConnected, setIsDriveConnected] = React.useState(false);
-  const [driveStorageInfo, setDriveStorageInfo] = React.useState({ used: '0 MB', total: t('sidebar.drive.not_connected') });
-
-  const handleConnectDriveClick = () => {
-    alert(t('sidebar.drive.connect_alert'));
-  };
-
-  const handleDisconnectDriveClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); 
-    setIsDriveConnected(false);
-    setDriveStorageInfo({ used: '0 MB', total: t('sidebar.drive.not_connected') });
-    alert(t('sidebar.drive.disconnect_alert'));
-  };
 
   const renderNavItem = (item: NavItem) => (
      <SidebarMenuItem key={item.href}>
@@ -97,36 +83,24 @@ export function AppSidebar() {
         
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={isDriveConnected ? () => alert(t('sidebar.drive.settings_alert')) : handleConnectDriveClick}
               tooltip={{
                   children: <>
-                    <p className="font-semibold mb-1">{isDriveConnected ? t('sidebar.drive.tooltip_connected_title') : t('sidebar.drive.tooltip_disconnected_title')}</p>
-                    {isDriveConnected ? (
-                      <p>{t('sidebar.drive.tooltip_storage')}: {driveStorageInfo.used} / {driveStorageInfo.total}</p>
-                    ) : (
-                      <>
-                      <p>{t('sidebar.drive.tooltip_disconnected_desc_1')}</p>
-                      <p className="mt-2 text-destructive-foreground bg-destructive p-2 rounded-md text-xs">
-                        <strong>{t('sidebar.drive.tooltip_disconnected_important')}:</strong> {t('sidebar.drive.tooltip_disconnected_desc_2')}
-                      </p>
-                      </>
-                    )}
+                    <p className="font-semibold mb-1">{t('sidebar.backup.tooltip_title')}</p>
+                    <p>{t('sidebar.backup.tooltip_desc')}</p>
                   </>,
                   side: 'right',
                   align: 'center',
                   hidden: isDesktopSidebarExpanded && !isMobile
               }}
               className="w-full rounded-none"
+              asChild
             >
-              {isDriveConnected ? <Cloud /> : <DatabaseZap />}
-              <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
-                {isDriveConnected ? `${t('sidebar.drive.drive_prefix')}: ${driveStorageInfo.used}` : t('sidebar.drive.connect_button')}
-                {isDriveConnected && (
-                  <Button variant="link" size="sm" className="p-0 h-auto text-xs ml-auto text-primary hover:text-primary/80 group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden" onClick={handleDisconnectDriveClick}>
-                    {t('sidebar.drive.disconnect_button')}
-                  </Button>
-                )}
-              </span>
+              <Link href="/settings">
+                <CloudOff />
+                <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
+                  {t('sidebar.backup.button')}
+                </span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         

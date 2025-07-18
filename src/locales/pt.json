@@ -30,20 +30,10 @@
     "settings": "Configurações"
   },
   "sidebar": {
-    "drive": {
-      "not_connected": "Não Conectado",
-      "connect_alert": "Conectando ao Google Drive (demonstração).",
-      "settings_alert": "Abrir configurações do Google Drive (demonstração).",
-      "disconnect_alert": "Desconectado do Google Drive (simulação de interface).",
-      "tooltip_connected_title": "Armazenamento em Nuvem Conectado",
-      "tooltip_disconnected_title": "Armazenamento em Nuvem",
-      "tooltip_storage": "Armazenamento",
-      "tooltip_disconnected_desc_1": "Conecte-se ao Google Drive para fazer backup de suas histórias, roteiros e personagens, e acessá-los em seus dispositivos.",
-      "tooltip_disconnected_important": "Importante",
-      "tooltip_disconnected_desc_2": "Sem conectar, todos os seus dados são salvos localmente apenas neste navegador. Isso significa que podem ser perdidos se você limpar os dados do seu navegador, usar um navegador diferente ou trocar de dispositivo.",
-      "drive_prefix": "Drive",
-      "connect_button": "Conectar ao Drive",
-      "disconnect_button": "Desconectar"
+    "backup": {
+      "button": "Backup / Restaurar",
+      "tooltip_title": "Apenas Armazenamento Local",
+      "tooltip_desc": "Todos os dados são salvos em seu navegador. Use o recurso de Backup nas Configurações para evitar a perda de dados."
     },
     "coffee_button": "Me Pague um Café"
   },
@@ -111,7 +101,7 @@
     "how_to_use_beta_desc": "Esta é uma versão preliminar. Recursos podem mudar e problemas inesperados podem ocorrer. Seu feedback é muito apreciado!",
     "how_to_use_storage_title": "Importante: Como Seus Dados São Salvos",
     "how_to_use_storage_desc_1": "Por padrão, todos os seus dados de escrita (histórias, personagens, etc.) são salvos **localmente apenas no seu navegador**. Isso significa que se você limpar os dados do seu navegador, usar um navegador diferente ou trocar de dispositivo, seu trabalho será perdido.",
-    "how_to_use_storage_desc_2": "Para evitar a perda de dados, por favor, conecte-se ao Google Drive na barra lateral ou **sempre salve uma cópia de segurança** do seu trabalho em outro lugar usando os recursos de exportação.",
+    "how_to_use_storage_desc_2": "Para evitar a perda de dados, por favor, use o recurso de **Backup & Restore** nas Configurações regularmente, ou **sempre salve uma cópia de segurança** do seu trabalho em outro lugar usando os recursos de exportação.",
     "quick_actions_title": "Ações Rápidas",
     "quick_actions": {
       "editor_title": "Novo Documento",
@@ -159,6 +149,17 @@
       "description": "Gerencie a segurança da sua conta.",
       "change_password_button": "Alterar Senha",
       "change_password_desc": "Isso enviará um link de redefinição de senha para o seu e-mail cadastrado."
+    },
+    "data_management": {
+      "title": "Gerenciamento de Dados",
+      "description": "Exporte todos os seus dados para um único arquivo, ou importe dados de um arquivo de backup.",
+      "export_button": "Exportar Todos os Dados",
+      "export_desc": "Baixe um único arquivo JSON contendo todas as suas histórias, personagens, roteiros, etc. para o usuário logado.",
+      "import_button": "Importar do Backup",
+      "import_desc": "Carregue um arquivo de backup JSON previamente exportado para restaurar seus dados.",
+      "import_warning_title": "Importante: Sobrescrita de Dados",
+      "import_warning_desc": "A importação de um backup excluirá e substituirá todos os dados atuais desta conta de usuário. Esta ação não pode ser desfeita.",
+      "import_confirm": "Tem certeza de que deseja importar este backup? Todos os dados existentes para sua conta serão permanentemente sobrescritos."
     },
     "ai": {
       "title": "Recursos de IA",
