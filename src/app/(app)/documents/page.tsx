@@ -4,7 +4,7 @@
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -35,6 +36,7 @@ import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import mammoth from 'mammoth';
 import JSZip from 'jszip';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type DocumentType = "folder" | "chapter" | "scene" | "file";
 type DocumentStatus = "Draft" | "Revised" | "Complete";
@@ -64,6 +66,7 @@ interface DocumentListItemProps {
 
 function DocumentListItem({ item, level = 0, onOpenDetails, onDelete }: DocumentListItemProps) {
   const [isOpen, setIsOpen] = useState(level < 1);
+  const { t } = useLanguage();
 
   const Icon = item.type === "folder" ? FolderIcon :
                item.type === "chapter" ? BookCopy :
@@ -200,6 +203,7 @@ export default function DocumentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   // For managing dialogs
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
