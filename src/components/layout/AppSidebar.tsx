@@ -77,7 +77,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarSeparator />
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="p-2 mt-auto">
         <SidebarMenu>
           {secondaryNavItems.map(renderNavItem)}
         

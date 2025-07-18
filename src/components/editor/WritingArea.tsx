@@ -244,6 +244,10 @@ export function WritingArea() {
         saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
         setActiveDocumentId(null);
         setActiveDocumentName(null);
+        if (editor) {
+            editor.commands.setContent('', false);
+            setSavedContent('');
+        }
     }
   }
 
@@ -274,25 +278,27 @@ export function WritingArea() {
   }, []);
 
   const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
-    const updatedSettings = { ...editorSettings, ...newSettings };
-    setEditorSettings(updatedSettings);
-    localStorage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updatedSettings));
+    setEditorSettings(prev => {
+        const updated = { ...prev, ...newSettings };
+        localStorage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updated));
+        return updated;
+    });
   };
   
   useEffect(() => {
     const root = document.documentElement;
     const fontMap = {
       sans: "'PT Sans', sans-serif",
-      serif: "'Georgia', serif",
+      serif: "Georgia, serif",
     };
     const sizeMap = { sm: '0.9rem', base: '1rem', lg: '1.1rem' };
     const lineHeightMap = { tight: '1.5', normal: '1.7', loose: '1.9' };
     const paraSpacingMap = { sm: '0.75rem', base: '1rem', lg: '1.5rem' };
 
-    root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily]);
-    root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize]);
-    root.style.setProperty('--editor-line-height', lineHeightMap[editorSettings.lineHeight]);
-    root.style.setProperty('--editor-paragraph-spacing', paraSpacingMap[editorSettings.paragraphSpacing]);
+    root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily] || fontMap.sans);
+    root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize] || sizeMap.base);
+    root.style.setProperty('--editor-line-height', lineHeightMap[editorSettings.lineHeight] || lineHeightMap.normal);
+    root.style.setProperty('--editor-paragraph-spacing', paraSpacingMap[editorSettings.paragraphSpacing] || paraSpacingMap.base);
   }, [editorSettings]);
 
 

@@ -18,8 +18,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStoryContext } from '@/contexts/StoryContext';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
-const EDITOR_FONT_SIZE_KEY = 'openwritingkit-editor-font-size';
-type EditorFontSize = "sm" | "base" | "lg";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -30,18 +28,12 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
-  const [editorFontSize, setEditorFontSize] = useState<EditorFontSize>('base');
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
     setAiFeaturesEnabled(storedAIPref === 'true');
-    
-    const storedFontSize = localStorage.getItem(EDITOR_FONT_SIZE_KEY) as EditorFontSize | null;
-    if (storedFontSize && ['sm', 'base', 'lg'].includes(storedFontSize)) {
-      setEditorFontSize(storedFontSize);
-    }
   }, []);
 
   const handleAiOptInChange = (checked: boolean) => {
@@ -52,12 +44,6 @@ export default function SettingsPage() {
       title: t('settings.toast.ai_updated_title'),
       description: checked ? t('settings.toast.ai_enabled_desc') : t('settings.toast.ai_disabled_desc'),
     });
-  };
-
-  const handleFontSizeChange = (value: EditorFontSize) => {
-    setEditorFontSize(value);
-    localStorage.setItem(EDITOR_FONT_SIZE_KEY, value);
-    window.dispatchEvent(new CustomEvent('editorSettingsChanged', { detail: { fontSize: value } }));
   };
 
   const handleChangePassword = async () => {
@@ -97,7 +83,7 @@ export default function SettingsPage() {
 
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(userPrefix)) {
+        if (key && (key.startsWith('openwritingkit-story-') || key.startsWith('openwritingkit-user-'))) {
             backupData[key] = JSON.parse(localStorage.getItem(key)!);
         }
     }
@@ -127,6 +113,7 @@ export default function SettingsPage() {
     }
 
     if (!confirm(t('settings.data_management.import_confirm'))) {
+        event.target.value = '';
         return;
     }
 
@@ -136,21 +123,18 @@ export default function SettingsPage() {
             const content = e.target?.result as string;
             const backupData = JSON.parse(content);
             
-            // Clear existing user data first
-            const userPrefix = `openwritingkit-user-${user.uid}`;
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key && key.startsWith(userPrefix)) {
+                 if (key && (key.startsWith('openwritingkit-story-') || key.startsWith('openwritingkit-user-'))) {
                     keysToRemove.push(key);
                 }
             }
             keysToRemove.forEach(key => localStorage.removeItem(key));
 
-            // Import new data
             for (const key in backupData) {
-                if (key.startsWith(userPrefix)) {
-                    localStorage.setItem(key, JSON.stringify(backupData[key]));
+                if (Object.prototype.hasOwnProperty.call(backupData, key)) {
+                   localStorage.setItem(key, JSON.stringify(backupData[key]));
                 }
             }
             toast({ title: "Import Successful", description: "Data restored. The app will now reload." });
@@ -180,7 +164,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground">{t('settings.description')}</p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
         {/* Appearance Card */}
         <Card>
           <CardHeader>
@@ -214,36 +198,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
         
-        {/* Editor Settings Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5"/> {t('settings.editor.title')}</CardTitle>
-            <CardDescription>{t('settings.editor.description')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Label>{t('settings.editor.font_size')}</Label>
-            <RadioGroup 
-              value={editorFontSize} 
-              onValueChange={handleFontSizeChange} 
-              className="flex items-center gap-4 mt-2"
-            >
-              <Label htmlFor="font-sm" className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="sm" id="font-sm" />
-                {t('settings.editor.font_size_small')}
-              </Label>
-              <Label htmlFor="font-base" className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="base" id="font-base" />
-                {t('settings.editor.font_size_medium')}
-              </Label>
-              <Label htmlFor="font-lg" className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="lg" id="font-lg" />
-                {t('settings.editor.font_size_large')}
-              </Label>
-            </RadioGroup>
-          </CardContent>
-        </Card>
-
-
         {/* Security Card */}
         <Card>
           <CardHeader>
@@ -259,7 +213,6 @@ export default function SettingsPage() {
             </p>
           </CardContent>
         </Card>
-
       </div>
 
       <Card>
