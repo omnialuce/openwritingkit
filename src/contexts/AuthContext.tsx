@@ -44,6 +44,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => unsubscribe();
   }, []);
+  
+  useEffect(() => {
+    if (!isMounted || loading) return;
+
+    const isPublicPage = ['/login'].includes(pathname);
+
+    if (!user && !isPublicPage) {
+      router.push('/login');
+    }
+
+    if (user && isPublicPage) {
+      router.push('/');
+    }
+  }, [user, loading, pathname, router, isMounted]);
 
   const login = async (email: string, pass: string) => {
     const auth = getAuth(firebaseApp);
@@ -97,8 +111,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = { user, loading, logout, login };
   
-  const isPublicPage = ['/login'].includes(pathname);
-
   if (!isMounted || loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -106,30 +118,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         <p className="ml-2">Loading application...</p>
       </div>
     );
-  }
-  
-  if (!user && !isPublicPage) {
-     if (typeof window !== 'undefined') {
-        router.push('/login');
-     }
-     return (
-       <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Redirecting to login...</p>
-      </div>
-     );
-  }
-  
-  if(user && isPublicPage) {
-     if (typeof window !== 'undefined') {
-        router.push('/');
-     }
-      return (
-       <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">You are already logged in. Redirecting...</p>
-      </div>
-     );
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
