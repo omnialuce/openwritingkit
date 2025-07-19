@@ -16,9 +16,9 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ChangeEmailO
     await auth.updateUser(input.uid, {
       email: input.newEmail,
     });
-    return { success: true, message: 'Email updated successfully. Please log in again.' };
+    return { success: true, message: 'Email updated successfully. Please log in again with your new email address.' };
   } catch (error: any) {
-    let message = 'An unexpected error occurred.';
+    let message = 'An unexpected error occurred while updating your email.';
     if (error.code === 'auth/email-already-exists') {
       message = 'This email address is already in use by another account.';
     } else if (error.code === 'auth/invalid-email') {
@@ -35,9 +35,9 @@ export async function changePassword(input: ChangePasswordInput): Promise<Change
     await auth.updateUser(input.uid, {
       password: input.newPassword,
     });
-    return { success: true, message: 'Password updated successfully. Please log in again.' };
+    return { success: true, message: 'Password updated successfully. Please log in again with your new password.' };
   } catch (error: any) {
-    let message = 'An unexpected error occurred.';
+    let message = 'An unexpected error occurred while updating your password.';
     if (error.code === 'auth/weak-password') {
       message = 'The new password is too weak. It must be at least 6 characters.';
     }
