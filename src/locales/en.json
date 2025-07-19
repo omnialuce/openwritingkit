@@ -13,7 +13,8 @@
     "logout": "Log out",
     "for": "for",
     "search_placeholder": "Search...",
-    "coming_soon": "Coming Soon"
+    "coming_soon": "Coming Soon",
+    "read_guide": "Read Guide"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -901,5 +902,3 @@
     }
   }
 }
-
-    

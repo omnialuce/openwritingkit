@@ -13,7 +13,8 @@
     "logout": "Sair",
     "for": "para",
     "search_placeholder": "Pesquisar...",
-    "coming_soon": "Em Breve"
+    "coming_soon": "Em Breve",
+    "read_guide": "Ler Guia"
   },
   "nav": {
     "dashboard": "Painel",
@@ -622,7 +623,7 @@
     "exit_focus_mode": "Sair do Modo Foco",
     "customize_theme_title": "Personalizar Tema",
     "customize_view_title": "Personalizar Visualização",
-     "customize_view": {
+    "customize_view": {
       "editor_theme": "Tema do Editor",
       "theme_light": "Claro",
       "theme_dark": "Escuro",
@@ -901,5 +902,3 @@
     }
   }
 }
-
-    

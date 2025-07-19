@@ -1,4 +1,3 @@
-
 // src/app/(app)/page.tsx
 'use client';
 
@@ -6,15 +5,17 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info } from "lucide-react";
+import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from "@/lib/storage";
+
+const HOW_TO_BANNER_DISMISSED_KEY = 'openwritingkit-how-to-banner-dismissed';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
@@ -22,6 +23,7 @@ export default function DashboardPage() {
   const { activeStoryId, activeStoryName } = useStoryContext();
   const [writingStreak, setWritingStreak] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [showHowToBanner, setShowHowToBanner] = useState(false);
 
   const getStreakKeys = useCallback(() => {
     if (!activeStoryId || !user) return null;
@@ -82,6 +84,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsMounted(true);
+    const bannerDismissed = localStorage.getItem(HOW_TO_BANNER_DISMISSED_KEY);
+    if (!bannerDismissed) {
+      setShowHowToBanner(true);
+    }
+    
     if (activeStoryId) {
         updateStreakDisplay();
     } else {
@@ -104,6 +111,11 @@ export default function DashboardPage() {
     };
   }, [activeStoryId, updateStreakDisplay, getStreakKeys]);
 
+  const dismissBanner = () => {
+    setShowHowToBanner(false);
+    localStorage.setItem(HOW_TO_BANNER_DISMISSED_KEY, 'true');
+  }
+
 
   const quickActions = [
     { title: t('dashboard.quick_actions.editor_title'), description: t('dashboard.quick_actions.editor_desc'), href: "/editor", icon: BookText, cta: t('dashboard.quick_actions.editor_cta') },
@@ -116,6 +128,66 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {showHowToBanner && (
+        <Alert className="bg-primary/5 border-primary/20">
+          <Info className="h-4 w-4 text-primary" />
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <AlertTitle className="text-primary">{t('dashboard.how_to_use_title')}</AlertTitle>
+              <AlertDescription>
+                {t('dashboard.how_to_use_desc')}
+              </AlertDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="link" size="sm" className="p-0 text-primary">{t('common.read_guide')}</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">{t('dashboard.how_to_use_title')}</DialogTitle>
+                    <DialogDescription>{t('dashboard.how_to_use_desc')}</DialogDescription>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-[70vh]">
+                    <div className="space-y-4 py-4 pr-6 text-sm">
+                      <div>
+                        <h3 className="font-semibold mb-2">{t('dashboard.how_to_use_features_title')}</h3>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_1_title')}:</span> {t('dashboard.how_to_use_feature_1_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_2_title')}:</span> {t('dashboard.how_to_use_feature_2_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_3_title')}:</span> {t('dashboard.how_to_use_feature_3_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_4_title')}:</span> {t('dashboard.how_to_use_feature_4_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_5_title')}:</span> {t('dashboard.how_to_use_feature_5_desc')}</li>
+                        </ul>
+                      </div>
+                      <Alert variant="default" className="bg-primary/5 border-primary/20">
+                        <AlertTriangle className="h-4 w-4 text-primary" />
+                        <AlertDescription><span className="font-semibold">{t('dashboard.how_to_use_beta_title')}:</span> {t('dashboard.how_to_use_beta_desc')}</AlertDescription>
+                      </Alert>
+                      <Alert variant="destructive">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription>
+                          <h4 className="font-bold mb-1">{t('dashboard.how_to_use_storage_title')}</h4>
+                          <p>{t('dashboard.how_to_use_storage_desc_1')}</p>
+                          <p className="mt-2">{t('dashboard.how_to_use_storage_desc_2')}</p>
+                        </AlertDescription>
+                      </Alert>
+                      <div className="flex justify-end pt-4">
+                        <DialogClose asChild><Button type="button" variant="secondary">{t('common.close')}</Button></DialogClose>
+                      </div>
+                    </div>
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={dismissBanner}>
+                <X className="h-4 w-4" />
+                <span className="sr-only">Dismiss</span>
+              </Button>
+            </div>
+          </div>
+        </Alert>
+      )}
+
       <section className="bg-card p-6 md:p-8 rounded-lg border">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
@@ -163,59 +235,6 @@ export default function DashboardPage() {
                     <BookOpenCheck className="mr-2 h-4 w-4" /> {t('dashboard.go_to_stories')}
                   </Button>
                 </Link>
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="secondary">
-                            <Info className="mr-2 h-4 w-4" /> {t('dashboard.how_to_use_button')}
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-lg">
-                        <DialogHeader>
-                            <DialogTitle className="text-2xl">{t('dashboard.how_to_use_title')}</DialogTitle>
-                            <DialogDescription>
-                                {t('dashboard.how_to_use_desc')}
-                            </DialogDescription>
-                        </DialogHeader>
-                          <ScrollArea className="max-h-[70vh]">
-                            <div className="space-y-4 py-4 pr-6 text-sm">
-                                <div>
-                                    <h3 className="font-semibold mb-2">{t('dashboard.how_to_use_features_title')}</h3>
-                                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                                        <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_1_title')}:</span> {t('dashboard.how_to_use_feature_1_desc')}</li>
-                                        <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_2_title')}:</span> {t('dashboard.how_to_use_feature_2_desc')}</li>
-                                        <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_3_title')}:</span> {t('dashboard.how_to_use_feature_3_desc')}</li>
-                                        <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_4_title')}:</span> {t('dashboard.how_to_use_feature_4_desc')}</li>
-                                        <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_5_title')}:</span> {t('dashboard.how_to_use_feature_5_desc')}</li>
-                                    </ul>
-                                </div>
-                                
-                                <Alert variant="default" className="bg-primary/5 border-primary/20">
-                                    <AlertTriangle className="h-4 w-4 text-primary" />
-                                    <AlertDescription>
-                                        <span className="font-semibold">{t('dashboard.how_to_use_beta_title')}:</span> {t('dashboard.how_to_use_beta_desc')}
-                                    </AlertDescription>
-                                </Alert>
-
-                                <Alert variant="destructive">
-                                    <AlertTriangle className="h-4 w-4" />
-                                    <AlertDescription>
-                                        <h4 className="font-bold mb-1">{t('dashboard.how_to_use_storage_title')}</h4>
-                                        <p>{t('dashboard.how_to_use_storage_desc_1')}</p>
-                                        <p className="mt-2">{t('dashboard.how_to_use_storage_desc_2')}</p>
-                                    </AlertDescription>
-                                </Alert>
-
-                                <div className="flex justify-end pt-4">
-                                    <DialogClose asChild>
-                                        <Button type="button" variant="secondary">
-                                            {t('common.close')}
-                                        </Button>
-                                    </DialogClose>
-                                </div>
-                            </div>
-                          </ScrollArea>
-                    </DialogContent>
-                </Dialog>
             </div>
           </CardContent>
         </Card>

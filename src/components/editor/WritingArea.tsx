@@ -1,4 +1,3 @@
-
 // src/components/editor/WritingArea.tsx
 'use client';
 
@@ -38,6 +37,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useStoryContext, getEditorContentKey, getDocumentsStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type EditorTheme = 'light' | 'dark';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -118,6 +118,8 @@ export function WritingArea() {
   const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
 
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
+  
+  const isMobile = useIsMobile();
 
   const editor = useEditor({
     extensions: [
@@ -565,6 +567,59 @@ export function WritingArea() {
   
   const currentOverallTheme = editorTheme === 'dark' ? 'dark' : '';
 
+  const renderFeedbackContent = () => feedbackResult && (
+    <div className="space-y-4 p-4">
+      <Card>
+        <CardHeader className="p-3">
+          <CardTitle className="text-base">{t('editor.feedback.overall_assessment_title')}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 pt-0">
+          <p className="text-sm whitespace-pre-wrap">{feedbackResult.overallAssessment}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="p-3">
+          <CardTitle className="text-base">{t('editor.feedback.readability_title')}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-3 pt-0 space-y-1">
+          <p className="text-sm"><strong>{t('editor.feedback.readability_score')}:</strong> {feedbackResult.readability.scoreDescription}</p>
+          <p className="text-sm whitespace-pre-wrap"><strong>{t('editor.feedback.readability_assessment')}:</strong> {feedbackResult.readability.assessment}</p>
+        </CardContent>
+      </Card>
+
+      {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length > 0 && (
+        <Card>
+          <CardHeader className="p-3">
+            <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 pt-0 space-y-3">
+            {feedbackResult.grammarSpellingSuggestions.map((suggestion, index) => (
+              <div key={index} className="p-2 border rounded-md bg-muted/30">
+                <p className="text-xs text-muted-foreground uppercase">{suggestion.issueType}</p>
+                <p className="text-sm my-1">{t('editor.feedback.grammar_original')}: <span className="line-through text-red-500 dark:text-red-400">{suggestion.originalText}</span></p>
+                <p className="text-sm my-1">{t('editor.feedback.grammar_suggested')}: <span className="text-green-600 dark:text-green-400 font-medium">{suggestion.suggestedCorrection}</span></p>
+                {suggestion.explanation && (
+                  <p className="text-xs text-muted-foreground italic mt-1">{suggestion.explanation}</p>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+      {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length === 0 && (
+        <Card>
+          <CardHeader className="p-3">
+            <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 pt-0">
+            <p className="text-sm">{t('editor.feedback.grammar_none_found')}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
 
   if (isFocusMode) {
     return (
@@ -586,7 +641,7 @@ export function WritingArea() {
   return (
     <TooltipProvider>
       <div className={cn("flex h-full", currentOverallTheme, themeClasses[editorTheme])}>
-        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", isFeedbackPanelOpen ? "md:w-2/3" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", (isFeedbackPanelOpen && !isMobile) ? "md:w-2/3" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
           {!isFocusMode && (
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
@@ -738,7 +793,7 @@ export function WritingArea() {
           )}
         </Card>
 
-        {isFeedbackPanelOpen && feedbackResult && (
+        {isFeedbackPanelOpen && !isMobile && feedbackResult && (
           <Card className={cn("hidden md:flex md:flex-col md:w-1/3 h-full border-l rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
             <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
               <div>
@@ -754,62 +809,34 @@ export function WritingArea() {
               </Button>
             </CardHeader>
             <CardContent className="flex-grow overflow-y-auto p-0">
-              <ScrollArea className="h-full p-4">
-                <div className="space-y-4">
-                  <Card>
-                    <CardHeader className="p-3">
-                      <CardTitle className="text-base">{t('editor.feedback.overall_assessment_title')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <p className="text-sm whitespace-pre-wrap">{feedbackResult.overallAssessment}</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="p-3">
-                      <CardTitle className="text-base">{t('editor.feedback.readability_title')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0 space-y-1">
-                      <p className="text-sm"><strong>{t('editor.feedback.readability_score')}:</strong> {feedbackResult.readability.scoreDescription}</p>
-                      <p className="text-sm whitespace-pre-wrap"><strong>{t('editor.feedback.readability_assessment')}:</strong> {feedbackResult.readability.assessment}</p>
-                    </CardContent>
-                  </Card>
-
-                  {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length > 0 && (
-                    <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0 space-y-3">
-                        {feedbackResult.grammarSpellingSuggestions.map((suggestion, index) => (
-                          <div key={index} className="p-2 border rounded-md bg-muted/30">
-                            <p className="text-xs text-muted-foreground uppercase">{suggestion.issueType}</p>
-                            <p className="text-sm my-1">{t('editor.feedback.grammar_original')}: <span className="line-through text-red-500 dark:text-red-400">{suggestion.originalText}</span></p>
-                            <p className="text-sm my-1">{t('editor.feedback.grammar_suggested')}: <span className="text-green-600 dark:text-green-400 font-medium">{suggestion.suggestedCorrection}</span></p>
-                            {suggestion.explanation && (
-                              <p className="text-xs text-muted-foreground italic mt-1">{suggestion.explanation}</p>
-                            )}
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  )}
-                  {feedbackResult.grammarSpellingSuggestions && feedbackResult.grammarSpellingSuggestions.length === 0 && (
-                    <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <p className="text-sm">{t('editor.feedback.grammar_none_found')}</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+              <ScrollArea className="h-full">
+                 {renderFeedbackContent()}
               </ScrollArea>
             </CardContent>
           </Card>
         )}
       </div>
+
+       <Dialog open={isFeedbackPanelOpen && isMobile} onOpenChange={setIsFeedbackPanelOpen}>
+        <DialogContent className="max-h-[90vh] flex flex-col p-0">
+           <DialogHeader className="p-4 border-b">
+              <DialogTitle>{t('editor.feedback.title')}</DialogTitle>
+              {feedbackTimestamp && (
+                <DialogDescription>
+                  {formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}
+                </DialogDescription>
+              )}
+            </DialogHeader>
+          <ScrollArea className="flex-grow">
+            {renderFeedbackContent()}
+          </ScrollArea>
+           <DialogFooter className="p-4 border-t">
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">{t('common.close')}</Button>
+              </DialogClose>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
        <Dialog open={isSaveToDocDialogOpen} onOpenChange={setIsSaveToDocDialogOpen}>
         <DialogContent>
