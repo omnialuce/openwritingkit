@@ -41,6 +41,7 @@ import { useStoryContext, getEditorContentKey, getDocumentsStorageKey } from '@/
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 type EditorTheme = 'light' | 'dark';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -76,10 +77,11 @@ interface DocumentItem {
 
 export function WritingArea() {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId } = useStoryContext();
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   
-  const editorStorageKey = getEditorContentKey(activeStoryId, activeDocumentId);
+  const editorStorageKey = getEditorContentKey(activeStoryId, activeDocumentId, user?.uid);
 
   const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime, versionHistory] = useAutosave<string>(
     editorStorageKey,
@@ -128,7 +130,7 @@ export function WritingArea() {
   const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([]);
   const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
 
-  const documentsStorageKey = getDocumentsStorageKey(activeStoryId);
+  const documentsStorageKey = getDocumentsStorageKey(activeStoryId, user?.uid);
   
   const isMobile = useIsMobile();
 
@@ -174,13 +176,13 @@ export function WritingArea() {
   };
 
   const loadAllDocuments = useCallback(() => {
-    if (activeStoryId) {
+    if (activeStoryId && user?.uid) {
         const stored = localStorage.getItem(documentsStorageKey);
         setAllDocuments(stored ? JSON.parse(stored) : []);
     } else {
         setAllDocuments([]);
     }
-  }, [activeStoryId, documentsStorageKey]);
+  }, [activeStoryId, user?.uid, documentsStorageKey]);
 
   useEffect(() => {
       loadAllDocuments();
@@ -242,7 +244,7 @@ export function WritingArea() {
 
 
   const saveCurrentContentToDocument = useCallback((content: string, docId: string) => {
-    if (!activeStoryId) return;
+    if (!activeStoryId || !user?.uid) return;
 
     const storedData = localStorage.getItem(documentsStorageKey);
     let documents: DocumentItem[] = storedData ? JSON.parse(storedData) : [];
@@ -264,7 +266,7 @@ export function WritingArea() {
     const updatedDocuments = updateRecursive(documents);
     localStorage.setItem(documentsStorageKey, JSON.stringify(updatedDocuments));
     
-  }, [activeStoryId, documentsStorageKey]);
+  }, [activeStoryId, user?.uid, documentsStorageKey]);
 
 
   useEffect(() => {
@@ -575,9 +577,8 @@ export function WritingArea() {
 
     const handleRevertVersion = (version: VersionHistoryEntry<string>) => {
       if (editor && confirm(t('editor.history.revert_confirm'))) {
-        editor.commands.setContent(version.text, true);
-        // This will trigger the autosave with the reverted content
         setSavedContent(version.text);
+        editor.commands.setContent(version.text, true);
         toast({ title: t('editor.history.revert_success_title'), description: t('editor.history.revert_success_desc') });
         setSelectedHistoryVersion(null);
       }

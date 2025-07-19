@@ -118,7 +118,6 @@
     "fontSize": "base",
     "lineHeight": "normal",
     "paragraphSpacing": "base",
-    "focusMode": false,
-    "typewriterMode": false
+    "focusMode": false
   }
 }
