@@ -3,7 +3,7 @@
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { BookOpenCheck, Settings as SettingsIcon, LogOut, ChevronDown, PlusCircle, FolderKanban } from 'lucide-react';
+import { BookOpenCheck, Settings as SettingsIcon, LogOut, ChevronDown, PlusCircle, FolderKanban, MessageCircleQuestion } from 'lucide-react';
 import { useStoryContext } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import {
@@ -100,6 +100,12 @@ export function AppHeader() {
                   <span>{t('common.settings')}</span>
                 </DropdownMenuItem>
               </Link>
+              <a href="mailto:owk@omnialuce.tech?subject=OpenWritingKit%20Support%20Request">
+                  <DropdownMenuItem>
+                      <MessageCircleQuestion className="mr-2 h-4 w-4" />
+                      <span>{t('header.contact_support')}</span>
+                  </DropdownMenuItem>
+              </a>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />

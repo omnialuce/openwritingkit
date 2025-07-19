@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wand2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Moon, Sun, Wand2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAuth, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -340,6 +340,12 @@ export default function SettingsPage() {
                 {t('settings.security.change_password_button')}
               </Button>
             </form>
+             <a href="mailto:owk@omnialuce.tech?subject=OpenWritingKit%20Support%20Request" className="w-full">
+                <Button variant="outline" className="w-full">
+                  <MessageCircleQuestion className="mr-2 h-4 w-4" />
+                  {t('settings.security.contact_support_button')}
+                </Button>
+            </a>
           </CardContent>
         </Card>
       </div>

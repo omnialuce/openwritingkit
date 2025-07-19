@@ -31,18 +31,16 @@ export default function FeedbackPage() {
       return;
     }
 
-    console.log({
-      feedbackType,
-      page,
-      message,
-    });
+    const subject = `OpenWritingKit Feedback: [${feedbackType}] on [${page}]`;
+    const body = encodeURIComponent(message);
+    const mailtoLink = `mailto:owk@omnialuce.tech?subject=${encodeURIComponent(subject)}&body=${body}`;
+
+    window.location.href = mailtoLink;
     
     toast({
       title: t('feedback.toast.success_title'),
       description: t('feedback.toast.success_desc'),
     });
-
-    setMessage('');
   };
 
   return (

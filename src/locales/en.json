@@ -71,7 +71,8 @@
     "switch_story": "Switch Story",
     "create_story": "Create New Story",
     "manage_stories": "Manage Stories",
-    "signed_in": "Signed In"
+    "signed_in": "Signed In",
+    "contact_support": "Contact Support"
   },
   "dashboard": {
     "working_on": "Working on",
@@ -154,7 +155,8 @@
       "change_password_label": "Change Password",
       "new_password_placeholder": "New password (min. 6 characters)",
       "confirm_password_placeholder": "Confirm new password",
-      "change_password_button": "Update Password"
+      "change_password_button": "Update Password",
+      "contact_support_button": "Contact Support"
     },
     "data_management": {
       "title": "Data Management",
@@ -542,8 +544,8 @@
     "toast": {
       "empty_title": "Message is empty",
       "empty_desc": "Please write something before submitting.",
-      "success_title": "Feedback Submitted!",
-      "success_desc": "Thank you for your valuable input. This is a demo and data was logged to the console."
+      "success_title": "Opening Email Client",
+      "success_desc": "Please send your feedback through your email application."
     },
     "contribute": {
       "title": "Contribute on GitHub",

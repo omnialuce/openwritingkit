@@ -71,7 +71,8 @@
     "switch_story": "Trocar de História",
     "create_story": "Criar Nova História",
     "manage_stories": "Gerenciar Histórias",
-    "signed_in": "Logado como"
+    "signed_in": "Logado como",
+    "contact_support": "Contatar Suporte"
   },
   "dashboard": {
     "working_on": "Trabalhando em",
@@ -154,7 +155,8 @@
       "change_password_label": "Alterar Senha",
       "new_password_placeholder": "Nova senha (mín. 6 caracteres)",
       "confirm_password_placeholder": "Confirmar nova senha",
-      "change_password_button": "Atualizar Senha"
+      "change_password_button": "Atualizar Senha",
+      "contact_support_button": "Contatar Suporte"
     },
     "data_management": {
       "title": "Gerenciamento de Dados",
@@ -542,8 +544,8 @@
     "toast": {
       "empty_title": "Mensagem está vazia",
       "empty_desc": "Por favor, escreva algo antes de enviar.",
-      "success_title": "Feedback Enviado!",
-      "success_desc": "Obrigado pela sua valiosa contribuição. Esta é uma demonstração e os dados foram registrados no console."
+      "success_title": "Abrindo Cliente de Email",
+      "success_desc": "Por favor, envie seu feedback através do seu aplicativo de email."
     },
     "contribute": {
       "title": "Contribua no GitHub",
