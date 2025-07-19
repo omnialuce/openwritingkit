@@ -30,6 +30,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
   const importFormRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -171,25 +172,27 @@ export default function SettingsPage() {
   
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) {
-        toast({ title: t('settings.toast.data_import_no_file_title'), description: t('settings.toast.data_import_no_file_desc'), variant: "destructive" });
-        return;
+    if (!file) {
+      toast({ title: t('settings.toast.data_import_no_file_title'), description: t('settings.toast.data_import_no_file_desc'), variant: "destructive" });
+      return;
     }
-
+    
     if (!confirm(t('settings.data_management.import_confirm'))) {
-        if(importFormRef.current) importFormRef.current.reset();
+        if(fileInputRef.current) fileInputRef.current.value = "";
         return;
     }
 
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
-            const content = e.target?.result as string;
+            // Correctly access the file content from the reader's result
+            const content = reader.result as string; 
             if (!content) {
                 throw new Error("File content is empty.");
             }
             const backupData = JSON.parse(content);
             
+            // Clear all existing app data first
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
@@ -199,6 +202,7 @@ export default function SettingsPage() {
             }
             keysToRemove.forEach(key => localStorage.removeItem(key));
 
+            // Import new data
             for (const key in backupData) {
                 if (Object.prototype.hasOwnProperty.call(backupData, key)) {
                    localStorage.setItem(key, typeof backupData[key] === 'string' ? backupData[key] : JSON.stringify(backupData[key]));
@@ -210,7 +214,7 @@ export default function SettingsPage() {
             console.error("Import error:", error);
             toast({ title: t('settings.toast.data_import_failed_title'), description: t('settings.toast.data_import_failed_desc'), variant: "destructive" });
         } finally {
-            if(importFormRef.current) importFormRef.current.reset();
+             if(fileInputRef.current) fileInputRef.current.value = "";
         }
     };
     reader.readAsText(file);
@@ -372,7 +376,7 @@ export default function SettingsPage() {
                   <input
                       type="file"
                       id="import-file"
-                      key={Date.now()} // Force re-render to allow selecting the same file
+                      ref={fileInputRef}
                       onChange={handleImportFile}
                       accept=".json"
                       className="hidden"
