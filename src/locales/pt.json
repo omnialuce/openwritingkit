@@ -547,10 +547,10 @@
       "success_title": "Abrindo Cliente de Email",
       "success_desc": "Por favor, envie seu feedback através do seu aplicativo de email."
     },
-    "contribute": {
-      "title": "Contribua no GitHub",
-      "description": "O OpenWritingKit é um projeto de código aberto. Se você é um desenvolvedor, pode contribuir diretamente para o código, corrigir bugs ou adicionar novos recursos.",
-      "button": "Ver no GitHub"
+    "contact": {
+        "title": "Contatar Suporte",
+        "description": "Precisa de ajuda com sua conta ou tem uma pergunta específica? Não hesite em entrar em contato.",
+        "button": "Contatar Suporte"
     },
     "support": {
       "title": "Apoie o Projeto",

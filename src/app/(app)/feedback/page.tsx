@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Lightbulb, Coffee, Send } from 'lucide-react';
+import { MessageSquare, Coffee, Send, MessageCircleQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -120,41 +120,41 @@ export default function FeedbackPage() {
         </Card>
         
         <div className="space-y-8">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Lightbulb className="h-8 w-8 text-primary" />
-                <CardTitle>{t('feedback.contribute.title')}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                {t('feedback.contribute.description')}
-              </p>
-              <a href="https://github.com/your-repo/openwritingkit" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline">{t('feedback.contribute.button')}</Button>
-              </a>
-            </CardContent>
-          </Card>
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <MessageCircleQuestion className="h-8 w-8 text-primary" />
+                        <CardTitle>{t('feedback.contact.title')}</CardTitle>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                       {t('feedback.contact.description')}
+                    </p>
+                    <a href="mailto:owk@omnialuce.tech?subject=OpenWritingKit%20Support%20Request">
+                        <Button variant="outline" className="w-full">{t('feedback.contact.button')}</Button>
+                    </a>
+                </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Coffee className="h-8 w-8 text-primary" />
-                <CardTitle>{t('feedback.support.title')}</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                {t('feedback.support.description')}
-              </p>
-               <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
-                <Button variant="default" className="w-full">
-                    {t('feedback.support.button')}
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+            <Card>
+                <CardHeader>
+                <div className="flex items-center gap-3">
+                    <Coffee className="h-8 w-8 text-primary" />
+                    <CardTitle>{t('feedback.support.title')}</CardTitle>
+                </div>
+                </CardHeader>
+                <CardContent>
+                <p className="text-muted-foreground mb-4">
+                    {t('feedback.support.description')}
+                </p>
+                <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
+                    <Button variant="default" className="w-full">
+                        {t('feedback.support.button')}
+                    </Button>
+                </Link>
+                </CardContent>
+            </Card>
         </div>
       </div>
     </div>
