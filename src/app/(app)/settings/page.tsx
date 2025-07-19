@@ -171,7 +171,7 @@ export default function SettingsPage() {
   
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) {
+    if (!file) {
         toast({ title: t('settings.toast.data_import_no_file_title'), description: t('settings.toast.data_import_no_file_desc'), variant: "destructive" });
         return;
     }
@@ -185,12 +185,15 @@ export default function SettingsPage() {
     reader.onload = (e) => {
         try {
             const content = e.target?.result as string;
+            if (!content) {
+                throw new Error("File content is empty.");
+            }
             const backupData = JSON.parse(content);
             
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                 if (key && (key.startsWith('openwritingkit-'))) {
+                 if (key && key.startsWith('openwritingkit-')) {
                     keysToRemove.push(key);
                 }
             }
