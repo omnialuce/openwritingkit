@@ -38,8 +38,6 @@ function useAutosave<T extends string>(
 
   const getStorageKeyWithUser = useCallback((baseKey: string) => {
     if (!user) return null;
-    // The key from StoryContext already includes the storyId, so we just add the user.
-    // This assumes baseKey is unique per document.
     return `${baseKey}-user-${user.uid}`;
   }, [user]);
 
@@ -89,6 +87,9 @@ function useAutosave<T extends string>(
         let activityLog = await storage.getItem<ActivityLogEntry[]>(activityKey) || [];
         activityLog.push(newLogEntry);
         await storage.setItem(activityKey, activityLog);
+        
+        // Dispatch a custom event to notify other components like the analytics page
+        window.dispatchEvent(new CustomEvent('storage-change', { detail: { key: activityKey } }));
       } catch (error) {
         console.warn(`Error updating activity log:`, error);
       }

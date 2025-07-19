@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, CalendarClock, AlertTriangle, AlignLeft, SpellCheck2, GitMerge } from "lucide-react"; 
 import Image from "next/image";
 import { WordGoalCard } from "@/components/analytics/WordGoalCard";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { storage } from "@/lib/storage";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface InsightCardProps {
   title: string;
@@ -59,29 +61,40 @@ function InsightCard({ title, description, icon: Icon, value, unit, children, co
 
 export default function AnalyticsPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { activeStoryId, activeStoryName } = useStoryContext();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  
+  const activityLogStorageKey = user ? `openwritingkit-story-${activeStoryId}-activity-log-user-${user.uid}` : null;
 
-  useEffect(() => {
-    setIsMounted(true);
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const activityLogStorageKey = getActivityLogKey(activeStoryId);
-      const storedLog = localStorage.getItem(activityLogStorageKey);
-      if (storedLog) {
-        try {
-          setActivityLog(JSON.parse(storedLog));
-        } catch(e) {
-          console.error("Failed to parse activity log:", e);
-          setActivityLog([]);
-        }
-      } else {
-        setActivityLog([]);
-      }
-    } else if (!activeStoryId) {
+  const loadActivityLog = useCallback(async () => {
+    if (activityLogStorageKey) {
+      const storedLog = await storage.getItem<ActivityLogEntry[]>(activityLogStorageKey);
+      setActivityLog(storedLog || []);
+    } else {
       setActivityLog([]);
     }
-  }, [activeStoryId]);
+  }, [activityLogStorageKey]);
+  
+  useEffect(() => {
+    setIsMounted(true);
+    loadActivityLog();
+
+    const handleStorageChange = (event: Event) => {
+        // This is a custom event dispatched from useAutosave
+        if ((event as CustomEvent).detail?.key === activityLogStorageKey) {
+            loadActivityLog();
+        }
+    };
+    window.addEventListener('storage-change', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage-change', handleStorageChange);
+    };
+
+  }, [loadActivityLog, activityLogStorageKey]);
+
 
   const getTodayISOString = () => new Date().toISOString().split('T')[0];
 
