@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { Moon, Sun, Wand2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ import { useStoryContext } from '@/contexts/StoryContext';
 import { Input } from '@/components/ui/input';
 import { changeEmail, changePassword } from '@/ai/flows/auth-flow';
 import type { ChangeEmailInput, ChangePasswordInput } from '@/ai/schemas/auth-schemas';
+import { cn } from '@/lib/utils';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
@@ -165,10 +166,6 @@ export default function SettingsPage() {
     toast({ title: "Export Successful", description: "Your data has been exported." });
   };
   
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) {
@@ -365,10 +362,24 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">{t('settings.data_management.export_desc')}</p>
             </div>
             <div className="flex flex-col gap-2">
-                 <input type="file" ref={fileInputRef} onChange={handleImportFile} accept=".json" className="hidden" />
-                 <Button variant="outline" onClick={handleImportClick} disabled={!user}>
+                 <input
+                    type="file"
+                    id="import-file"
+                    ref={fileInputRef}
+                    onChange={handleImportFile}
+                    accept=".json"
+                    className="hidden"
+                  />
+                  <Label
+                    htmlFor="import-file"
+                    className={cn(
+                      buttonVariants({ variant: "outline" }),
+                      "cursor-pointer",
+                      !user && "opacity-50 pointer-events-none"
+                    )}
+                  >
                     <Upload className="mr-2 h-4 w-4" /> {t('settings.data_management.import_button')}
-                </Button>
+                  </Label>
                 <p className="text-xs text-muted-foreground">{t('settings.data_management.import_desc')}</p>
             </div>
         </CardContent>
