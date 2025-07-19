@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -95,7 +96,7 @@ export function AppSidebar() {
               className="w-full rounded-none"
               asChild
             >
-              <Link href="/settings">
+              <Link href="/settings#data-management">
                 <CloudOff />
                 <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">
                   {t('sidebar.backup.button')}

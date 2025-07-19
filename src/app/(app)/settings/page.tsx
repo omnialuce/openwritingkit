@@ -1,3 +1,4 @@
+
 // src/app/(app)/settings/page.tsx
 'use client';
 
@@ -28,7 +29,7 @@ export default function SettingsPage() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const importFormRef = useRef<HTMLFormElement>(null);
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -174,7 +175,7 @@ export default function SettingsPage() {
     }
 
     if (!confirm(t('settings.data_management.import_confirm'))) {
-        event.target.value = '';
+        if(importFormRef.current) importFormRef.current.reset();
         return;
     }
 
@@ -204,7 +205,7 @@ export default function SettingsPage() {
             console.error("Import error:", error);
             toast({ title: "Import Failed", description: "The backup file is corrupted or not valid.", variant: "destructive" });
         } finally {
-            event.target.value = '';
+            if(importFormRef.current) importFormRef.current.reset();
         }
     };
     reader.readAsText(file);
@@ -349,7 +350,7 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      <Card>
+      <Card id="data-management">
         <CardHeader>
             <CardTitle className="flex items-center gap-2"><Download className="h-5 w-5"/>{t('settings.data_management.title')}</CardTitle>
             <CardDescription>{t('settings.data_management.description')}</CardDescription>
@@ -362,24 +363,26 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">{t('settings.data_management.export_desc')}</p>
             </div>
             <div className="flex flex-col gap-2">
-                 <input
-                    type="file"
-                    id="import-file"
-                    ref={fileInputRef}
-                    onChange={handleImportFile}
-                    accept=".json"
-                    className="hidden"
-                  />
-                  <Label
-                    htmlFor="import-file"
-                    className={cn(
-                      buttonVariants({ variant: "outline" }),
-                      "cursor-pointer",
-                      !user && "opacity-50 pointer-events-none"
-                    )}
-                  >
-                    <Upload className="mr-2 h-4 w-4" /> {t('settings.data_management.import_button')}
-                  </Label>
+                 <form ref={importFormRef}>
+                  <input
+                      type="file"
+                      id="import-file"
+                      key={Date.now()} // Force re-render to allow selecting the same file
+                      onChange={handleImportFile}
+                      accept=".json"
+                      className="hidden"
+                    />
+                    <Label
+                      htmlFor="import-file"
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "cursor-pointer",
+                        !user && "opacity-50 pointer-events-none"
+                      )}
+                    >
+                      <Upload className="mr-2 h-4 w-4" /> {t('settings.data_management.import_button')}
+                    </Label>
+                 </form>
                 <p className="text-xs text-muted-foreground">{t('settings.data_management.import_desc')}</p>
             </div>
         </CardContent>
