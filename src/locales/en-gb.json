@@ -563,9 +563,9 @@
       "success_desc": "Please send your feedback through your email application."
     },
     "contact": {
-      "title": "Contact Support",
-      "description": "Need help with your account or have a specific question? Don't hesitate to reach out.",
-      "button": "Contact Support"
+        "title": "Contact Support",
+        "description": "Need help with your account or have a specific question? Don't hesitate to reach out.",
+        "button": "Contact Support"
     },
     "support": {
       "title": "Support the Project",
@@ -933,10 +933,11 @@
   },
   "world_building": {
     "title": "World Building",
-    "description": "Create and manage the locales of your story's world.",
+    "description": "Create and manage the locales and elements of your story's world.",
     "create_button": "Create New Locale",
     "no_locales": "No locales for this story yet. Start by creating one!",
     "no_description": "No description provided.",
+    "view_sheet_button": "View Sheet",
     "no_story": {
       "title": "No Active Story",
       "description_1": "Please select or create a story from the",
@@ -945,7 +946,7 @@
     },
     "delete_dialog": {
       "title": "Are you sure?",
-      "description": "This action cannot be undone. This will permanently delete this locale."
+      "description": "This action cannot be undone. This will permanently delete this locale and its detailed sheet."
     },
     "edit_dialog": {
       "title": "Edit Locale",
@@ -958,7 +959,87 @@
     "fields": {
       "name": "Locale Name",
       "description": "Description",
-      "description_placeholder": "Describe the location, its atmosphere, key features, etc."
+      "description_placeholder": "Describe the location, its atmosphere, key features, etc.",
+      "tags": "Tags (comma-separated)",
+      "tags_placeholder": "e.g., City, Region, Planet"
+    }
+  },
+  "world_building_sheet": {
+    "loading": "Loading locale sheet...",
+    "no_active_story_title": "No Active Story",
+    "no_active_story_desc_1": "Please select a story from the",
+    "no_active_story_desc_2": "Stories page",
+    "no_active_story_desc_3": "to view locale sheets.",
+    "not_found_title": "Locale Not Found",
+    "not_found_desc": "The locale you are looking for does not exist in the active story.",
+    "back_to_locales": "Back to All Locales",
+    "title": "World Sheet",
+    "autosave_notice": "All changes are saved automatically. Last saved:",
+    "autosave_na": "N/A",
+    "export_button": "Export Sheet",
+    "field_placeholder": "Details about {{label}}...",
+    "template_citation": "This template is inspired by the detailed world-building plan from",
+    "export": {
+      "title_prefix": "WORLD SHEET:",
+      "description": "DESCRIPTION",
+      "tags": "TAGS",
+      "not_applicable": "N/A",
+      "toast_success_title": "Export Successful",
+      "toast_success_desc": "World sheet for {{name}} has been downloaded."
+    },
+    "sections": {
+      "overview": "Overview",
+      "geography": "Geography",
+      "ecosystem": "Ecosystem",
+      "locations": "Key Locations",
+      "society": "Society & Government",
+      "culture": "Culture",
+      "economy": "Economy",
+      "technology": "Technology",
+      "magic": "Magic & Metaphysics",
+      "history": "History & Lore"
+    },
+    "fields": {
+      "name": "Name (from profile)",
+      "summary": "One-Paragraph Summary",
+      "inspiration": "Inspiration & Core Concepts",
+      "terrain": "Terrain & Topography",
+      "climate": "Climate & Weather Patterns",
+      "bodies_of_water": "Bodies of Water",
+      "natural_resources": "Natural Resources",
+      "flora": "Flora (Plants)",
+      "fauna": "Fauna (Animals)",
+      "natural_laws": "Natural & Physical Laws",
+      "continents": "Continents",
+      "countries": "Countries / Nations",
+      "cities": "Major Cities & Towns",
+      "landmarks": "Important Landmarks",
+      "inhabitants": "Peoples & Species",
+      "government": "Government & Politics",
+      "social_structure": "Social Structure & Hierarchy",
+      "laws": "Laws & Justice System",
+      "military": "Military & Factions",
+      "language": "Language(s)",
+      "religion": "Religion & Beliefs",
+      "education": "Education System",
+      "traditions": "Traditions & Customs",
+      "art": "Art & Architecture",
+      "entertainment": "Entertainment & Recreation",
+      "food": "Food & Cuisine",
+      "currency": "Currency",
+      "trade": "Trade & Commerce",
+      "industries": "Major Industries",
+      "tech_level": "Level of Technology",
+      "innovations": "Key Innovations",
+      "transportation": "Transportation",
+      "communication": "Communication",
+      "magic_system": "Magic System(s)",
+      "magic_users": "Who Can Use Magic?",
+      "magic_limits": "Limitations of Magic",
+      "creation_myth": "Creation Myth",
+      "historical_events": "Key Historical Events",
+      "conflicts": "Major Wars & Conflicts",
+      "legends": "Myths & Legends"
     }
   },
   "research": {

@@ -933,10 +933,11 @@
   },
   "world_building": {
     "title": "Criação de Mundo",
-    "description": "Crie e gerencie os locais do mundo da sua história.",
+    "description": "Crie e gerencie os locais e elementos do mundo da sua história.",
     "create_button": "Criar Novo Local",
     "no_locales": "Nenhum local para esta história ainda. Comece criando um!",
     "no_description": "Nenhuma descrição fornecida.",
+    "view_sheet_button": "Ver Ficha",
     "no_story": {
       "title": "Nenhuma História Ativa",
       "description_1": "Por favor, selecione ou crie uma história na",
@@ -945,11 +946,11 @@
     },
     "delete_dialog": {
       "title": "Tem certeza?",
-      "description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente este local."
+      "description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente este local e sua ficha detalhada."
     },
     "edit_dialog": {
       "title": "Editar Local",
-      "description": "Atualize os detalhes para este local."
+      "description": "Atualize os detalhes deste local."
     },
     "create_dialog": {
       "title": "Criar Novo Local",
@@ -958,7 +959,87 @@
     "fields": {
       "name": "Nome do Local",
       "description": "Descrição",
-      "description_placeholder": "Descreva o local, sua atmosfera, características principais, etc."
+      "description_placeholder": "Descreva o local, sua atmosfera, características principais, etc.",
+      "tags": "Tags (separadas por vírgula)",
+      "tags_placeholder": "ex: Cidade, Região, Planeta"
+    }
+  },
+  "world_building_sheet": {
+    "loading": "Carregando ficha do local...",
+    "no_active_story_title": "Nenhuma História Ativa",
+    "no_active_story_desc_1": "Por favor, selecione uma história na",
+    "no_active_story_desc_2": "página de Histórias",
+    "no_active_story_desc_3": "para ver as fichas dos locais.",
+    "not_found_title": "Local Não Encontrado",
+    "not_found_desc": "O local que você está procurando não existe na história ativa.",
+    "back_to_locales": "Voltar para Todos os Locais",
+    "title": "Ficha do Mundo",
+    "autosave_notice": "Todas as alterações são salvas automaticamente. Último salvamento:",
+    "autosave_na": "N/D",
+    "export_button": "Exportar Ficha",
+    "field_placeholder": "Detalhes sobre {{label}}...",
+    "template_citation": "Este modelo é inspirado no plano detalhado de criação de mundos do",
+    "export": {
+      "title_prefix": "FICHA DO MUNDO:",
+      "description": "DESCRIÇÃO",
+      "tags": "TAGS",
+      "not_applicable": "N/A",
+      "toast_success_title": "Exportação Bem-sucedida",
+      "toast_success_desc": "A ficha do mundo para {{name}} foi baixada."
+    },
+    "sections": {
+      "overview": "Visão Geral",
+      "geography": "Geografia",
+      "ecosystem": "Ecossistema",
+      "locations": "Locais Chave",
+      "society": "Sociedade & Governo",
+      "culture": "Cultura",
+      "economy": "Economia",
+      "technology": "Tecnologia",
+      "magic": "Magia & Metafísica",
+      "history": "História & Lore"
+    },
+    "fields": {
+      "name": "Nome (do perfil)",
+      "summary": "Resumo de Um Parágrafo",
+      "inspiration": "Inspiração & Conceitos Centrais",
+      "terrain": "Terreno & Topografia",
+      "climate": "Clima & Padrões Climáticos",
+      "bodies_of_water": "Corpos d'Água",
+      "natural_resources": "Recursos Naturais",
+      "flora": "Flora (Plantas)",
+      "fauna": "Fauna (Animais)",
+      "natural_laws": "Leis Naturais & Físicas",
+      "continents": "Continentes",
+      "countries": "Países / Nações",
+      "cities": "Cidades & Vilas Principais",
+      "landmarks": "Marcos Importantes",
+      "inhabitants": "Povos & Espécies",
+      "government": "Governo & Política",
+      "social_structure": "Estrutura Social & Hierarquia",
+      "laws": "Leis & Sistema de Justiça",
+      "military": "Militar & Facções",
+      "language": "Idioma(s)",
+      "religion": "Religião & Crenças",
+      "education": "Sistema Educacional",
+      "traditions": "Tradições & Costumes",
+      "art": "Arte & Arquitetura",
+      "entertainment": "Entretenimento & Lazer",
+      "food": "Comida & Culinária",
+      "currency": "Moeda",
+      "trade": "Comércio",
+      "industries": "Indústrias Principais",
+      "tech_level": "Nível de Tecnologia",
+      "innovations": "Inovações Chave",
+      "transportation": "Transporte",
+      "communication": "Comunicação",
+      "magic_system": "Sistema(s) de Magia",
+      "magic_users": "Quem Pode Usar Magia?",
+      "magic_limits": "Limitações da Magia",
+      "creation_myth": "Mito da Criação",
+      "historical_events": "Eventos Históricos Chave",
+      "conflicts": "Guerras & Conflitos Principais",
+      "legends": "Mitos & Lendas"
     }
   },
   "research": {

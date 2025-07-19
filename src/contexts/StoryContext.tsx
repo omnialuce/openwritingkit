@@ -6,6 +6,13 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useAuth } from './AuthContext'; // Import useAuth from our updated AuthContext
 import type { CharacterProfile } from '@/app/(app)/characters/page';
 
+export interface Locale {
+  id: string;
+  name: string;
+  description?: string;
+  tags?: string[];
+}
+
 interface Story {
   id: string;
   title: string;
@@ -157,6 +164,13 @@ export function StoryProvider({ children }: { children: ReactNode }) {
     for (const char of storedCharacters) {
         keysToRemove.push(getCharacterSheetStorageKey(storyId, char.id));
     }
+
+    const localesKey = getWorldBuildingStorageKey(storyId);
+    const storedLocales = JSON.parse(localStorage.getItem(localesKey) || '[]') as Locale[];
+    for (const locale of storedLocales) {
+        keysToRemove.push(getLocaleSheetStorageKey(storyId, locale.id));
+    }
+
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
     const updatedStories = stories.filter(s => s.id !== storyId);
@@ -225,10 +239,13 @@ export const getDocumentsStorageKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-documents` : 'openwritingkit-documents-noactive';
 
 export const getWorldBuildingStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-world-building` : 'openwritingkit-world-building-noactive';
+  storyId ? `openwritingkit-story-${storyId}-world-building-v2` : 'openwritingkit-world-building-v2-noactive';
+
+export const getLocaleSheetStorageKey = (storyId: string | null, localeId: string | null): string =>
+  (storyId && localeId) ? `openwritingkit-story-${storyId}-locale-${localeId}-sheet` : 'openwritingkit-locale-sheet-noactive';
 
 export const getResearchStorageKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-research` : 'openwritingkit-research-noactive';
 
 
-export type { CharacterProfile };
+export type { CharacterProfile, Locale };

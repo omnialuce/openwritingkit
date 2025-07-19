@@ -3,23 +3,18 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Globe, PlusCircle, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { Globe, PlusCircle, Edit, Trash2, AlertTriangle, FileText } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useStoryContext, getWorldBuildingStorageKey } from '@/contexts/StoryContext';
+import { useStoryContext, getWorldBuildingStorageKey, type Locale } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-export interface Locale {
-  id: string;
-  name: string;
-  description?: string;
-}
+import { Badge } from '@/components/ui/badge';
 
 export default function WorldBuildingPage() {
   const { t } = useLanguage();
@@ -30,6 +25,7 @@ export default function WorldBuildingPage() {
   
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [tags, setTags] = useState('');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
@@ -56,6 +52,7 @@ export default function WorldBuildingPage() {
   const resetForm = () => {
     setName('');
     setDescription('');
+    setTags('');
     setEditingLocale(null);
   };
 
@@ -68,6 +65,7 @@ export default function WorldBuildingPage() {
     setEditingLocale(locale);
     setName(locale.name);
     setDescription(locale.description || '');
+    setTags(locale.tags?.join(', ') || '');
     setIsDialogOpen(true);
   };
 
@@ -78,6 +76,7 @@ export default function WorldBuildingPage() {
     const newLocaleData = {
       name: name.trim(),
       description: description.trim() || undefined,
+      tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
     };
 
     if (editingLocale) {
@@ -96,6 +95,7 @@ export default function WorldBuildingPage() {
   const handleDeleteLocale = (id: string) => {
     const updatedLocales = locales.filter(loc => loc.id !== id);
     saveLocales(updatedLocales);
+    // Note: This doesn't delete the associated sheet data, which might be desired.
   };
 
   if (!activeStoryId) {
@@ -133,16 +133,27 @@ export default function WorldBuildingPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {locales.map(locale => (
             <Card key={locale.id} className="flex flex-col">
               <CardHeader>
                 <CardTitle>{locale.name}</CardTitle>
+                {locale.tags && locale.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-2">
+                    {locale.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-4">{locale.description || t('world_building.no_description')}</p>
               </CardContent>
-              <CardContent className="flex gap-2">
+              <CardFooter className="flex flex-col gap-2">
+                 <Button asChild variant="default" className="w-full">
+                  <Link href={`/world-building/${locale.id}`}>
+                    <FileText className="mr-2 h-4 w-4" /> {t('world_building.view_sheet_button')}
+                  </Link>
+                </Button>
+                <div className="flex gap-2 w-full">
                   <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(locale)} className="flex-1">
                     <Edit className="mr-2 h-4 w-4" /> {t('common.edit')}
                   </Button>
@@ -167,7 +178,8 @@ export default function WorldBuildingPage() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-              </CardContent>
+                </div>
+              </CardFooter>
             </Card>
           ))}
         </div>
@@ -190,6 +202,10 @@ export default function WorldBuildingPage() {
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="locale-name" className="text-right">{t('world_building.fields.name')}</Label>
                   <Input id="locale-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" required />
+                </div>
+                 <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="locale-tags" className="text-right">{t('world_building.fields.tags')}</Label>
+                  <Input id="locale-tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder={t('world_building.fields.tags_placeholder')} />
                 </div>
                 <div className="grid grid-cols-4 items-start gap-4">
                   <Label htmlFor="locale-description" className="text-right pt-2">{t('world_building.fields.description')}</Label>
