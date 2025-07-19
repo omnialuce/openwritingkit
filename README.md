@@ -56,14 +56,14 @@ You can either clone the repository using Git or download the source code as a Z
 **Using Git (Recommended):**
 Open your terminal or command prompt and run:
 ```bash
-git clone https://github.com/your-username/OpenWritingKit.git
+git clone https://github.com/luanaairs/OpenWritingKit.git
 cd OpenWritingKit
 ```
 
 **Download ZIP:**
 - Go to the repository on GitHub.
 - Click the "Code" button and select "Download ZIP".
-- Unzip the file and open the `OpenWritingKit-main` folder in your terminal.
+- Unzip the file and open the `OpenWritingKit-master` folder in your terminal.
 
 ### 3. Install Dependencies
 
