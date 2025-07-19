@@ -158,6 +158,10 @@ export default function DashboardPage() {
                           <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_2_title')}:</span> {t('dashboard.how_to_use_feature_2_desc')}</li>
                           <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_3_title')}:</span> {t('dashboard.how_to_use_feature_3_desc')}</li>
                           <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_4_title')}:</span> {t('dashboard.how_to_use_feature_4_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_6_title')}:</span> {t('dashboard.how_to_use_feature_6_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_7_title')}:</span> {t('dashboard.how_to_use_feature_7_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_8_title')}:</span> {t('dashboard.how_to_use_feature_8_desc')}</li>
+                          <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_9_title')}:</span> {t('dashboard.how_to_use_feature_9_desc')}</li>
                           <li><span className="font-semibold text-foreground">{t('dashboard.how_to_use_feature_5_title')}:</span> {t('dashboard.how_to_use_feature_5_desc')}</li>
                         </ul>
                       </div>
