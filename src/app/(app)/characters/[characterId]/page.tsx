@@ -170,12 +170,13 @@ export default function CharacterSheetPage() {
       const storageKey = getCharactersStorageKey(activeStoryId);
       const storedCharacters = localStorage.getItem(storageKey);
       if (storedCharacters) {
-        const chars: CharacterProfile[] = JSON.parse(storedCharacters);
-        const foundChar = chars.find(c => c.id === characterId);
-        if (foundChar) {
-          setCharacter(foundChar);
-        } else {
-          setCharacter(null);
+        try {
+          const chars: CharacterProfile[] = JSON.parse(storedCharacters);
+          const foundChar = chars.find(c => c.id === characterId);
+          setCharacter(foundChar || null);
+        } catch(e) {
+            console.error("Error parsing characters from local storage", e);
+            setCharacter(null);
         }
       }
     }
@@ -226,6 +227,7 @@ export default function CharacterSheetPage() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast({ title: t('character_sheet.export.toast_success_title'), description: t('character_sheet.export.toast_success_desc', {name: character.name})});
   };
 
 

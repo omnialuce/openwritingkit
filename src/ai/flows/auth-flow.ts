@@ -13,6 +13,9 @@ import type { ChangeEmailInput, ChangeEmailOutput, ChangePasswordInput, ChangePa
 export async function changeEmail(input: ChangeEmailInput): Promise<ChangeEmailOutput> {
   try {
     const auth = getAuth(adminApp);
+    if (!input.uid || !input.newEmail) {
+        return { success: false, message: 'User ID and new email are required.' };
+    }
     await auth.updateUser(input.uid, {
       email: input.newEmail,
     });
@@ -23,6 +26,8 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ChangeEmailO
       message = 'This email address is already in use by another account.';
     } else if (error.code === 'auth/invalid-email') {
       message = 'The new email address is not valid.';
+    } else if (error.code === 'auth/user-not-found') {
+        message = 'User not found.';
     }
     console.error('Error changing email:', error);
     return { success: false, message };
@@ -32,6 +37,9 @@ export async function changeEmail(input: ChangeEmailInput): Promise<ChangeEmailO
 export async function changePassword(input: ChangePasswordInput): Promise<ChangePasswordOutput> {
   try {
     const auth = getAuth(adminApp);
+     if (!input.uid || !input.newPassword) {
+        return { success: false, message: 'User ID and new password are required.' };
+    }
     await auth.updateUser(input.uid, {
       password: input.newPassword,
     });
@@ -40,6 +48,8 @@ export async function changePassword(input: ChangePasswordInput): Promise<Change
     let message = 'An unexpected error occurred while updating your password.';
     if (error.code === 'auth/weak-password') {
       message = 'The new password is too weak. It must be at least 6 characters.';
+    } else if (error.code === 'auth/user-not-found') {
+        message = 'User not found.';
     }
     console.error('Error changing password:', error);
     return { success: false, message };

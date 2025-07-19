@@ -97,7 +97,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     const auth = getAuth(firebaseApp);
     await signOut(auth);
+    // Explicitly clear the user state and the cookie
     setUser(null);
+    document.cookie = 'firebaseIdToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     router.push('/login');
     toast({
         title: t('auth.logout_success_title'),

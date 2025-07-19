@@ -191,7 +191,16 @@
       "reauth_failed_desc": "A reautenticação falhou. Verifique sua senha e tente novamente.",
       "email_change_success_title": "Email Atualizado",
       "password_change_success_title": "Senha Atualizada",
-      "passwords_do_not_match": "As novas senhas não coincidem."
+      "passwords_do_not_match": "As novas senhas não coincidem.",
+      "data_export_success_title": "Exportação Bem-sucedida",
+      "data_export_success_desc": "Seus dados foram baixados.",
+      "data_export_error_desc": "Você deve estar logado para exportar dados.",
+      "data_import_no_file_title": "Erro",
+      "data_import_no_file_desc": "Nenhum arquivo selecionado ou você não está logado.",
+      "data_import_success_title": "Importação Bem-sucedida",
+      "data_import_success_desc": "Dados restaurados. O aplicativo será recarregado agora.",
+      "data_import_failed_title": "Falha na Importação",
+      "data_import_failed_desc": "O arquivo de backup está corrompido ou não é válido."
     }
   },
     "stories": {
@@ -416,7 +425,10 @@
       "title_prefix": "FICHA DE PERSONAGEM:",
       "role": "PAPEL",
       "description": "DESCRIÇÃO",
-      "backstory": "HISTÓRIA DE FUNDO"
+      "backstory": "HISTÓRIA DE FUNDO",
+      "not_applicable": "N/A",
+      "toast_success_title": "Exportação Bem-sucedida",
+      "toast_success_desc": "A ficha do personagem {{name}} foi baixada."
     },
     "sections": {
       "demographics": "Dados Demográficos",

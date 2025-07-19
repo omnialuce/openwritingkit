@@ -191,7 +191,16 @@
       "reauth_failed_desc": "Re-authentication failed. Please check your password and try again.",
       "email_change_success_title": "Email Updated",
       "password_change_success_title": "Password Updated",
-      "passwords_do_not_match": "The new passwords do not match."
+      "passwords_do_not_match": "The new passwords do not match.",
+      "data_export_success_title": "Export Successful",
+      "data_export_success_desc": "Your data has been downloaded.",
+      "data_export_error_desc": "You must be logged in to export data.",
+      "data_import_no_file_title": "Error",
+      "data_import_no_file_desc": "No file selected or you are not logged in.",
+      "data_import_success_title": "Import Successful",
+      "data_import_success_desc": "Data restored. The app will now reload.",
+      "data_import_failed_title": "Import Failed",
+      "data_import_failed_desc": "The backup file is corrupted or not valid."
     }
   },
   "stories": {
@@ -417,7 +426,9 @@
       "role": "ROLE",
       "description": "DESCRIPTION",
       "backstory": "BACKSTORY",
-      "not_applicable": "N/A"
+      "not_applicable": "N/A",
+      "toast_success_title": "Export Successful",
+      "toast_success_desc": "Character sheet for {{name}} has been downloaded."
     },
     "sections": {
       "demographics": "Demographics",
