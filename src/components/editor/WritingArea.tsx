@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Focus from '@tiptap/extension-focus';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -26,7 +27,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem
+  DropdownMenuRadioItem,
+  DropdownMenuCheckboxItem
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -47,7 +49,9 @@ interface EditorSettings {
   fontFamily: 'sans' | 'serif';
   fontSize: 'sm' | 'base' | 'lg';
   lineHeight: 'tight' | 'normal' | 'loose';
-  paragraphSpacing: 'sm' | 'base' | 'lg';
+  paragraphSpacing: 'base';
+  focusMode: boolean;
+  typewriterMode: boolean;
 }
 
 const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings';
@@ -88,11 +92,13 @@ export function WritingArea() {
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [editorTheme, setEditorTheme] = useState<EditorTheme>('light');
-  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const sidebarContext = useSidebar();
   const editorRef = useRef<HTMLDivElement>(null);
+  const editorContentRef = useRef<HTMLDivElement>(null);
+
 
   const [sessionTime, setSessionTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -114,6 +120,8 @@ export function WritingArea() {
     fontSize: 'base',
     lineHeight: 'normal',
     paragraphSpacing: 'base',
+    focusMode: false,
+    typewriterMode: false,
   });
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
@@ -133,6 +141,10 @@ export function WritingArea() {
           levels: [1, 2, 3],
         },
       }),
+      Focus.configure({
+        className: 'has-focus',
+        mode: 'all',
+      }),
     ],
     content: savedContent,
     immediatelyRender: false,
@@ -141,9 +153,28 @@ export function WritingArea() {
         setSavedContent(currentEditor.getHTML());
       }
     },
+    onSelectionUpdate: ({ editor }) => {
+      if (editorSettings.typewriterMode) {
+        const { from } = editor.state.selection;
+        const node = editor.view.nodeDOM(from);
+        if (node instanceof HTMLElement) {
+          const editorRect = editorContentRef.current?.getBoundingClientRect();
+          const nodeRect = node.getBoundingClientRect();
+          if(editorRect) {
+             editorContentRef.current?.scrollTo({
+                top: editorContentRef.current.scrollTop + nodeRect.top - editorRect.height / 2,
+                behavior: 'smooth'
+             });
+          }
+        }
+      }
+    },
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert focus:outline-none w-full h-full p-6'
+        class: cn('prose dark:prose-invert focus:outline-none w-full h-full p-6', 
+                   editorSettings.typewriterMode && 'typewriter-mode',
+                   editorSettings.focusMode && 'focus-mode'
+                   )
       },
     },
   });
@@ -283,7 +314,7 @@ export function WritingArea() {
       const storedSettings = localStorage.getItem(EDITOR_SETTINGS_KEY);
       if (storedSettings) {
         try {
-          setEditorSettings(JSON.parse(storedSettings));
+          setEditorSettings(prev => ({...prev, ...JSON.parse(storedSettings)}));
         } catch(e) { /* use default */ }
       }
 
@@ -314,6 +345,18 @@ export function WritingArea() {
 
     const root = editorElement.closest('.ProseMirror') as HTMLElement | null;
     if (!root) return;
+    
+    // Update class names for focus/typewriter modes
+    editor?.setOptions({
+        editorProps: {
+            attributes: {
+                class: cn('prose dark:prose-invert focus:outline-none w-full h-full p-6', 
+                   editorSettings.typewriterMode && 'typewriter-mode',
+                   editorSettings.focusMode && 'focus-mode'
+                )
+            }
+        }
+    })
 
     const fontMap = {
         sans: "'PT Sans', sans-serif",
@@ -321,7 +364,7 @@ export function WritingArea() {
     };
     const sizeMap = { sm: '0.9rem', base: '1rem', lg: '1.1rem' };
     const lineHeightMap = { tight: '1.5', normal: '1.7', loose: '1.9' };
-    const paraSpacingMap = { sm: '0.75rem', base: '1rem', lg: '1.5rem' };
+    const paraSpacingMap = { base: '1rem' };
 
     root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily]);
     root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize]);
@@ -448,7 +491,7 @@ export function WritingArea() {
     setEditorTheme(selectedTheme);
   };
 
-  const toggleFocusMode = () => setIsFocusMode(!isFocusMode);
+  const toggleFullScreen = () => setIsFullScreen(!isFullScreen);
 
   const handleGetFeedback = async () => {
     if (!editor || !activeStoryId) return;
@@ -462,8 +505,8 @@ export function WritingArea() {
       return;
     }
 
-    if (isFocusMode) {
-      toggleFocusMode(); 
+    if (isFullScreen) {
+      toggleFullScreen(); 
     }
     
     setIsHistoryPanelOpen(false);
@@ -691,13 +734,13 @@ export function WritingArea() {
   );
 
 
-  if (isFocusMode) {
+  if (isFullScreen) {
     return (
       <div className={cn("fixed inset-0 z-50 flex flex-col p-2 md:p-4", currentOverallTheme, themeClasses[editorTheme])} ref={editorRef}>
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleFocusMode}
+          onClick={toggleFullScreen}
           className="absolute top-4 right-4 z-10"
           title={t('editor.exit_focus_mode')}
         >
@@ -712,7 +755,7 @@ export function WritingArea() {
     <TooltipProvider>
       <div className={cn("flex h-full", currentOverallTheme, themeClasses[editorTheme])}>
         <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none transition-all duration-300", isSidePanelOpen ? "md:w-2/3 lg:w-3/4" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
-          {!isFocusMode && (
+          {!isFullScreen && (
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
@@ -782,24 +825,38 @@ export function WritingArea() {
                         <Palette className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80 rounded-none p-4">
-                       <div className="grid grid-cols-2 gap-4">
+                    <DropdownMenuContent align="end" className="w-80 rounded-none p-2">
+                      <DropdownMenuLabel>{t('editor.customize_view.view_options')}</DropdownMenuLabel>
+                      <DropdownMenuCheckboxItem
+                        checked={editorSettings.focusMode}
+                        onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked })}
+                      >
+                        {t('editor.customize_view.focus_mode')}
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={editorSettings.typewriterMode}
+                        onCheckedChange={(checked) => updateEditorSettings({ typewriterMode: checked })}
+                      >
+                         {t('editor.customize_view.typewriter_mode')}
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuSeparator />
+                       <div className="grid grid-cols-2 gap-2 p-2">
                           <div>
-                            <DropdownMenuLabel>{t('editor.customize_view.editor_theme')}</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.editor_theme')}</DropdownMenuLabel>
                             <DropdownMenuRadioGroup value={editorTheme} onValueChange={(v) => applyEditorTheme(v as EditorTheme)}>
                               <DropdownMenuRadioItem value="light"><Sun className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_light')}</DropdownMenuRadioItem>
                               <DropdownMenuRadioItem value="dark"><Moon className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_dark')}</DropdownMenuRadioItem>
                             </DropdownMenuRadioGroup>
                           </div>
                           <div>
-                            <DropdownMenuLabel>{t('editor.customize_view.font_family')}</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.font_family')}</DropdownMenuLabel>
                             <DropdownMenuRadioGroup value={editorSettings.fontFamily} onValueChange={(v) => updateEditorSettings({ fontFamily: v as EditorSettings['fontFamily'] })}>
                               <DropdownMenuRadioItem value="sans"><Type className="mr-2 h-4 w-4" />{t('editor.customize_view.font_sans')}</DropdownMenuRadioItem>
                               <DropdownMenuRadioItem value="serif"><CaseSensitive className="mr-2 h-4 w-4" />{t('editor.customize_view.font_serif')}</DropdownMenuRadioItem>
                             </DropdownMenuRadioGroup>
                           </div>
                           <div>
-                            <DropdownMenuLabel>{t('editor.customize_view.font_size')}</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.font_size')}</DropdownMenuLabel>
                             <DropdownMenuRadioGroup value={editorSettings.fontSize} onValueChange={(v) => updateEditorSettings({ fontSize: v as EditorSettings['fontSize'] })}>
                               <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
                               <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
@@ -807,21 +864,11 @@ export function WritingArea() {
                             </DropdownMenuRadioGroup>
                           </div>
                            <div>
-                            <DropdownMenuLabel>{t('editor.customize_view.line_height')}</DropdownMenuLabel>
+                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.line_height')}</DropdownMenuLabel>
                             <DropdownMenuRadioGroup value={editorSettings.lineHeight} onValueChange={(v) => updateEditorSettings({ lineHeight: v as EditorSettings['lineHeight'] })}>
                               <DropdownMenuRadioItem value="tight">{t('editor.customize_view.line_height_tight')}</DropdownMenuRadioItem>
                               <DropdownMenuRadioItem value="normal">{t('editor.customize_view.line_height_normal')}</DropdownMenuRadioItem>
                               <DropdownMenuRadioItem value="loose">{t('editor.customize_view.line_height_loose')}</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </div>
-                           <div className="col-span-2">
-                             <DropdownMenuLabel>{t('editor.customize_view.paragraph_spacing')}</DropdownMenuLabel>
-                              <DropdownMenuRadioGroup value={editorSettings.paragraphSpacing} onValueChange={(v) => updateEditorSettings({ paragraphSpacing: v as EditorSettings['paragraphSpacing'] })}>
-                                <div className="flex justify-around">
-                                  <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
-                                  <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
-                                  <DropdownMenuRadioItem value="lg">{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
-                                </div>
                             </DropdownMenuRadioGroup>
                           </div>
                        </div>
@@ -835,7 +882,7 @@ export function WritingArea() {
                     <RotateCcw className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <span className="text-xs md:text-sm text-muted-foreground min-w-[60px] md:min-w-[70px] text-center px-1"><TimerIcon className="inline h-4 w-4 mr-0.5 md:mr-1" />{formatTime(sessionTime)}</span>
-                  <Button variant="ghost" size="icon" onClick={toggleFocusMode} title={t('editor.focus_mode')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={toggleFullScreen} title={t('editor.full_screen_mode')} disabled={!activeStoryId}>
                     <Expand className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   
@@ -845,13 +892,13 @@ export function WritingArea() {
             </>
           )}
           <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
-            <ScrollArea className="h-full w-full">
+            <ScrollArea className="h-full w-full" ref={editorContentRef}>
                <div ref={editorRef} className="min-h-full">
                     <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
                 </div>
             </ScrollArea>
           </CardContent>
-          {!isFocusMode && (
+          {!isFullScreen && (
             <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <div className="flex-1 truncate">
                 <span>{activeDocumentId ? t('editor.editing', { name: activeDocumentName }) : t('editor.editing_scratchpad')}</span>

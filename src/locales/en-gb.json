@@ -621,9 +621,13 @@
     "clear_content_confirm": "Are you sure you want to clear all content? This action cannot be undone.",
     "focus_mode": "Focus Mode",
     "exit_focus_mode": "Exit Focus Mode",
+    "full_screen_mode": "Full Screen Mode",
     "customize_theme_title": "Customise Theme",
     "customize_view_title": "Customise View",
     "customize_view": {
+      "view_options": "View Options",
+      "focus_mode": "Focus Mode",
+      "typewriter_mode": "Typewriter Mode",
       "editor_theme": "Editor Theme",
       "theme_light": "Light",
       "theme_dark": "Dark",

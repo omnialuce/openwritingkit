@@ -621,9 +621,13 @@
     "clear_content_confirm": "Tem certeza de que deseja limpar todo o conteúdo? Esta ação não pode ser desfeita.",
     "focus_mode": "Modo Foco",
     "exit_focus_mode": "Sair do Modo Foco",
+    "full_screen_mode": "Modo Tela Cheia",
     "customize_theme_title": "Personalizar Tema",
     "customize_view_title": "Personalizar Visualização",
     "customize_view": {
+      "view_options": "Opções de Visualização",
+      "focus_mode": "Modo Foco",
+      "typewriter_mode": "Modo Máquina de Escrever",
       "editor_theme": "Tema do Editor",
       "theme_light": "Claro",
       "theme_dark": "Escuro",

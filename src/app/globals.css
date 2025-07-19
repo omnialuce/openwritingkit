@@ -163,6 +163,23 @@
   .ProseMirror:focus {
     outline: none;
   }
+  
+  /* Typewriter mode styling */
+  .ProseMirror.typewriter-mode {
+    padding-top: 50vh;
+    padding-bottom: 50vh;
+  }
+
+  /* Focus mode styling */
+  .ProseMirror.focus-mode :not(.has-focus) {
+    color: hsl(var(--muted-foreground));
+    transition: color 0.3s ease-in-out;
+  }
+  
+  .dark .ProseMirror.focus-mode :not(.has-focus) {
+    color: hsl(var(--muted-foreground));
+  }
+
 
   /* Dark mode for TipTap content */
   .dark .ProseMirror {
