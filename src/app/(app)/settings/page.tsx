@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStoryContext } from '@/contexts/StoryContext';
 import { Input } from '@/components/ui/input';
 import { changeEmail, changePassword } from '@/ai/flows/auth-flow';
+import type { ChangeEmailInput, ChangePasswordInput } from '@/ai/schemas/auth-schemas';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
