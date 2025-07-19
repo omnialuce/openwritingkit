@@ -33,32 +33,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
-import { useStoryContext, getDocumentsStorageKey } from '@/contexts/StoryContext';
+import { useStoryContext, getDocumentsStorageKey, type DocumentItem } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import mammoth from 'mammoth';
 import JSZip from 'jszip';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { getEditorContentKey } from '@/contexts/StoryContext';
+import { storage } from '@/lib/storage';
 
-type DocumentType = "folder" | "chapter" | "scene" | "file";
-type DocumentStatus = "Draft" | "Revised" | "Complete";
-const documentStatuses: DocumentStatus[] = ["Draft", "Revised", "Complete"];
-type DocumentTag = "Draft" | "WIP" | "Review" | "Published" | "Idea" | "Research" | "Key Scene" | "Needs Work" | "Outline" | "Character";
-
-interface DocumentItem {
-  id: string;
-  name: string;
-  type: DocumentType;
-  lastModified?: string;
-  words?: number;
-  itemCount?: number;
-  status?: DocumentStatus;
-  tags?: DocumentTag[];
-  notes?: string; // For more detailed descriptions if needed
-  content?: string; // For file/scene content
-  children?: DocumentItem[];
-}
 
 interface DocumentListItemProps {
   item: DocumentItem;
@@ -82,7 +67,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
     }
   };
 
-  const getStatusVariant = (status?: DocumentStatus) => {
+  const getStatusVariant = (status?: DocumentItem['status']) => {
     switch (status) {
       case "Draft": return "secondary";
       case "Revised": return "outline";
@@ -91,16 +76,16 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
     }
   };
   
-  const getTranslatedStatus = (status: DocumentStatus): string => {
+  const getTranslatedStatus = (status: DocumentItem['status']): string => {
     switch (status) {
         case 'Draft': return t('documents.status.draft');
         case 'Revised': return t('documents.status.revised');
         case 'Complete': return t('documents.status.complete');
-        default: return status;
+        default: return status || '';
     }
   };
 
-  const getTagVariant = (tag: DocumentTag): "default" | "secondary" | "destructive" | "outline" => {
+  const getTagVariant = (tag: DocumentItem['tags'][number]): "default" | "secondary" | "destructive" | "outline" => {
      switch (tag) {
       case "Published": return "default";
       case "WIP": return "secondary";
@@ -134,7 +119,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
               <p className="text-sm text-muted-foreground">
                 {item.type === "folder" || item.type === "chapter" ?
                  t('documents.item_count', {count: (item.children?.length || 0).toString()}) :
-                 `${item.words || 0} ${t('documents.words')} - ${t('documents.last_modified')}: ${item.lastModified ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
+                 `${item.words || 0} ${t('documents.words')} - ${t('documents.last_modified') ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
               </p>
             </div>
           </div>
@@ -173,7 +158,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
         {item.tags && item.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1 pl-8">
             {item.tags.map(tag => (
-              <Badge key={tag} variant={getTagVariant(tag as DocumentTag)} className="text-xs">{tag}</Badge>
+              <Badge key={tag} variant={getTagVariant(tag as DocumentItem['tags'][number])} className="text-xs">{tag}</Badge>
             ))}
           </div>
         )}
@@ -221,6 +206,7 @@ const deleteItemRecursive = (nodes: DocumentItem[], itemId: string): DocumentIte
 
 export default function DocumentsPage() {
   const { activeStoryId, setDocumentToOpen, setHistoryDocumentId } = useStoryContext();
+  const { user } = useAuth();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -234,21 +220,22 @@ export default function DocumentsPage() {
   
   // State for Create dialog
   const [newItemName, setNewItemName] = useState('');
-  const [newItemType, setNewItemType] = useState<DocumentType>('file');
+  const [newItemType, setNewItemType] = useState<DocumentItem['type']>('file');
 
   // State for Details dialog
   const [selectedItemForDialog, setSelectedItemForDialog] = useState<DocumentItem | null>(null);
   const [editedName, setEditedName] = useState('');
   const [editedNotes, setEditedNotes] = useState('');
   const [editedWords, setEditedWords] = useState('');
-  const [editedStatus, setEditedStatus] = useState<DocumentStatus | undefined>(undefined);
+  const [editedStatus, setEditedStatus] = useState<DocumentItem['status'] | undefined>(undefined);
   const [editedTagsString, setEditedTagsString] = useState('');
 
+  const documentsStorageKey = getDocumentsStorageKey(activeStoryId, user?.uid);
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
+    if (typeof window !== 'undefined' && activeStoryId && user) {
       setIsLoading(true);
-      const storageKey = getDocumentsStorageKey(activeStoryId);
-      const storedData = localStorage.getItem(storageKey);
+      const storedData = localStorage.getItem(documentsStorageKey);
       if (storedData) {
         setDocuments(JSON.parse(storedData));
       } else {
@@ -259,13 +246,12 @@ export default function DocumentsPage() {
       setDocuments([]); // Clear if no story is active
       setIsLoading(false);
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user, documentsStorageKey]);
 
   const saveDocuments = (updatedDocuments: DocumentItem[]) => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getDocumentsStorageKey(activeStoryId);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
       setDocuments(updatedDocuments);
-      localStorage.setItem(storageKey, JSON.stringify(updatedDocuments));
+      localStorage.setItem(documentsStorageKey, JSON.stringify(updatedDocuments));
     }
   };
 
@@ -283,6 +269,12 @@ export default function DocumentsPage() {
       status: "Draft",
       children: newItemType === 'folder' || newItemType === 'chapter' ? [] : undefined,
     };
+    
+    // For file types, create an empty storage entry for the editor
+    if (newItem.type === 'file' || newItem.type === 'scene') {
+        const editorKey = getEditorContentKey(activeStoryId, newItem.id, user?.uid);
+        storage.setItem(editorKey, { current: '<p></p>', history: [], lastSaved: null });
+    }
 
     saveDocuments([...documents, newItem]);
     setIsCreateDialogOpen(false);
@@ -332,7 +324,7 @@ export default function DocumentsPage() {
       updates.status = editedStatus;
     }
     
-    updates.tags = editedTagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) as DocumentTag[];
+    updates.tags = editedTagsString.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) as DocumentItem['tags'];
 
     setDocuments(prevDocs => {
         const updatedDocs = updateItemRecursive(prevDocs, selectedItemForDialog.id, updates);
@@ -369,19 +361,22 @@ export default function DocumentsPage() {
       try {
         const result = await mammoth.convertToHtml({ arrayBuffer });
         const htmlContent = result.value;
-        const wordCount = htmlContent.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length;
+        const wordCount = htmlContent.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
 
         const newDoc: DocumentItem = {
           id: Date.now().toString(),
           name: file.name.replace(/\.docx$/, ''),
           type: 'file',
-          content: htmlContent,
-          words: wordCount,
           lastModified: new Date().toISOString(),
           status: 'Draft',
           tags: ['Imported', 'Draft'],
+          words: wordCount,
         };
         
+        // Save the content separately
+        const editorKey = getEditorContentKey(activeStoryId, newDoc.id, user?.uid);
+        storage.setItem(editorKey, { current: htmlContent, history: [], lastSaved: null });
+
         saveDocuments([...documents, newDoc]);
         toast({ title: t('documents.toast.import_success_title'), description: t('documents.toast.import_success_desc', { name: newDoc.name }) });
 
@@ -395,22 +390,26 @@ export default function DocumentsPage() {
   };
 
   const handleExportZip = async () => {
-    if (!activeStoryId || documents.length === 0) return;
+    if (!activeStoryId || documents.length === 0 || !user) return;
     const zip = new JSZip();
 
-    const addDocsToZip = (docs: DocumentItem[], currentPath: string) => {
-        docs.forEach(doc => {
+    const addDocsToZip = async (docs: DocumentItem[], currentPath: string) => {
+        for (const doc of docs) {
             const newPath = currentPath ? `${currentPath}/${doc.name}` : doc.name;
-            if ((doc.type === 'file' || doc.type === 'scene') && doc.content) {
-                zip.file(`${newPath}.html`, doc.content);
+            if ((doc.type === 'file' || doc.type === 'scene')) {
+                const editorKey = getEditorContentKey(activeStoryId, doc.id, user.uid);
+                const editorData = await storage.getItem<{current: string}>(editorKey);
+                if (editorData?.current) {
+                    zip.file(`${newPath}.html`, editorData.current);
+                }
             } else if ((doc.type === 'folder' || doc.type === 'chapter') && doc.children) {
                 zip.folder(newPath);
-                addDocsToZip(doc.children, newPath);
+                await addDocsToZip(doc.children, newPath);
             }
-        });
+        }
     };
 
-    addDocsToZip(documents, '');
+    await addDocsToZip(documents, '');
 
     try {
         const content = await zip.generateAsync({ type: "blob" });
@@ -517,7 +516,7 @@ export default function DocumentsPage() {
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="create-type" className="text-right">{t('documents.fields.type')}</Label>
-                        <Select value={newItemType} onValueChange={(v) => setNewItemType(v as DocumentType)}>
+                        <Select value={newItemType} onValueChange={(v) => setNewItemType(v as DocumentItem['type'])}>
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder={t('documents.fields.select_type_placeholder')} />
                             </SelectTrigger>
@@ -566,12 +565,12 @@ export default function DocumentsPage() {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="status" className="text-right">{t('documents.fields.status')}</Label>
-                    <Select value={editedStatus} onValueChange={(value: DocumentStatus) => setEditedStatus(value)}>
+                    <Select value={editedStatus} onValueChange={(value: DocumentItem['status']) => setEditedStatus(value)}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder={t('documents.fields.select_status_placeholder')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {documentStatuses.map(status => (
+                        {['Draft', 'Revised', 'Complete'].map((status) => (
                           <SelectItem key={status} value={status}>{t(`documents.status.${status.toLowerCase()}` as any)}</SelectItem>
                         ))}
                       </SelectContent>
@@ -610,6 +609,3 @@ export default function DocumentsPage() {
     </div>
   );
 }
-
-
-    

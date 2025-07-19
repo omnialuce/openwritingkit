@@ -3,7 +3,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useAuth } from './AuthContext'; // Import useAuth from our updated AuthContext
+import { useAuth } from './AuthContext';
 import type { CharacterProfile } from '@/app/(app)/characters/page';
 
 export interface Locale {
@@ -12,6 +12,24 @@ export interface Locale {
   description?: string;
   tags?: string[];
 }
+
+export type DocumentType = "folder" | "chapter" | "scene" | "file";
+export type DocumentStatus = "Draft" | "Revised" | "Complete";
+export type DocumentTag = "Draft" | "WIP" | "Review" | "Published" | "Idea" | "Research" | "Key Scene" | "Needs Work" | "Outline" | "Character";
+
+export interface DocumentItem {
+  id: string;
+  name: string;
+  type: DocumentType;
+  lastModified?: string;
+  words?: number;
+  itemCount?: number;
+  status?: DocumentStatus;
+  tags?: DocumentTag[];
+  notes?: string;
+  children?: DocumentItem[];
+}
+
 
 interface Story {
   id: string;
@@ -134,49 +152,70 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const deleteStory = useCallback((storyId: string) => {
     if (!user) return;
     const uid = user.uid;
+
+    // Recursive function to get all document IDs
+    const getAllDocIdsRecursive = (items: DocumentItem[]): string[] => {
+        let ids: string[] = [];
+        for (const item of items) {
+            if (item.type === 'file' || item.type === 'scene') {
+                ids.push(item.id);
+            }
+            if (item.children) {
+                ids = ids.concat(getAllDocIdsRecursive(item.children));
+            }
+        }
+        return ids;
+    };
+    
+    // Get all document IDs to remove their content from localStorage
+    const documentsKey = getDocumentsStorageKey(storyId, uid);
+    const storedDocumentsJSON = localStorage.getItem(documentsKey);
+    const storedDocuments = storedDocumentsJSON ? JSON.parse(storedDocumentsJSON) : [];
+    const docIdsToDelete = getAllDocIdsRecursive(storedDocuments);
+    
+    docIdsToDelete.forEach(docId => {
+        localStorage.removeItem(getEditorContentKey(storyId, docId, uid));
+    });
+
+    // Get all character IDs to remove their sheets
+    const charactersKey = getCharactersStorageKey(storyId, uid);
+    const storedCharactersJSON = localStorage.getItem(charactersKey);
+    const storedCharacters: CharacterProfile[] = storedCharactersJSON ? JSON.parse(storedCharactersJSON) : [];
+    storedCharacters.forEach(char => {
+        localStorage.removeItem(getCharacterSheetStorageKey(storyId, char.id, uid));
+    });
+
+    // Get all locale IDs to remove their sheets
+    const localesKey = getWorldBuildingStorageKey(storyId, uid);
+    const storedLocalesJSON = localStorage.getItem(localesKey);
+    const storedLocales: Locale[] = storedLocalesJSON ? JSON.parse(storedLocalesJSON) : [];
+    storedLocales.forEach(locale => {
+        localStorage.removeItem(getLocaleSheetStorageKey(storyId, locale.id, uid));
+    });
+
+
+    // Remove main story data keys
     const keysToRemove = [
-        getCharactersStorageKey(storyId, uid),
+        documentsKey,
+        charactersKey,
+        localesKey,
         getOutlineStorageKey(storyId, uid),
         getPlotPointsStorageKey(storyId, uid),
         getTimelineEventsStorageKey(storyId, uid),
-        getEditorContentKey(storyId, null, uid), // remove scratchpad for story
+        getEditorContentKey(storyId, null, uid), // scratchpad
         getWordGoalKey(storyId, uid),
         getActivityLogKey(storyId, uid),
-        getDocumentsStorageKey(storyId, uid),
-        getWorldBuildingStorageKey(storyId, uid),
         getResearchStorageKey(storyId, uid),
     ];
-    // Also remove character sheets and individual documents
-    const documentsKey = getDocumentsStorageKey(storyId, uid);
-    const storedDocuments = JSON.parse(localStorage.getItem(documentsKey) || '[]') as { id: string, children?: any[] }[];
-
-    const removeDocsRecursive = (docs: any[]) => {
-      docs.forEach(doc => {
-        keysToRemove.push(getEditorContentKey(storyId, doc.id, uid));
-        if (doc.children) {
-          removeDocsRecursive(doc.children);
-        }
-      });
-    };
-    removeDocsRecursive(storedDocuments);
-    
-    const charactersKey = getCharactersStorageKey(storyId, uid);
-    const storedCharacters = JSON.parse(localStorage.getItem(charactersKey) || '[]') as CharacterProfile[];
-    for (const char of storedCharacters) {
-        keysToRemove.push(getCharacterSheetStorageKey(storyId, char.id, uid));
-    }
-
-    const localesKey = getWorldBuildingStorageKey(storyId, uid);
-    const storedLocales = JSON.parse(localStorage.getItem(localesKey) || '[]') as Locale[];
-    for (const locale of storedLocales) {
-        keysToRemove.push(getLocaleSheetStorageKey(storyId, locale.id, uid));
-    }
 
     keysToRemove.forEach(key => localStorage.removeItem(key));
     
+    // Finally remove the story itself from the stories list
     const updatedStories = stories.filter(s => s.id !== storyId);
     setStories(updatedStories);
     localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
+
+    // If the deleted story was active, clear the active state
     if (activeStoryId === storyId) {
       setActiveStory(null);
     }
@@ -259,4 +298,4 @@ export const getResearchStorageKey = (storyId: string | null, userId: string | u
 }
 
 
-export type { CharacterProfile, Locale };
+export type { CharacterProfile, Locale, Story };

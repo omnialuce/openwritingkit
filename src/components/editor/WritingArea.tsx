@@ -37,7 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 import { useSidebar } from '@/components/ui/sidebar';
 import { format, formatDistanceToNow } from 'date-fns';
-import { useStoryContext, getEditorContentKey, getDocumentsStorageKey } from '@/contexts/StoryContext';
+import { useStoryContext, getEditorContentKey, getDocumentsStorageKey, type DocumentItem } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -56,29 +56,10 @@ interface EditorSettings {
 
 const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings';
 
-type DocumentType = "folder" | "chapter" | "scene" | "file";
-type DocumentStatus = "Draft" | "Revised" | "Complete";
-type DocumentTag = "Draft" | "WIP" | "Review" | "Published" | "Idea" | "Research" | "Key Scene" | "Needs Work" | "Outline" | "Character";
-
-interface DocumentItem {
-  id: string;
-  name: string;
-  type: DocumentType;
-  lastModified?: string;
-  words?: number;
-  itemCount?: number;
-  status?: DocumentStatus;
-  tags?: DocumentTag[];
-  notes?: string; 
-  content?: string;
-  children?: DocumentItem[];
-}
-
-
 export function WritingArea() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId } = useStoryContext();
+  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId, setDocumentToOpen } = useStoryContext();
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   
   const editorStorageKey = getEditorContentKey(activeStoryId, activeDocumentId, user?.uid);
@@ -86,8 +67,7 @@ export function WritingArea() {
   const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime, versionHistory] = useAutosave<string>(
     editorStorageKey,
     '<p></p>',
-    2000,
-    !!documentToOpen || !!historyDocumentId // Prevent autoload when a document is about to be opened
+    2000
   );
   
   const [wordCount, setWordCount] = useState(0);
@@ -198,43 +178,37 @@ export function WritingArea() {
   }, [loadAllDocuments, documentsStorageKey]);
 
 
-  const openDocument = useCallback((doc: DocumentItem) => {
-    if (editor) {
-      const content = doc.content || '<p></p>';
-      setActiveDocumentId(doc.id);
-      setActiveDocumentName(doc.name);
-      setSavedContent(content); 
-      editor.commands.setContent(content, false);
-      setIsHistoryPanelOpen(false);
-      setSelectedHistoryVersion(null);
-    }
-  }, [editor, setSavedContent]);
+  const openDocument = useCallback((docId: string) => {
+      const doc = findDocumentRecursive(allDocuments, docId);
+      if (doc) {
+        setActiveDocumentId(doc.id);
+        setActiveDocumentName(doc.name);
+        // The useAutosave hook will now handle loading the content via its useEffect
+        // when editorStorageKey changes.
+        setIsHistoryPanelOpen(false);
+        setSelectedHistoryVersion(null);
+      }
+  }, [allDocuments]);
 
 
   useEffect(() => {
-    if (editor && documentToOpen) {
+    if (documentToOpen) {
       const docToLoadId = consumeDocumentToOpen();
       if (docToLoadId) {
-        const docToLoad = findDocumentRecursive(allDocuments, docToLoadId);
-        if (docToLoad) {
-          openDocument(docToLoad);
-        }
+        openDocument(docToLoadId);
       }
     }
-  }, [documentToOpen, editor, allDocuments, consumeDocumentToOpen, openDocument]);
+  }, [documentToOpen, consumeDocumentToOpen, openDocument]);
   
   useEffect(() => {
-    if (editor && historyDocumentId) {
+    if (historyDocumentId) {
         const docId = consumeHistoryDocumentId();
         if (docId) {
-            const doc = findDocumentRecursive(allDocuments, docId);
-            if(doc) {
-              openDocument(doc);
-              setIsHistoryPanelOpen(true);
-            }
+            openDocument(docId);
+            setIsHistoryPanelOpen(true);
         }
     }
-  }, [historyDocumentId, editor, allDocuments, consumeHistoryDocumentId, openDocument]);
+  }, [historyDocumentId, consumeHistoryDocumentId, openDocument]);
 
   useEffect(() => {
     if (editor && savedContent !== editor.getHTML()) {
@@ -254,7 +228,7 @@ export function WritingArea() {
             if (item.id === docId) {
                 const textContent = content.replace(/<[^>]*>/g, '').trim();
                 const wordCount = textContent.split(/\s+/).filter(Boolean).length;
-                return { ...item, content, words: wordCount, lastModified: new Date().toISOString() };
+                return { ...item, words: wordCount, lastModified: new Date().toISOString() };
             }
             if (item.children) {
                 return { ...item, children: updateRecursive(item.children) };
@@ -280,10 +254,6 @@ export function WritingArea() {
         saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
         setActiveDocumentId(null);
         setActiveDocumentName(null);
-        if (editor) {
-            editor.commands.setContent('', false);
-            setSavedContent('');
-        }
         setIsHistoryPanelOpen(false);
     }
   }
@@ -518,18 +488,15 @@ export function WritingArea() {
       if (!editor || !activeStoryId || !newDocFilename.trim()) return;
 
       const contentToSave = editor.getHTML();
-      const textContent = editor.getText();
-      const wordCount = textContent.trim() ? textContent.trim().split(/\s+/).length : 0;
       
       const newFile: DocumentItem = {
           id: Date.now().toString(),
           name: newDocFilename,
           type: 'file',
-          content: contentToSave,
-          words: wordCount,
           lastModified: new Date().toISOString(),
           status: 'Draft',
           tags: ['Draft'],
+          words: wordCount,
       };
 
       try {
@@ -538,6 +505,12 @@ export function WritingArea() {
         documents.push(newFile);
         localStorage.setItem(documentsStorageKey, JSON.stringify(documents));
         
+        // Save content to its own key
+        setSavedContent(contentToSave);
+        // Switch active document to the new one
+        setActiveDocumentId(newFile.id);
+        setActiveDocumentName(newFile.name);
+
         toast({ title: t('editor.toast.doc_saved_title'), description: t('editor.toast.doc_saved_desc', { name: newDocFilename }) });
         setIsSaveToDocDialogOpen(false);
         setNewDocFilename('');
@@ -566,7 +539,7 @@ export function WritingArea() {
         }
         if (item.type === 'file' || item.type === 'scene') {
           return (
-            <DropdownMenuItem key={item.id} onClick={() => openDocument(item)}>
+            <DropdownMenuItem key={item.id} onClick={() => openDocument(item.id)}>
               {item.name}
             </DropdownMenuItem>
           );
@@ -876,7 +849,7 @@ export function WritingArea() {
           {!isFullScreen && (
             <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <div className="flex-1 truncate">
-                <span>{activeDocumentId ? t('editor.editing', { name: activeDocumentName }) : t('editor.editing_scratchpad')}</span>
+                <span>{activeDocumentId ? t('editor.editing', { name: activeDocumentName || '' }) : t('editor.editing_scratchpad')}</span>
               </div>
               <div className="flex-1 text-center">
                 <span>{t('editor.words')}: {activeStoryId ? wordCount : '-'} | {t('editor.chars')}: {activeStoryId ? charCount : '-'}</span>

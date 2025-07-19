@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast'; 
 import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext'; 
 import { storage } from '@/lib/storage';
@@ -28,10 +28,9 @@ interface ActivityLogEntry {
 }
 
 function useAutosave<T extends string>( 
-  dynamicStorageKey: string, 
+  storageKey: string, 
   initialValue: T,
-  saveInterval: number = 2000,
-  preventAutoload: boolean = false
+  saveInterval: number = 2000
 ): [T, (value: T) => void, boolean, () => void, Date | null, Array<VersionHistoryEntry<T>>] {
   const { t } = useLanguage();
   const { toast } = useToast(); 
@@ -42,48 +41,41 @@ function useAutosave<T extends string>(
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
   const [history, setHistory] = useState<Array<VersionHistoryEntry<T>>>([]);
+  const isInitialLoad = useRef(true);
 
+  // Load data effect
   useEffect(() => {
-    if (preventAutoload) return;
-    const key = dynamicStorageKey;
+    isInitialLoad.current = true;
     const loadData = async () => {
-      if (key) {
+      if (storageKey) {
         try {
-          const item = await storage.getItem<string | DocumentData<T>>(key);
+          const item = await storage.getItem<DocumentData<T>>(storageKey);
           if (item) {
-            let loadedValue: T;
-            let lastSaved: string | null = null;
-            let loadedHistory: Array<VersionHistoryEntry<T>> = [];
-
-            if (typeof item === 'string') {
-              loadedValue = item as T;
-            } else {
-              loadedValue = item.current || initialValue;
-              lastSaved = item.lastSaved;
-              loadedHistory = item.history || [];
-            }
-            setCurrentTextInternal(loadedValue);
-            setHistory(loadedHistory);
-            setLastSavedTime(lastSaved ? new Date(lastSaved) : null);
+            setCurrentTextInternal(item.current || initialValue);
+            setHistory(item.history || []);
+            setLastSavedTime(item.lastSaved ? new Date(item.lastSaved) : null);
           } else {
             setCurrentTextInternal(initialValue);
             setHistory([]);
             setLastSavedTime(null);
           }
         } catch (error) {
-          console.warn(`Error reading storage key "${key}":`, error);
+          console.warn(`Error reading storage key "${storageKey}":`, error);
           setCurrentTextInternal(initialValue);
           setHistory([]);
           setLastSavedTime(null);
+        } finally {
+            isInitialLoad.current = false;
         }
       } else {
         setCurrentTextInternal(initialValue); 
         setHistory([]);
         setLastSavedTime(null);
+        isInitialLoad.current = false;
       }
     };
     loadData();
-  }, [dynamicStorageKey, initialValue, preventAutoload]);
+  }, [storageKey, initialValue]);
 
   const logActivity = useCallback(async (textToSave: T) => {
     const activityKey = getActivityLogKey(activeStoryId, user?.uid);
@@ -106,47 +98,37 @@ function useAutosave<T extends string>(
 
   const saveDocument = useCallback(
     async (textToSave: T, forceHistory: boolean = false) => {
-      const key = dynamicStorageKey;
-      if (key) { 
-        setIsSaving(true);
-        try {
-          const now = new Date();
-          const timestamp = now.toISOString();
-          
-          let documentData: DocumentData<T>;
-          const existingItem = await storage.getItem<string | DocumentData<T>>(key);
-          
-          if (existingItem) {
-            if (typeof existingItem === 'string') {
-              documentData = { current: existingItem, history: [], lastSaved: null };
-            } else if (typeof existingItem.current !== 'undefined') {
-              documentData = existingItem;
-            } else {
-               documentData = { current: initialValue, history: [], lastSaved: null };
-            }
-          } else {
-            documentData = { current: initialValue, history: [], lastSaved: null };
-          }
+      if (!storageKey) return;
 
-          const latestHistoryEntry = documentData.history?.[0]?.text;
-          if (forceHistory || textToSave !== latestHistoryEntry) {
-            const newHistoryEntry = { timestamp, text: textToSave };
-            documentData.history = documentData.history || [];
-            documentData.history.unshift(newHistoryEntry);
-            if (documentData.history.length > MAX_HISTORY_LENGTH) {
-              documentData.history.pop();
-            }
-            setHistory(documentData.history);
-          }
-          
-          documentData.current = textToSave;
-          documentData.lastSaved = timestamp;
+      setIsSaving(true);
+      try {
+        const now = new Date();
+        const timestamp = now.toISOString();
+        
+        let documentData: DocumentData<T>;
+        const existingItem = await storage.getItem<DocumentData<T>>(storageKey);
+        
+        documentData = existingItem || { current: initialValue, history: [], lastSaved: null };
 
-          await storage.setItem(key, documentData);
-          setLastSavedTime(now);
-          await logActivity(textToSave);
-          
-          if(activeStoryId && user){
+        const latestHistoryEntry = documentData.history?.[0]?.text;
+        if (forceHistory || textToSave !== latestHistoryEntry) {
+          const newHistoryEntry = { timestamp, text: textToSave };
+          documentData.history = documentData.history || [];
+          documentData.history.unshift(newHistoryEntry);
+          if (documentData.history.length > MAX_HISTORY_LENGTH) {
+            documentData.history.pop();
+          }
+          setHistory([...documentData.history]);
+        }
+        
+        documentData.current = textToSave;
+        documentData.lastSaved = timestamp;
+
+        await storage.setItem(storageKey, documentData);
+        setLastSavedTime(now);
+        await logActivity(textToSave);
+        
+        if(activeStoryId && user){
             const today = now.toISOString().split('T')[0];
             const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`; 
             const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`; 
@@ -177,57 +159,43 @@ function useAutosave<T extends string>(
             }
           }
 
-        } catch (error) {
-          console.error(`Error saving to storage key "${key}":`, error);
-          toast({ title: t('autosave.error_save_title'), description: t('autosave.error_save_desc'), variant: "destructive" });
-        } finally {
-          setTimeout(() => setIsSaving(false), 500); 
-        }
+      } catch (error) {
+        console.error(`Error saving to storage key "${storageKey}":`, error);
+        toast({ title: t('autosave.error_save_title'), description: t('autosave.error_save_desc'), variant: "destructive" });
+      } finally {
+        setTimeout(() => setIsSaving(false), 500); 
       }
     },
-    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId, user, t]
+    [storageKey, initialValue, toast, logActivity, activeStoryId, user, t]
   );
   
+  // Autosave effect
   useEffect(() => {
-    const key = dynamicStorageKey;
-    if (!key) return; 
+    if (isInitialLoad.current || !storageKey) return; 
 
     const handler = setTimeout(async () => {
-      let storedCurrent: T | undefined = initialValue;
-      try {
-        const item = await storage.getItem<string | DocumentData<T>>(key);
-        if (item) {
-            if (typeof item === 'string') {
-              storedCurrent = item as T;
-            } else {
-              storedCurrent = item.current;
-            }
-        }
-        if (currentText !== storedCurrent) {
-          await saveDocument(currentText);
-        }
-      } catch(e) {
-        // Could be a race condition on initial load, ignore.
+      const item = await storage.getItem<DocumentData<T>>(storageKey);
+      if (currentText !== item?.current) {
+        await saveDocument(currentText);
       }
     }, saveInterval);
 
     return () => clearTimeout(handler);
-  }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue]);
+  }, [currentText, saveInterval, saveDocument, storageKey]);
 
   const clearSavedDocument = useCallback(async () => {
-    const key = dynamicStorageKey;
-    if (key) { 
+    if (storageKey) { 
       try {
-        await storage.removeItem(key);
+        await storage.removeItem(storageKey);
         setCurrentTextInternal(initialValue); 
         setLastSavedTime(null);
         toast({ title: t('autosave.cleared_title'), description: t('autosave.cleared_desc') });
       } catch (error) {
-        console.error(`Error clearing storage key "${key}":`, error);
+        console.error(`Error clearing storage key "${storageKey}":`, error);
         toast({ title: t('common.error'), description: t('autosave.error_clear_desc'), variant: "destructive" });
       }
     }
-  }, [dynamicStorageKey, initialValue, toast, t]);
+  }, [storageKey, initialValue, toast, t]);
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);
