@@ -71,7 +71,7 @@ interface DocumentItem {
 
 
 export function WritingArea() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { activeStoryId, documentToOpen, consumeDocumentToOpen } = useStoryContext();
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   
@@ -453,7 +453,7 @@ export function WritingArea() {
     }
 
     try {
-      const result = await getWritingFeedback({ text: textContent });
+      const result = await getWritingFeedback({ text: textContent, language: language });
       setFeedbackResult(result);
       setFeedbackTimestamp(Date.now());
       setIsFeedbackPanelOpen(true);

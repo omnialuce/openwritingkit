@@ -13,6 +13,7 @@ import {z} from 'genkit';
 
 const GetWritingFeedbackInputSchema = z.object({
   text: z.string().describe('The text to analyze.'),
+  language: z.string().optional().describe('The language of the text, specified as a BCP-47 tag (e.g., "en-US", "en-GB", "pt-BR").'),
 });
 export type GetWritingFeedbackInput = z.infer<typeof GetWritingFeedbackInputSchema>;
 
@@ -42,6 +43,9 @@ const prompt = ai.definePrompt({
   input: {schema: GetWritingFeedbackInputSchema},
   output: {schema: GetWritingFeedbackOutputSchema},
   prompt: `You are an expert writing assistant. Analyze the following text for grammar, spelling, punctuation, and readability.
+{{#if language}}
+Pay close attention to the conventions of the specified language dialect: {{{language}}}. For example, for "en-GB", prefer British spelling and grammar. For "en-US", prefer American spelling and grammar.
+{{/if}}
 
 Text to analyze:
 {{{text}}}
@@ -74,4 +78,5 @@ const getWritingFeedbackFlow = ai.defineFlow(
     return output!;
   }
 );
+
 

@@ -254,8 +254,9 @@ export default function SettingsPage() {
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="pt">Português (Brasil)</SelectItem>
+                    <SelectItem value="en-US">English (US)</SelectItem>
+                    <SelectItem value="en-GB">English (GB)</SelectItem>
+                    <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
                   </SelectContent>
                 </Select>
             </div>

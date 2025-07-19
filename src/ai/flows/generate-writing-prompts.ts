@@ -16,6 +16,7 @@ const GenerateWritingPromptsInputSchema = z.object({
   notes: z.string().optional().describe('Optional user notes for additional context.'),
   documentContext: z.string().optional().describe('Optional content of a linked document, scene, or chapter for context.'),
   characterContext: z.string().optional().describe('Optional profile of a linked character for context.'),
+  language: z.string().optional().describe('The target language dialect for the prompt, specified as a BCP-47 tag (e.g., "en-US", "pt-BR").'),
 });
 export type GenerateWritingPromptsInput = z.infer<typeof GenerateWritingPromptsInputSchema>;
 
@@ -33,6 +34,9 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateWritingPromptsInputSchema},
   output: {schema: GenerateWritingPromptsOutputSchema},
   prompt: `You are a creative writing assistant. Generate a writing prompt based on the specified genre, style, and any provided context.
+{{#if language}}
+The prompt should be suitable for the specified language dialect: {{{language}}}. Use appropriate cultural references and phrasing.
+{{/if}}
 
 Genre: {{{genre}}}
 Style: {{{style}}}

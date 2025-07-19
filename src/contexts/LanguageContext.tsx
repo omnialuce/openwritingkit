@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import en from '@/locales/en.json';
 import pt from '@/locales/pt.json';
 
-type Language = 'en' | 'pt';
+export type Language = 'en-US' | 'en-GB' | 'pt-BR';
 
 // Helper to get nested keys from translation object
 type NestedKey<T> = T extends object ? { [K in keyof T]: `${K & string}` | `${K & string}.${NestedKey<T[K]>}` }[keyof T] : never;
@@ -17,21 +17,21 @@ interface LanguageContextType {
   t: (key: TranslationKey, params?: Record<string, string>) => string;
 }
 
-const translations = { en, pt };
-const LANGUAGE_KEY = 'openwritingkit-language';
+const translations = { 'en-US': en, 'en-GB': en, 'pt-BR': pt };
+const LANGUAGE_KEY = 'openwritingkit-language-v2';
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>('en-US');
 
   useEffect(() => {
     const storedLanguage = localStorage.getItem(LANGUAGE_KEY) as Language | null;
-    if (storedLanguage && (storedLanguage === 'en' || storedLanguage === 'pt')) {
+    if (storedLanguage && ['en-US', 'en-GB', 'pt-BR'].includes(storedLanguage)) {
       setLanguageState(storedLanguage);
       document.documentElement.lang = storedLanguage;
     } else {
-        document.documentElement.lang = 'en';
+      document.documentElement.lang = 'en-US';
     }
   }, []);
 
@@ -49,7 +49,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       result = result?.[k];
       if (result === undefined) {
         // Fallback to English if key not found
-        let fallbackResult: any = translations.en;
+        let fallbackResult: any = translations['en-US'];
         for (const fk of keys) {
             fallbackResult = fallbackResult?.[fk];
             if(fallbackResult === undefined) return key;

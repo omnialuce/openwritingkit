@@ -25,7 +25,7 @@ interface DocumentItem {
 
 
 export function PromptGeneratorCard() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { activeStoryId } = useStoryContext();
   const [genre, setGenre] = useState('');
   const [style, setStyle] = useState('');
@@ -98,6 +98,7 @@ export function PromptGeneratorCard() {
         notes: notes || undefined,
         documentContext: selectedDoc?.content || undefined,
         characterContext: characterContext,
+        language: language,
       };
       
       const result = await generateWritingPrompts(input);

@@ -9,11 +9,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useStoryContext } from "@/contexts/StoryContext";
+import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { storage } from "@/lib/storage";
 
 export default function DashboardPage() {
   const { t } = useLanguage();
@@ -22,81 +23,86 @@ export default function DashboardPage() {
   const [writingStreak, setWritingStreak] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
-  const updateStreakDisplay = useCallback(() => {
-    if (typeof window !== 'undefined' && activeStoryId && user) {
-      const today = new Date().toISOString().split('T')[0];
-      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`;
-      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`;
-      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date-${user.uid}`;
+  const getStreakKeys = useCallback(() => {
+    if (!activeStoryId || !user) return null;
+    return {
+      lastActiveDateKey: `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`,
+      streakKey: `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`,
+      lastStreakDateKey: `openwritingkit-story-${activeStoryId}-last-streak-date-${user.uid}`,
+    };
+  }, [activeStoryId, user]);
 
-      const lastActiveDateStr = localStorage.getItem(lastActiveDateKey);
-      const storedStreak = parseInt(localStorage.getItem(streakKey) || '0', 10);
-      const lastStreakUpdateDate = localStorage.getItem(lastStreakDateKey);
 
-      if (lastStreakUpdateDate === today) {
-        setWritingStreak(storedStreak);
-      } else {
-        if (lastActiveDateStr) {
-          const lastActiveDate = new Date(lastActiveDateStr);
-          const todayDate = new Date(today);
-          
-          const diffTime = todayDate.getTime() - lastActiveDate.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const updateStreakDisplay = useCallback(async () => {
+    const keys = getStreakKeys();
+    if (!keys) {
+      setWritingStreak(0);
+      return;
+    }
 
-          if (diffDays > 1) {
-            localStorage.setItem(streakKey, '0');
-            setWritingStreak(0);
-          } else {
+    const { lastActiveDateKey, streakKey, lastStreakDateKey } = keys;
+    const today = new Date().toISOString().split('T')[0];
+    
+    const lastActiveDateStr = await storage.getItem<string>(lastActiveDateKey);
+    const storedStreak = await storage.getItem<number>(streakKey) || 0;
+    const lastStreakUpdateDate = await storage.getItem<string>(lastStreakDateKey);
+
+    if (lastStreakUpdateDate === today) {
+      setWritingStreak(storedStreak);
+    } else {
+      if (lastActiveDateStr) {
+        const lastActiveDate = new Date(lastActiveDateStr);
+        const todayDate = new Date(today);
+        
+        const diffTime = todayDate.getTime() - lastActiveDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 1) {
+          await storage.setItem(streakKey, 0);
+          setWritingStreak(0);
+        } else {
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             if (lastStreakUpdateDate === yesterday.toISOString().split('T')[0]) {
                setWritingStreak(storedStreak);
             } else if (lastStreakUpdateDate !== today && lastActiveDateStr !== today) {
-               localStorage.setItem(streakKey, '0');
+               await storage.setItem(streakKey, 0);
                setWritingStreak(0);
             } else {
                  setWritingStreak(storedStreak);
             }
-          }
-        } else {
-          localStorage.setItem(streakKey, '0');
-          setWritingStreak(0);
         }
-      }
-    } else {
+      } else {
+        await storage.setItem(streakKey, 0);
         setWritingStreak(0);
+      }
     }
-  }, [activeStoryId, user]);
+  }, [getStreakKeys]);
 
 
   useEffect(() => {
     setIsMounted(true);
-    if (activeStoryId) { // Only update streak if a story is active initially
+    if (activeStoryId) {
         updateStreakDisplay();
     } else {
-        setWritingStreak(0); // Reset streak if no story active on mount
+        setWritingStreak(0); 
     }
 
-    const handleStorageChange = (event: StorageEvent) => {
-      if (!activeStoryId || !user) return;
-      const lastActiveDateKey = `openwritingkit-story-${activeStoryId}-last-active-date-${user.uid}`;
-      const streakKey = `openwritingkit-story-${activeStoryId}-writing-streak-${user.uid}`;
-      const lastStreakDateKey = `openwritingkit-story-${activeStoryId}-last-streak-date-${user.uid}`;
-
-      if (
-        event.key === streakKey ||
-        event.key === lastActiveDateKey ||
-        event.key === lastStreakDateKey
-      ) {
-        updateStreakDisplay();
-      }
+    const handleStorageChange = (event: Event) => {
+        const customEvent = event as CustomEvent;
+        const keys = getStreakKeys();
+        if (!keys) return;
+        
+        if (customEvent.detail?.key === keys.lastActiveDateKey || customEvent.detail?.key === keys.streakKey) {
+            updateStreakDisplay();
+        }
     };
-
-    window.addEventListener('storage', handleStorageChange);
+    
+    window.addEventListener('storage-change', handleStorageChange);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage-change', handleStorageChange);
     };
-  }, [activeStoryId, updateStreakDisplay, user]);
+  }, [activeStoryId, updateStreakDisplay, getStreakKeys]);
 
 
   const quickActions = [

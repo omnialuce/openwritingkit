@@ -161,7 +161,10 @@ function useAutosave<T extends string>(
               }
               await storage.setItem(streakKey, currentStreak);
               await storage.setItem(lastStreakDateKey, today);
-              window.dispatchEvent(new Event('storage')); 
+              
+              window.dispatchEvent(new CustomEvent('storage-change', { detail: { key: lastActiveDateKey } }));
+              window.dispatchEvent(new CustomEvent('storage-change', { detail: { key: streakKey } }));
+
             }
           }
 
