@@ -192,6 +192,7 @@
       "email_change_success_title": "Email Atualizado",
       "password_change_success_title": "Senha Atualizada",
       "passwords_do_not_match": "As novas senhas não coincidem.",
+      "data_export_error_title": "Erro na Exportação",
       "data_export_success_title": "Exportação Bem-sucedida",
       "data_export_success_desc": "Seus dados foram baixados.",
       "data_export_error_desc": "Você deve estar logado para exportar dados.",
@@ -641,7 +642,6 @@
     "customize_view": {
       "view_options": "Opções de Visualização",
       "focus_mode": "Modo Foco",
-      "typewriter_mode": "Modo Máquina de Escrever",
       "editor_theme": "Tema do Editor",
       "theme_light": "Claro",
       "theme_dark": "Escuro",

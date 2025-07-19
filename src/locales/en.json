@@ -192,6 +192,7 @@
       "email_change_success_title": "Email Updated",
       "password_change_success_title": "Password Updated",
       "passwords_do_not_match": "The new passwords do not match.",
+      "data_export_error_title": "Export Error",
       "data_export_success_title": "Export Successful",
       "data_export_success_desc": "Your data has been downloaded.",
       "data_export_error_desc": "You must be logged in to export data.",
@@ -641,7 +642,6 @@
     "customize_view": {
       "view_options": "View Options",
       "focus_mode": "Focus Mode",
-      "typewriter_mode": "Typewriter Mode",
       "editor_theme": "Editor Theme",
       "theme_light": "Light",
       "theme_dark": "Dark",

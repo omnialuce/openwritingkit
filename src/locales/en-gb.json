@@ -192,6 +192,7 @@
       "email_change_success_title": "Email Updated",
       "password_change_success_title": "Password Updated",
       "passwords_do_not_match": "The new passwords do not match.",
+      "data_export_error_title": "Export Error",
       "data_export_success_title": "Export Successful",
       "data_export_success_desc": "Your data has been downloaded.",
       "data_export_error_desc": "You must be logged in to export data.",
@@ -641,7 +642,6 @@
     "customize_view": {
       "view_options": "View Options",
       "focus_mode": "Focus Mode",
-      "typewriter_mode": "Typewriter Mode",
       "editor_theme": "Editor Theme",
       "theme_light": "Light",
       "theme_dark": "Dark",
@@ -853,7 +853,7 @@
   },
   "documents": {
     "title": "Document Management",
-    "description": "Organise, create, and manage all your writing projects.",
+    "description": "Organize, create, and manage all your writing projects.",
     "no_story": {
       "title": "No Active Story",
       "description_1": "Please select or create a story from the",
@@ -913,7 +913,7 @@
       "complete": "Complete"
     },
     "coming_soon": {
-      "title": "Streamlined Organisation",
+      "title": "Streamlined Organization",
       "description": "Drag-and-drop reordering is planned for a future update.",
       "alt_text": "Illustration of a building site with the words 'coming soon'."
     },
@@ -1044,7 +1044,7 @@
   },
   "research": {
     "title": "Research Notes",
-    "description": "Collect and organise your research, ideas, and snippets.",
+    "description": "Collect and organize your research, ideas, and snippets.",
     "create_button": "Create New Note",
     "no_notes": "No research notes for this story yet. Start by creating one!",
     "no_story": {

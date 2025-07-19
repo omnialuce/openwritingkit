@@ -51,7 +51,6 @@ interface EditorSettings {
   lineHeight: 'tight' | 'normal' | 'loose';
   paragraphSpacing: 'base';
   focusMode: boolean;
-  typewriterMode: boolean;
 }
 
 const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings';
@@ -121,7 +120,6 @@ export function WritingArea() {
     lineHeight: 'normal',
     paragraphSpacing: 'base',
     focusMode: false,
-    typewriterMode: false,
   });
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
@@ -153,26 +151,9 @@ export function WritingArea() {
         setSavedContent(currentEditor.getHTML());
       }
     },
-    onSelectionUpdate: ({ editor }) => {
-      if (editorSettings.typewriterMode) {
-        const { from } = editor.state.selection;
-        const node = editor.view.nodeDOM(from);
-        if (node instanceof HTMLElement) {
-          const editorRect = editorContentRef.current?.getBoundingClientRect();
-          const nodeRect = node.getBoundingClientRect();
-          if(editorRect) {
-             editorContentRef.current?.scrollTo({
-                top: editorContentRef.current.scrollTop + nodeRect.top - editorRect.height / 2,
-                behavior: 'smooth'
-             });
-          }
-        }
-      }
-    },
     editorProps: {
       attributes: {
         class: cn('prose dark:prose-invert focus:outline-none w-full h-full p-6', 
-                   editorSettings.typewriterMode && 'typewriter-mode',
                    editorSettings.focusMode && 'focus-mode'
                    )
       },
@@ -346,12 +327,11 @@ export function WritingArea() {
     const root = editorElement.closest('.ProseMirror') as HTMLElement | null;
     if (!root) return;
     
-    // Update class names for focus/typewriter modes
+    // Update class names for focus mode
     editor?.setOptions({
         editorProps: {
             attributes: {
                 class: cn('prose dark:prose-invert focus:outline-none w-full h-full p-6', 
-                   editorSettings.typewriterMode && 'typewriter-mode',
                    editorSettings.focusMode && 'focus-mode'
                 )
             }
@@ -832,12 +812,6 @@ export function WritingArea() {
                         onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked })}
                       >
                         {t('editor.customize_view.focus_mode')}
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={editorSettings.typewriterMode}
-                        onCheckedChange={(checked) => updateEditorSettings({ typewriterMode: checked })}
-                      >
-                         {t('editor.customize_view.typewriter_mode')}
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuSeparator />
                        <div className="grid grid-cols-2 gap-2 p-2">

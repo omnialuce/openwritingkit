@@ -137,15 +137,19 @@ export default function SettingsPage() {
   };
   
   const handleExportAllData = () => {
-    if (!user) {
-        toast({ title: "Error", description: "You must be logged in to export data.", variant: "destructive" });
+    if (!user || !user.email) {
+        toast({ title: t('settings.toast.data_export_error_title'), description: t('settings.toast.data_export_error_desc'), variant: "destructive" });
         return;
     }
     const backupData: { [key: string]: any } = {};
+    const userPrefix = `openwritingkit-user-${user.email}`;
+    const generalPrefix = 'openwritingkit-';
+
 
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.startsWith('openwritingkit-story-') || key.startsWith('openwritingkit-user-') || key.startsWith('openwritingkit-language') || key.startsWith('openwritingkit-ai-opt-in') || key.startsWith('openwritingkit-editor-settings'))) {
+        // Backup keys specific to the logged-in user or general app settings not tied to a specific user
+        if (key && (key.startsWith(userPrefix) || (key.startsWith(generalPrefix) && !key.includes('-user-')))) {
             try {
                 backupData[key] = JSON.parse(localStorage.getItem(key)!);
             } catch(e) {
@@ -158,19 +162,19 @@ export default function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `openwritingkit_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `openwritingkit_backup_${user.email}_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast({ title: "Export Successful", description: "Your data has been exported." });
+    toast({ title: t('settings.toast.data_export_success_title'), description: t('settings.toast.data_export_success_desc') });
   };
   
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) {
-        toast({ title: "Error", description: "No file selected or you are not logged in.", variant: "destructive" });
+        toast({ title: t('settings.toast.data_import_no_file_title'), description: t('settings.toast.data_import_no_file_desc'), variant: "destructive" });
         return;
     }
 
@@ -199,11 +203,11 @@ export default function SettingsPage() {
                    localStorage.setItem(key, typeof backupData[key] === 'string' ? backupData[key] : JSON.stringify(backupData[key]));
                 }
             }
-            toast({ title: "Import Successful", description: "Data restored. The app will now reload." });
+            toast({ title: t('settings.toast.data_import_success_title'), description: t('settings.toast.data_import_success_desc') });
             setTimeout(() => window.location.reload(), 1500);
         } catch (error) {
             console.error("Import error:", error);
-            toast({ title: "Import Failed", description: "The backup file is corrupted or not valid.", variant: "destructive" });
+            toast({ title: t('settings.toast.data_import_failed_title'), description: t('settings.toast.data_import_failed_desc'), variant: "destructive" });
         } finally {
             if(importFormRef.current) importFormRef.current.reset();
         }
@@ -376,7 +380,7 @@ export default function SettingsPage() {
                       htmlFor="import-file"
                       className={cn(
                         buttonVariants({ variant: "outline" }),
-                        "cursor-pointer",
+                        "cursor-pointer w-full justify-center",
                         !user && "opacity-50 pointer-events-none"
                       )}
                     >

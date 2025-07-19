@@ -163,12 +163,6 @@
   .ProseMirror:focus {
     outline: none;
   }
-  
-  /* Typewriter mode styling */
-  .ProseMirror.typewriter-mode {
-    padding-top: 50vh;
-    padding-bottom: 50vh;
-  }
 
   /* Focus mode styling */
   .ProseMirror.focus-mode :not(.has-focus) {
