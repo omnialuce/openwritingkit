@@ -474,55 +474,59 @@ export default function OutlineBuilderPage() {
             if (!isOpen) resetAddForm();
         }}>
           <DialogContent className="sm:max-w-[525px]">
-              <DialogHeader>
-                <DialogTitle>{t('outline.add_dialog.title')}</DialogTitle>
-                <DialogDescription>
-                  {t('outline.add_dialog.description')}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleAddItem} className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="itemType" className="text-right">{t('outline.fields.type')}</Label>
-                  <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder={t('outline.fields.type_placeholder')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Chapter">{t('outline.types.chapter')}</SelectItem>
-                      <SelectItem value="Scene">{t('outline.types.scene')}</SelectItem>
-                      <SelectItem value="Plot Point/Notes">{t('outline.types.plot_point')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="newItemTitleDialog" className="text-right">{t('outline.fields.title')}</Label>
-                  <Input 
-                    id="newItemTitleDialog" 
-                    value={newItemTitle} 
-                    onChange={(e) => setNewItemTitle(e.target.value)} 
-                    className="col-span-3" 
-                    placeholder={t('outline.fields.title_placeholder')}
-                    required 
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-start gap-4">
-                  <Label htmlFor="newItemNotesDialog" className="text-right pt-2">{t('outline.fields.notes')}</Label>
-                  <Textarea 
-                    id="newItemNotesDialog" 
-                    value={newItemNotes} 
-                    onChange={(e) => setNewItemNotes(e.target.value)} 
-                    className="col-span-3" 
-                    rows={4}
-                    placeholder={t('outline.fields.notes_placeholder')}
-                  />
-                </div>
-                <DialogFooter className="mt-4">
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">{t('common.cancel')}</Button>
-                  </DialogClose>
-                  <Button type="submit">{t('outline.add_dialog.add_button')}</Button>
-                </DialogFooter>
-              </form>
+            <ScrollArea className="max-h-[80vh]">
+              <div className="p-1 pr-3">
+                <DialogHeader>
+                  <DialogTitle>{t('outline.add_dialog.title')}</DialogTitle>
+                  <DialogDescription>
+                    {t('outline.add_dialog.description')}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddItem} className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="itemType" className="text-right">{t('outline.fields.type')}</Label>
+                    <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder={t('outline.fields.type_placeholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Chapter">{t('outline.types.chapter')}</SelectItem>
+                        <SelectItem value="Scene">{t('outline.types.scene')}</SelectItem>
+                        <SelectItem value="Plot Point/Notes">{t('outline.types.plot_point')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="newItemTitleDialog" className="text-right">{t('outline.fields.title')}</Label>
+                    <Input 
+                      id="newItemTitleDialog" 
+                      value={newItemTitle} 
+                      onChange={(e) => setNewItemTitle(e.target.value)} 
+                      className="col-span-3" 
+                      placeholder={t('outline.fields.title_placeholder')}
+                      required 
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="newItemNotesDialog" className="text-right pt-2">{t('outline.fields.notes')}</Label>
+                    <Textarea 
+                      id="newItemNotesDialog" 
+                      value={newItemNotes} 
+                      onChange={(e) => setNewItemNotes(e.target.value)} 
+                      className="col-span-3" 
+                      rows={4}
+                      placeholder={t('outline.fields.notes_placeholder')}
+                    />
+                  </div>
+                  <DialogFooter className="mt-4">
+                    <DialogClose asChild>
+                      <Button type="button" variant="outline">{t('common.cancel')}</Button>
+                    </DialogClose>
+                    <Button type="submit">{t('outline.add_dialog.add_button')}</Button>
+                  </DialogFooter>
+                </form>
+              </div>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
 
