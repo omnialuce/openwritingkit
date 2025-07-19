@@ -8,6 +8,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'OpenWritingKit',
@@ -27,15 +28,15 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
       </head>
-      <!-- Google tag (gtag.js) -->
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-SR6WBRR9F4"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'G-SR6WBRR9F4');
-      </script>
+      <Script async src="https://www.googletagmanager.com/gtag/js?id=G-SR6WBRR9F4"></Script>
+      <Script id="google-analytics">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-SR6WBRR9F4');
+        `}
+      </Script>
       <body className={cn("font-body antialiased min-h-screen bg-background flex flex-col")}>
         <ThemeProvider
           attribute="class"
