@@ -820,5 +820,86 @@
       "scene_notes": "Notes",
       "no_notes": "No notes."
     }
+  },
+  "documents": {
+    "title": "Document Management",
+    "description": "Organize, create, and manage all your writing projects.",
+    "no_story": {
+      "title": "No Active Story",
+      "description_1": "Please select or create a story from the",
+      "description_2": "Stories page",
+      "description_3": "to manage documents."
+    },
+    "loading": "Loading documents...",
+    "import_button": "Import DOCX",
+    "export_button": "Export All as ZIP",
+    "create_button": "Create Item",
+    "list_title": "Your Files & Folders",
+    "list_description": "Browse and manage your work. Click on folders or chapters to expand/collapse. Click 'Details' to edit.",
+    "item_count": "{{count}} item(s)",
+    "words": "words",
+    "last_modified": "Last modified",
+    "details_button": "Details",
+    "delete_dialog": {
+      "title": "Delete {{name}}?",
+      "description": "This action cannot be undone and will permanently delete this item."
+    },
+    "empty_state": {
+      "message": "You don't have any documents or folders yet.",
+      "cta": "Start by creating something new"
+    },
+    "create_dialog": {
+      "title": "Create New Item",
+      "description": "Create a new folder, chapter, scene, or file at the top level.",
+      "create_button": "Create"
+    },
+    "details_dialog": {
+      "title": "Edit Details: {{name}}",
+      "description": "Make changes to your {{type}}. Click save when you're done.",
+      "save_button": "Save changes"
+    },
+    "fields": {
+      "name": "Name",
+      "type": "Type",
+      "select_type_placeholder": "Select type",
+      "notes": "Notes",
+      "notes_placeholder": "Add notes or a brief description...",
+      "word_count": "Word Count",
+      "status": "Status",
+      "select_status_placeholder": "Select status",
+      "tags": "Tags",
+      "tags_placeholder": "Comma-separated tags, e.g., Draft, Key Scene"
+    },
+    "types": {
+      "file": "File",
+      "scene": "Scene",
+      "chapter": "Chapter",
+      "folder": "Folder"
+    },
+    "status": {
+      "draft": "Draft",
+      "revised": "Revised",
+      "complete": "Complete"
+    },
+    "coming_soon": {
+      "title": "Streamlined Organization",
+      "description": "Drag-and-drop reordering is planned for a future update.",
+      "alt_text": "Illustration of a building site with the words 'coming soon'."
+    },
+    "toast": {
+      "invalid_file_type_title": "Invalid File Type",
+      "invalid_file_type_desc": "Please select a .docx file to import.",
+      "error_reading_file": "Error Reading File",
+      "import_success_title": "Import Successful",
+      "import_success_desc": "\"{{name}}\" has been imported.",
+      "import_failed_title": "Import Failed",
+      "import_failed_desc": "Could not convert the .docx file.",
+      "export_started_title": "Export Started",
+      "export_started_desc": "Your documents are being zipped for download.",
+      "export_failed_title": "Export Failed",
+      "export_failed_desc": "Could not generate the zip file."
+    }
   }
 }
+
+    

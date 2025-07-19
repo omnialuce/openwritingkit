@@ -820,5 +820,86 @@
       "scene_notes": "Notas",
       "no_notes": "Sem notas."
     }
+  },
+  "documents": {
+    "title": "Gerenciamento de Documentos",
+    "description": "Organize, crie e gerencie todos os seus projetos de escrita.",
+    "no_story": {
+      "title": "Nenhuma História Ativa",
+      "description_1": "Por favor, selecione ou crie uma história na",
+      "description_2": "página de Histórias",
+      "description_3": "para gerenciar documentos."
+    },
+    "loading": "Carregando documentos...",
+    "import_button": "Importar DOCX",
+    "export_button": "Exportar Tudo como ZIP",
+    "create_button": "Criar Item",
+    "list_title": "Seus Arquivos e Pastas",
+    "list_description": "Navegue e gerencie seu trabalho. Clique em pastas ou capítulos para expandir/recolher. Clique em 'Detalhes' para editar.",
+    "item_count": "{{count}} item(ns)",
+    "words": "palavras",
+    "last_modified": "Última modificação",
+    "details_button": "Detalhes",
+    "delete_dialog": {
+      "title": "Excluir {{name}}?",
+      "description": "Esta ação não pode ser desfeita e excluirá permanentemente este item."
+    },
+    "empty_state": {
+      "message": "Você ainda não tem nenhum documento ou pasta.",
+      "cta": "Comece criando algo novo"
+    },
+    "create_dialog": {
+      "title": "Criar Novo Item",
+      "description": "Crie uma nova pasta, capítulo, cena ou arquivo no nível superior.",
+      "create_button": "Criar"
+    },
+    "details_dialog": {
+      "title": "Editar Detalhes: {{name}}",
+      "description": "Faça alterações em seu/sua {{type}}. Clique em salvar quando terminar.",
+      "save_button": "Salvar alterações"
+    },
+    "fields": {
+      "name": "Nome",
+      "type": "Tipo",
+      "select_type_placeholder": "Selecione o tipo",
+      "notes": "Notas",
+      "notes_placeholder": "Adicione notas ou uma breve descrição...",
+      "word_count": "Contagem de Palavras",
+      "status": "Status",
+      "select_status_placeholder": "Selecione o status",
+      "tags": "Tags",
+      "tags_placeholder": "Tags separadas por vírgula, ex: Rascunho, Cena Chave"
+    },
+    "types": {
+      "file": "Arquivo",
+      "scene": "Cena",
+      "chapter": "Capítulo",
+      "folder": "Pasta"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "revised": "Revisado",
+      "complete": "Concluído"
+    },
+    "coming_soon": {
+      "title": "Organização Simplificada",
+      "description": "A reordenação por arrastar e soltar está planejada para uma atualização futura.",
+      "alt_text": "Ilustração de um canteiro de obras com as palavras 'em breve'."
+    },
+    "toast": {
+      "invalid_file_type_title": "Tipo de Arquivo Inválido",
+      "invalid_file_type_desc": "Por favor, selecione um arquivo .docx para importar.",
+      "error_reading_file": "Erro ao Ler o Arquivo",
+      "import_success_title": "Importação Bem-sucedida",
+      "import_success_desc": "\"{{name}}\" foi importado.",
+      "import_failed_title": "Falha na Importação",
+      "import_failed_desc": "Não foi possível converter o arquivo .docx.",
+      "export_started_title": "Exportação Iniciada",
+      "export_started_desc": "Seus documentos estão sendo compactados para download.",
+      "export_failed_title": "Falha na Exportação",
+      "export_failed_desc": "Não foi possível gerar o arquivo zip."
+    }
   }
 }
+
+    

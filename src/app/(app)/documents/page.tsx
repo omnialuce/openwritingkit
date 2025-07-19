@@ -1,3 +1,4 @@
+
 // src/app/(app)/documents/page.tsx
 'use client';
 
@@ -88,6 +89,15 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
       default: return "secondary";
     }
   };
+  
+  const getTranslatedStatus = (status: DocumentStatus): string => {
+    switch (status) {
+        case 'Draft': return t('documents.status.draft');
+        case 'Revised': return t('documents.status.revised');
+        case 'Complete': return t('documents.status.complete');
+        default: return status;
+    }
+  };
 
   const getTagVariant = (tag: DocumentTag): "default" | "secondary" | "destructive" | "outline" => {
      switch (tag) {
@@ -122,22 +132,22 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
               <h3 className="font-semibold truncate">{item.name}</h3>
               <p className="text-sm text-muted-foreground">
                 {item.type === "folder" || item.type === "chapter" ?
-                 `${item.children?.length || 0} item(s)` :
-                 `${item.words || 0} words - Last modified: ${item.lastModified ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
+                 t('documents.item_count', {count: (item.children?.length || 0).toString()}) :
+                 `${item.words || 0} ${t('documents.words')} - ${t('documents.last_modified')}: ${item.lastModified ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 ml-2 shrink-0">
             {(item.type === "scene" || item.type === 'file') && item.status && (
-              <Badge variant={getStatusVariant(item.status)} className="text-xs">{item.status}</Badge>
+              <Badge variant={getStatusVariant(item.status)} className="text-xs">{getTranslatedStatus(item.status)}</Badge>
             )}
             {isEditable && (
                 <Button variant="default" size="sm" onClick={() => onEditInEditor(item.id)}>
                     <Edit className="h-4 w-4 mr-1" />
-                    Edit
+                    {t('common.edit')}
                 </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>Details</Button>
+            <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>{t('documents.details_button')}</Button>
              <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
@@ -146,14 +156,14 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {item.name}?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('documents.delete_dialog.title', { name: item.name })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone and will permanently delete this item.
+                    {t('documents.delete_dialog.description')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(item.id)}>Delete</AlertDialogAction>
+                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete(item.id)}>{t('common.delete')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -338,7 +348,7 @@ export default function DocumentsPage() {
     if (!file || !activeStoryId) return;
 
     if (file.type !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-        toast({ title: "Invalid File Type", description: "Please select a .docx file to import.", variant: "destructive" });
+        toast({ title: t('documents.toast.invalid_file_type_title'), description: t('documents.toast.invalid_file_type_desc'), variant: "destructive" });
         event.target.value = '';
         return;
     }
@@ -347,7 +357,7 @@ export default function DocumentsPage() {
     reader.onload = async (e) => {
       const arrayBuffer = e.target?.result as ArrayBuffer;
       if (!arrayBuffer) {
-        toast({ title: "Error Reading File", variant: "destructive" });
+        toast({ title: t('documents.toast.error_reading_file'), variant: "destructive" });
         return;
       }
       try {
@@ -367,11 +377,11 @@ export default function DocumentsPage() {
         };
         
         saveDocuments([...documents, newDoc]);
-        toast({ title: "Import Successful", description: `"${newDoc.name}" has been imported.` });
+        toast({ title: t('documents.toast.import_success_title'), description: t('documents.toast.import_success_desc', { name: newDoc.name }) });
 
       } catch (error) {
         console.error("Mammoth conversion error:", error);
-        toast({ title: "Import Failed", description: "Could not convert the .docx file.", variant: "destructive" });
+        toast({ title: t('documents.toast.import_failed_title'), description: t('documents.toast.import_failed_desc'), variant: "destructive" });
       }
     };
     reader.readAsArrayBuffer(file);
@@ -406,10 +416,10 @@ export default function DocumentsPage() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        toast({ title: "Export Started", description: "Your documents are being zipped for download." });
+        toast({ title: t('documents.toast.export_started_title'), description: t('documents.toast.export_started_desc') });
     } catch (error) {
         console.error("ZIP generation error:", error);
-        toast({ title: "Export Failed", description: "Could not generate the zip file.", variant: "destructive" });
+        toast({ title: t('documents.toast.export_failed_title'), description: t('documents.toast.export_failed_desc'), variant: "destructive" });
     }
   };
 
@@ -418,32 +428,32 @@ export default function DocumentsPage() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> No Active Story</CardTitle>
+          <CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-6 w-6 text-destructive" /> {t('documents.no_story.title')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Please select or create a story from the <Link href="/stories" className="text-primary hover:underline">Stories page</Link> to manage documents.</p>
+          <p className="text-muted-foreground">{t('documents.no_story.description_1')} <Link href="/stories" className="text-primary hover:underline">{t('documents.no_story.description_2')}</Link> {t('documents.no_story.description_3')}</p>
         </CardContent>
       </Card>
     );
   }
 
   if (isLoading) {
-      return <div>Loading documents...</div>
+      return <div>{t('documents.loading')}</div>
   }
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Document Management</h1>
-          <p className="text-muted-foreground">Organize, create, and manage all your writing projects.</p>
+          <h1 className="text-3xl font-bold mb-2">{t('documents.title')}</h1>
+          <p className="text-muted-foreground">{t('documents.description')}</p>
         </div>
         <div className="flex gap-2">
            <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".docx" className="hidden" />
-           <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-5 w-5" /> Import DOCX</Button>
-           <Button variant="outline" onClick={handleExportZip} disabled={documents.length === 0}><Download className="mr-2 h-5 w-5" /> Export All as ZIP</Button>
+           <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-5 w-5" /> {t('documents.import_button')}</Button>
+           <Button variant="outline" onClick={handleExportZip} disabled={documents.length === 0}><Download className="mr-2 h-5 w-5" /> {t('documents.export_button')}</Button>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <FilePlus2 className="mr-2 h-5 w-5" /> Create Item
+            <FilePlus2 className="mr-2 h-5 w-5" /> {t('documents.create_button')}
           </Button>
         </div>
       </div>
@@ -451,14 +461,14 @@ export default function DocumentsPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
-            <CardTitle>Your Files & Folders</CardTitle>
+            <CardTitle>{t('documents.list_title')}</CardTitle>
             <div className="relative w-full md:max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search..." className="pl-8" />
+              <Input placeholder={t('common.search_placeholder')} className="pl-8" />
             </div>
           </div>
           <CardDescription>
-            Browse and manage your work. Click on folders or chapters to expand/collapse. Click 'Details' to edit.
+            {t('documents.list_description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -477,8 +487,8 @@ export default function DocumentsPage() {
           ) : (
             <div className="text-center py-10">
               <FolderIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">You don&apos;t have any documents or folders yet.</p>
-              <Button variant="link" className="mt-2" onClick={() => setIsCreateDialogOpen(true)}>Start by creating something new</Button>
+              <p className="text-muted-foreground">{t('documents.empty_state.message')}</p>
+              <Button variant="link" className="mt-2" onClick={() => setIsCreateDialogOpen(true)}>{t('documents.empty_state.cta')}</Button>
             </div>
           )}
         </CardContent>
@@ -488,35 +498,35 @@ export default function DocumentsPage() {
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Create New Item</DialogTitle>
+                <DialogTitle>{t('documents.create_dialog.title')}</DialogTitle>
                 <DialogDescription>
-                    Create a new folder, chapter, scene, or file at the top level.
+                    {t('documents.create_dialog.description')}
                 </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateItem}>
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="create-name" className="text-right">Name</Label>
+                        <Label htmlFor="create-name" className="text-right">{t('documents.fields.name')}</Label>
                         <Input id="create-name" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} className="col-span-3" required />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="create-type" className="text-right">Type</Label>
+                        <Label htmlFor="create-type" className="text-right">{t('documents.fields.type')}</Label>
                         <Select value={newItemType} onValueChange={(v) => setNewItemType(v as DocumentType)}>
                             <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Select type" />
+                                <SelectValue placeholder={t('documents.fields.select_type_placeholder')} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="file">File</SelectItem>
-                                <SelectItem value="scene">Scene</SelectItem>
-                                <SelectItem value="chapter">Chapter</SelectItem>
-                                <SelectItem value="folder">Folder</SelectItem>
+                                <SelectItem value="file">{t('documents.types.file')}</SelectItem>
+                                <SelectItem value="scene">{t('documents.types.scene')}</SelectItem>
+                                <SelectItem value="chapter">{t('documents.types.chapter')}</SelectItem>
+                                <SelectItem value="folder">{t('documents.types.folder')}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
-                    <Button type="submit">Create</Button>
+                    <DialogClose asChild><Button type="button" variant="outline">{t('common.cancel')}</Button></DialogClose>
+                    <Button type="submit">{t('documents.create_dialog.create_button')}</Button>
                 </DialogFooter>
             </form>
         </DialogContent>
@@ -527,36 +537,36 @@ export default function DocumentsPage() {
         <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
           <DialogContent className="sm:max-w-[525px]">
             <DialogHeader>
-              <DialogTitle>Edit Details: {selectedItemForDialog.name}</DialogTitle>
+              <DialogTitle>{t('documents.details_dialog.title', { name: selectedItemForDialog.name })}</DialogTitle>
               <DialogDescription>
-                Make changes to your {selectedItemForDialog.type}. Click save when you&apos;re done.
+                {t('documents.details_dialog.description', { type: selectedItemForDialog.type })}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
+                <Label htmlFor="name" className="text-right">{t('documents.fields.name')}</Label>
                 <Input id="name" value={editedName} onChange={(e) => setEditedName(e.target.value)} className="col-span-3" />
               </div>
               <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="notes" className="text-right pt-2">Notes</Label>
-                <Textarea id="notes" value={editedNotes} onChange={(e) => setEditedNotes(e.target.value)} className="col-span-3" placeholder="Add notes or a brief description..." rows={3}/>
+                <Label htmlFor="notes" className="text-right pt-2">{t('documents.fields.notes')}</Label>
+                <Textarea id="notes" value={editedNotes} onChange={(e) => setEditedNotes(e.target.value)} className="col-span-3" placeholder={t('documents.fields.notes_placeholder')} rows={3}/>
               </div>
 
               {(selectedItemForDialog.type === 'scene' || selectedItemForDialog.type === 'file') && (
                 <>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="words" className="text-right">Word Count</Label>
+                    <Label htmlFor="words" className="text-right">{t('documents.fields.word_count')}</Label>
                     <Input id="words" type="number" value={editedWords} onChange={(e) => setEditedWords(e.target.value)} className="col-span-3" />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="status" className="text-right">Status</Label>
+                    <Label htmlFor="status" className="text-right">{t('documents.fields.status')}</Label>
                     <Select value={editedStatus} onValueChange={(value: DocumentStatus) => setEditedStatus(value)}>
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('documents.fields.select_status_placeholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {documentStatuses.map(status => (
-                          <SelectItem key={status} value={status}>{status}</SelectItem>
+                          <SelectItem key={status} value={status}>{t(`documents.status.${status.toLowerCase()}` as any)}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -565,27 +575,30 @@ export default function DocumentsPage() {
               )}
               
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="tags" className="text-right">Tags</Label>
-                <Input id="tags" value={editedTagsString} onChange={(e) => setEditedTagsString(e.target.value)} className="col-span-3" placeholder="Comma-separated tags, e.g., Draft, Key Scene"/>
+                <Label htmlFor="tags" className="text-right">{t('documents.fields.tags')}</Label>
+                <Input id="tags" value={editedTagsString} onChange={(e) => setEditedTagsString(e.target.value)} className="col-span-3" placeholder={t('documents.fields.tags_placeholder')}/>
               </div>
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">{t('common.cancel')}</Button>
               </DialogClose>
-              <Button type="button" onClick={handleSaveDetails}>Save changes</Button>
+              <Button type="button" onClick={handleSaveDetails}>{t('documents.details_dialog.save_button')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
 
       <div className="text-center mt-12 p-6 bg-card border">
-        <Image src="/comingsoon.svg" alt="Illustration of a building site with the words 'coming soon'." width={300} height={150} className="mx-auto mb-4 dark:invert w-full max-w-xs" />
-        <h3 className="text-xl font-semibold mb-2">Streamlined Organization</h3>
+        <Image src="/comingsoon.svg" alt={t('documents.coming_soon.alt_text')} width={300} height={150} className="mx-auto mb-4 dark:invert w-full max-w-xs" />
+        <h3 className="text-xl font-semibold mb-2">{t('documents.coming_soon.title')}</h3>
         <p className="text-muted-foreground max-w-md mx-auto">
-          Drag-and-drop reordering is planned for a future update.
+          {t('documents.coming_soon.description')}
         </p>
       </div>
     </div>
   );
 }
+
+
+    
