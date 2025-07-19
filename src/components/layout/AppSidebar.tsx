@@ -110,7 +110,7 @@ export function AppSidebar() {
               className="w-full rounded-none"
               tooltip={{ children: t('sidebar.coffee_button'), side: 'right', align: 'center', hidden: isDesktopSidebarExpanded && !isMobile }}
             >
-              <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
+              <Link href="https://ko-fi.com/luanaairs" target="_blank" rel="noopener noreferrer">
                 <Coffee />
                 <span className="group-data-[state=collapsed]/sidebar:group-data-[collapsible=icon]/sidebar:hidden">{t('sidebar.coffee_button')}</span>
               </Link>

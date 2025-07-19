@@ -148,7 +148,7 @@ export default function FeedbackPage() {
                 <p className="text-muted-foreground mb-4">
                     {t('feedback.support.description')}
                 </p>
-                <Link href="https://ko-fi.com/expectaylor" target="_blank" rel="noopener noreferrer">
+                <Link href="https://ko-fi.com/luanaairs" target="_blank" rel="noopener noreferrer">
                     <Button variant="default" className="w-full">
                         {t('feedback.support.button')}
                     </Button>
