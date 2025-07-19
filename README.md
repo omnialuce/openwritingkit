@@ -1,7 +1,7 @@
 
 # OpenWritingKit
 
-This is a Next.js app designed to be an intelligent, open-source writing companion. It's built for writers who want a powerful, private, and customizable tool to bring their stories to life.
+This is a Next.js app designed to be an intelligent,comprehensive, open-source writing companion. It's built for writers who want a powerful, private, and customizable tool to bring their stories to life.
 
 ## Features
 
