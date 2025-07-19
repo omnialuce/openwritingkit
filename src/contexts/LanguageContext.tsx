@@ -3,6 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import en from '@/locales/en.json';
+import enGB from '@/locales/en-gb.json';
 import pt from '@/locales/pt.json';
 
 export type Language = 'en-US' | 'en-GB' | 'pt-BR';
@@ -17,7 +18,7 @@ interface LanguageContextType {
   t: (key: TranslationKey, params?: Record<string, string>) => string;
 }
 
-const translations = { 'en-US': en, 'en-GB': en, 'pt-BR': pt };
+const translations = { 'en-US': en, 'en-GB': enGB, 'pt-BR': pt };
 const LANGUAGE_KEY = 'openwritingkit-language-v2';
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);

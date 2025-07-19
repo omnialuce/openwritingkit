@@ -202,17 +202,17 @@ export default function CharacterSheetPage() {
     if (!character || !sheetData) return;
 
     let textContent = `${t('character_sheet.export.title_prefix')} ${character.name}\n`;
-    textContent += `${t('character_sheet.export.role')}: ${character.role || 'N/A'}\n`;
-    textContent += `${t('character_sheet.export.description')}: ${character.description || 'N/A'}\n`;
-    textContent += `${t('character_sheet.export.backstory')}: ${character.backstory || 'N/A'}\n`;
-    textContent += '===================================\n\n';
+    textContent += `${t('character_sheet.export.role')}: ${character.role || t('character_sheet.export.not_applicable')}\n`;
+    textContent += `${t('character_sheet.export.description')}: ${character.description || t('character_sheet.export.not_applicable')}\n`;
+    textContent += `${t('character_sheet.export.backstory')}: ${character.backstory || t('character_sheet.export.not_applicable')}\n`;
+    textContent += `${'='.repeat(35)}\n\n`;
 
     Object.entries(dynamicCharacterSheetFields).forEach(([sectionKey, fields]) => {
       const sectionName = t(characterSheetSections[sectionKey as keyof typeof characterSheetSections]);
       textContent += `--- ${sectionName.toUpperCase()} ---\n\n`;
       fields.forEach(field => {
         if (field.type !== 'display') {
-          textContent += `${field.label}:\n${sheetData[field.id] || 'N/A'}\n\n`;
+          textContent += `${field.label}:\n${sheetData[field.id] || t('character_sheet.export.not_applicable')}\n\n`;
         }
       });
     });

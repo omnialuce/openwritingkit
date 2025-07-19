@@ -164,7 +164,7 @@ export function WordGoalCard() {
           </div>
         ) : (
           <p className="text-2xl font-semibold">
-            {t('word_goal.goal_prefix')}: {goal.toLocaleString()} {t('word_goal.words')}
+            {t('word_goal.goal_prefix')} {goal.toLocaleString()} {t('word_goal.words')}
           </p>
         )}
         <div>
