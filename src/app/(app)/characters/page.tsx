@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface CharacterProfile {
   id: string;
@@ -30,6 +31,7 @@ export interface CharacterProfile {
 
 export default function CharactersPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const [characters, setCharacters] = useState<CharacterProfile[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -46,7 +48,7 @@ export default function CharactersPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getCharactersStorageKey(activeStoryId);
+      const storageKey = getCharactersStorageKey(activeStoryId, user?.uid);
       const storedCharacters = localStorage.getItem(storageKey);
       if (storedCharacters) {
         setCharacters(JSON.parse(storedCharacters));
@@ -56,11 +58,11 @@ export default function CharactersPage() {
     } else if (!activeStoryId) {
       setCharacters([]);
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
   const saveCharacters = (updatedCharacters: CharacterProfile[]) => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getCharactersStorageKey(activeStoryId);
+      const storageKey = getCharactersStorageKey(activeStoryId, user?.uid);
       setCharacters(updatedCharacters);
       localStorage.setItem(storageKey, JSON.stringify(updatedCharacters));
     }

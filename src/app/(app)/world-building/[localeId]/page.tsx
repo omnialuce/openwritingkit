@@ -15,6 +15,7 @@ import { useStoryContext, getWorldBuildingStorageKey, getLocaleSheetStorageKey, 
 import { useToast } from '@/hooks/use-toast';
 import useAutosave from '@/hooks/useAutosave';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const localeSheetSections = {
   // Based on https://www.storyplanner.com/story/plan/world-building-detailed-plan
@@ -102,11 +103,12 @@ export default function LocaleSheetPage() {
   const { t } = useLanguage();
   const params = useParams();
   const localeId = params.localeId as string;
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { toast } = useToast();
   
   const [locale, setLocale] = useState<Locale | null>(null);
-  const sheetStorageKey = useMemo(() => getLocaleSheetStorageKey(activeStoryId, localeId), [activeStoryId, localeId]);
+  const sheetStorageKey = useMemo(() => getLocaleSheetStorageKey(activeStoryId, localeId, user?.uid), [activeStoryId, localeId, user?.uid]);
   
   const [savedContent, setSavedContent, isSaving, , lastSavedTime] = useAutosave<string>(sheetStorageKey, '{}');
   const [sheetData, setSheetData] = useState<SheetData>({});
@@ -116,7 +118,7 @@ export default function LocaleSheetPage() {
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getWorldBuildingStorageKey(activeStoryId);
+      const storageKey = getWorldBuildingStorageKey(activeStoryId, user?.uid);
       const storedLocales = localStorage.getItem(storageKey);
       if (storedLocales) {
         try {
@@ -129,7 +131,7 @@ export default function LocaleSheetPage() {
         }
       }
     }
-  }, [activeStoryId, localeId]);
+  }, [activeStoryId, localeId, user]);
 
   useEffect(() => {
     if(isMounted) {

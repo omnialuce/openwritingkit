@@ -29,6 +29,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { useStoryContext, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
 
@@ -210,6 +211,7 @@ function OutlineItemDisplay({
 
 
 export default function OutlineBuilderPage() {
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { t } = useLanguage();
   const [items, setItems] = useState<OutlineItem[]>([]);
@@ -225,7 +227,7 @@ export default function OutlineBuilderPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const outlineStorageKey = getOutlineStorageKey(activeStoryId);
+      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user?.uid);
       const storedItems = localStorage.getItem(outlineStorageKey);
       if (storedItems) {
         try {
@@ -245,14 +247,14 @@ export default function OutlineBuilderPage() {
     } else if (!activeStoryId) {
       setItems([]); // Clear items if no story is active
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const outlineStorageKey = getOutlineStorageKey(activeStoryId);
+      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user?.uid);
       localStorage.setItem(outlineStorageKey, JSON.stringify(items));
     }
-  }, [items, activeStoryId]);
+  }, [items, activeStoryId, user]);
 
   const resetAddForm = () => {
     setNewItemTitle('');

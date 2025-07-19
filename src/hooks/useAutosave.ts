@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -32,8 +33,8 @@ function useAutosave<T extends string>(
   saveInterval: number = 2000,
   preventAutoload: boolean = false
 ): [T, (value: T) => void, boolean, () => void, Date | null, Array<VersionHistoryEntry<T>>] {
-  const { toast } = useToast(); 
   const { t } = useLanguage();
+  const { toast } = useToast(); 
   const { activeStoryId } = useStoryContext();
   const { user } = useAuth();
 
@@ -42,14 +43,9 @@ function useAutosave<T extends string>(
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
   const [history, setHistory] = useState<Array<VersionHistoryEntry<T>>>([]);
 
-  const getStorageKeyWithUser = useCallback((baseKey: string) => {
-    if (!user) return null;
-    return `${baseKey}-user-${user.uid}`;
-  }, [user]);
-
   useEffect(() => {
     if (preventAutoload) return;
-    const key = getStorageKeyWithUser(dynamicStorageKey);
+    const key = dynamicStorageKey;
     const loadData = async () => {
       if (key) {
         try {
@@ -87,10 +83,10 @@ function useAutosave<T extends string>(
       }
     };
     loadData();
-  }, [dynamicStorageKey, initialValue, getStorageKeyWithUser, preventAutoload]);
+  }, [dynamicStorageKey, initialValue, preventAutoload]);
 
   const logActivity = useCallback(async (textToSave: T) => {
-    const activityKey = getStorageKeyWithUser(getActivityLogKey(activeStoryId));
+    const activityKey = getActivityLogKey(activeStoryId, user?.uid);
     if (activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{') && activityKey) {
       const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
       const wordCount = words.length;
@@ -106,11 +102,11 @@ function useAutosave<T extends string>(
         console.warn(`Error updating activity log:`, error);
       }
     }
-  }, [activeStoryId, getStorageKeyWithUser]);
+  }, [activeStoryId, user]);
 
   const saveDocument = useCallback(
     async (textToSave: T, forceHistory: boolean = false) => {
-      const key = getStorageKeyWithUser(dynamicStorageKey);
+      const key = dynamicStorageKey;
       if (key) { 
         setIsSaving(true);
         try {
@@ -189,11 +185,11 @@ function useAutosave<T extends string>(
         }
       }
     },
-    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId, getStorageKeyWithUser, user, t]
+    [dynamicStorageKey, initialValue, toast, logActivity, activeStoryId, user, t]
   );
   
   useEffect(() => {
-    const key = getStorageKeyWithUser(dynamicStorageKey);
+    const key = dynamicStorageKey;
     if (!key) return; 
 
     const handler = setTimeout(async () => {
@@ -216,10 +212,10 @@ function useAutosave<T extends string>(
     }, saveInterval);
 
     return () => clearTimeout(handler);
-  }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue, getStorageKeyWithUser]);
+  }, [currentText, saveInterval, saveDocument, dynamicStorageKey, initialValue]);
 
   const clearSavedDocument = useCallback(async () => {
-    const key = getStorageKeyWithUser(dynamicStorageKey);
+    const key = dynamicStorageKey;
     if (key) { 
       try {
         await storage.removeItem(key);
@@ -231,7 +227,7 @@ function useAutosave<T extends string>(
         toast({ title: t('common.error'), description: t('autosave.error_clear_desc'), variant: "destructive" });
       }
     }
-  }, [dynamicStorageKey, initialValue, toast, getStorageKeyWithUser, t]);
+  }, [dynamicStorageKey, initialValue, toast, t]);
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);

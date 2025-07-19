@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 // --- Plot Point Tracker ---
 interface PlotPoint {
@@ -43,6 +44,7 @@ interface OutlineItem {
 
 
 export default function PlotToolsPage() {
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { t } = useLanguage();
 
@@ -75,7 +77,7 @@ export default function PlotToolsPage() {
   // Load Plot Points
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId);
+      const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user?.uid);
       const storedPlotPoints = localStorage.getItem(plotPointsStorageKey);
       if (storedPlotPoints) {
         setPlotPoints(JSON.parse(storedPlotPoints));
@@ -87,12 +89,12 @@ export default function PlotToolsPage() {
     } else if (!activeStoryId) {
       setPlotPoints([]); // Clear if no active story
     }
-  }, [activeStoryId, getPlotPointTemplate]);
+  }, [activeStoryId, user, getPlotPointTemplate]);
 
   // Load Timeline Events
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId);
+      const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user?.uid);
       const storedTimelineEvents = localStorage.getItem(timelineEventsStorageKey);
       if (storedTimelineEvents) {
         setTimelineEvents(JSON.parse(storedTimelineEvents));
@@ -102,12 +104,12 @@ export default function PlotToolsPage() {
     } else if (!activeStoryId) {
       setTimelineEvents([]); // Clear if no active story
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
   
   // Load Outline Items for Scene Summaries
   useEffect(() => {
       if (typeof window !== 'undefined' && activeStoryId) {
-          const outlineStorageKey = getOutlineStorageKey(activeStoryId);
+          const outlineStorageKey = getOutlineStorageKey(activeStoryId, user?.uid);
           const storedOutline = localStorage.getItem(outlineStorageKey);
           if (storedOutline) {
               try {
@@ -124,7 +126,7 @@ export default function PlotToolsPage() {
       } else if (!activeStoryId) {
           setSceneSummaries([]);
       }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
   const extractScenesRecursive = (items: OutlineItem[]): OutlineItem[] => {
     let scenes: OutlineItem[] = [];
@@ -143,7 +145,7 @@ export default function PlotToolsPage() {
   // Save Plot Points
   const handlePlotPointChange = (id: string, newDescription: string) => {
     if (!activeStoryId) return;
-    const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId);
+    const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user?.uid);
     const updatedPlotPoints = plotPoints.map(pp => 
       pp.id === id ? { ...pp, description: newDescription } : pp
     );
@@ -156,7 +158,7 @@ export default function PlotToolsPage() {
   // Save Timeline Events (helper)
   const saveTimelineEvents = (updatedEvents: TimelineEvent[]) => {
     if (!activeStoryId) return;
-    const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId);
+    const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user?.uid);
     setTimelineEvents(updatedEvents);
     if (typeof window !== 'undefined') {
       localStorage.setItem(timelineEventsStorageKey, JSON.stringify(updatedEvents));

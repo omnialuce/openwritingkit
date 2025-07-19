@@ -15,6 +15,7 @@ import { useStoryContext, getCharactersStorageKey, getCharacterSheetStorageKey, 
 import { useToast } from '@/hooks/use-toast';
 import useAutosave from '@/hooks/useAutosave';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const characterSheetSections = {
   demographics: 'character_sheet.sections.demographics',
@@ -153,11 +154,12 @@ export default function CharacterSheetPage() {
   const { t } = useLanguage();
   const params = useParams();
   const characterId = params.characterId as string;
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { toast } = useToast();
   
   const [character, setCharacter] = useState<CharacterProfile | null>(null);
-  const sheetStorageKey = useMemo(() => getCharacterSheetStorageKey(activeStoryId, characterId), [activeStoryId, characterId]);
+  const sheetStorageKey = useMemo(() => getCharacterSheetStorageKey(activeStoryId, characterId, user?.uid), [activeStoryId, characterId, user?.uid]);
   
   const [savedContent, setSavedContent, isSaving, , lastSavedTime] = useAutosave<string>(sheetStorageKey, '{}');
   const [sheetData, setSheetData] = useState<SheetData>({});
@@ -167,7 +169,7 @@ export default function CharacterSheetPage() {
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getCharactersStorageKey(activeStoryId);
+      const storageKey = getCharactersStorageKey(activeStoryId, user?.uid);
       const storedCharacters = localStorage.getItem(storageKey);
       if (storedCharacters) {
         try {
@@ -180,7 +182,7 @@ export default function CharacterSheetPage() {
         }
       }
     }
-  }, [activeStoryId, characterId]);
+  }, [activeStoryId, characterId, user?.uid]);
 
   useEffect(() => {
     if(isMounted) {

@@ -14,10 +14,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getWorldBuildingStorageKey, type Locale } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
 
 export default function WorldBuildingPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const [locales, setLocales] = useState<Locale[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -29,7 +31,7 @@ export default function WorldBuildingPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getWorldBuildingStorageKey(activeStoryId);
+      const storageKey = getWorldBuildingStorageKey(activeStoryId, user?.uid);
       const storedLocales = localStorage.getItem(storageKey);
       if (storedLocales) {
         setLocales(JSON.parse(storedLocales));
@@ -39,11 +41,11 @@ export default function WorldBuildingPage() {
     } else if (!activeStoryId) {
       setLocales([]);
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
   const saveLocales = (updatedLocales: Locale[]) => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getWorldBuildingStorageKey(activeStoryId);
+      const storageKey = getWorldBuildingStorageKey(activeStoryId, user?.uid);
       setLocales(updatedLocales);
       localStorage.setItem(storageKey, JSON.stringify(updatedLocales));
     }

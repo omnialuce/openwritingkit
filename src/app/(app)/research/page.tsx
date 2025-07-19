@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getResearchStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface ResearchNote {
   id: string;
@@ -24,6 +25,7 @@ export interface ResearchNote {
 
 export default function ResearchPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const [notes, setNotes] = useState<ResearchNote[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,7 +37,7 @@ export default function ResearchPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getResearchStorageKey(activeStoryId);
+      const storageKey = getResearchStorageKey(activeStoryId, user?.uid);
       const storedNotes = localStorage.getItem(storageKey);
       if (storedNotes) {
         setNotes(JSON.parse(storedNotes));
@@ -45,11 +47,11 @@ export default function ResearchPage() {
     } else if (!activeStoryId) {
       setNotes([]);
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
   const saveNotes = (updatedNotes: ResearchNote[]) => {
     if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getResearchStorageKey(activeStoryId);
+      const storageKey = getResearchStorageKey(activeStoryId, user?.uid);
       setNotes(updatedNotes);
       localStorage.setItem(storageKey, JSON.stringify(updatedNotes));
     }
