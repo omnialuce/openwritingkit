@@ -63,6 +63,16 @@
       ]
     }
   ],
+  "openwritingkit-story-1720630737219-doc-1720631024578-user-test@example.com": {
+    "current": "<h1>The Whispering Blade</h1><p>Kaelen gripped the hilt of his sword, the worn leather a familiar comfort in his palm.</p>",
+    "history": [
+        {
+            "timestamp": "2024-07-19T10:00:00.000Z",
+            "text": "<h1>The Whispering Blade</h1><p>Kaelen gripped the hilt of his sword, the worn leather a familiar comfort in his palm.</p>"
+        }
+    ],
+    "lastSaved": "2024-07-19T10:00:00.000Z"
+  },
   "openwritingkit-story-1720630737219-documents-user-test@example.com": [
     {
       "id": "1720631024578",
@@ -108,6 +118,7 @@
     "fontSize": "base",
     "lineHeight": "normal",
     "paragraphSpacing": "base",
-    "focusMode": false
+    "focusMode": false,
+    "typewriterMode": false
   }
 }

@@ -52,8 +52,8 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const [documentToOpen, setDocumentToOpen] = useState<string | null>(null);
   const [historyDocumentId, setHistoryDocumentId] = useState<string | null>(null);
 
-  const storiesStorageKey = getStoriesStorageKey(user?.email); // Use email or another stable ID
-  const activeStoryIdKey = user?.email ? `openwritingkit-user-${user.email}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
+  const storiesStorageKey = getStoriesStorageKey(user?.uid);
+  const activeStoryIdKey = user?.uid ? `openwritingkit-user-${user.uid}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
 
   const consumeDocumentToOpen = (): string | null => {
     const docId = documentToOpen;
@@ -206,46 +206,68 @@ export function useStoryContext() {
   return context;
 }
 
-export const getCharactersStorageKey = (storyId: string | null): string => 
-  storyId ? `openwritingkit-story-${storyId}-characters` : 'openwritingkit-characters-noactive';
-
-export const getCharacterSheetStorageKey = (storyId: string | null, characterId: string | null): string =>
-  (storyId && characterId) ? `openwritingkit-story-${storyId}-character-${characterId}-sheet` : 'openwritingkit-sheet-noactive';
-
-export const getOutlineStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-outline-items-v3` : 'openwritingkit-outline-items-v3-noactive';
-
-export const getPlotPointsStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-plotpoints` : 'openwritingkit-plotpoints-noactive';
-
-export const getTimelineEventsStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-timeline-events` : 'openwritingkit-timeline-events-noactive';
-  
-export const getEditorContentKey = (storyId: string | null, docId: string | null): string => {
-  if (!storyId) return 'openwritingkit-scratchpad-noactive';
-  // If a docId is provided, use it. Otherwise, use a generic "scratchpad" key for the story.
-  return docId 
-    ? `openwritingkit-story-${storyId}-doc-${docId}`
-    : `openwritingkit-story-${storyId}-scratchpad`;
+export const getCharactersStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return (storyId && user) ? `openwritingkit-story-${storyId}-characters-user-${user.uid}` : 'openwritingkit-characters-noactive';
 }
 
-export const getWordGoalKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-word-goal` : 'openwritingkit-word-goal-noactive';
+export const getCharacterSheetStorageKey = (storyId: string | null, characterId: string | null): string => {
+  const { user } = useAuth();
+  return (storyId && characterId && user) ? `openwritingkit-story-${storyId}-character-${characterId}-sheet-user-${user.uid}` : 'openwritingkit-sheet-noactive';
+}
 
-export const getActivityLogKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-activity-log` : 'openwritingkit-activity-log-noactive';
+export const getOutlineStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-outline-items-v3-user-${user.uid}` : 'openwritingkit-outline-items-v3-noactive';
+}
 
-export const getDocumentsStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-documents` : 'openwritingkit-documents-noactive';
+export const getPlotPointsStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-plotpoints-user-${user.uid}` : 'openwritingkit-plotpoints-noactive';
+}
 
-export const getWorldBuildingStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-world-building-v2` : 'openwritingkit-world-building-v2-noactive';
+export const getTimelineEventsStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-timeline-events-user-${user.uid}` : 'openwritingkit-timeline-events-noactive';
+}
+  
+export const getEditorContentKey = (storyId: string | null, docId: string | null): string => {
+    const { user } = useAuth();
+    if (!storyId || !user) return 'openwritingkit-scratchpad-noactive';
+    return docId 
+        ? `openwritingkit-story-${storyId}-doc-${docId}-user-${user.uid}`
+        : `openwritingkit-story-${storyId}-scratchpad-user-${user.uid}`;
+}
 
-export const getLocaleSheetStorageKey = (storyId: string | null, localeId: string | null): string =>
-  (storyId && localeId) ? `openwritingkit-story-${storyId}-locale-${localeId}-sheet` : 'openwritingkit-locale-sheet-noactive';
+export const getWordGoalKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-word-goal-user-${user.uid}` : 'openwritingkit-word-goal-noactive';
+}
 
-export const getResearchStorageKey = (storyId: string | null): string =>
-  storyId ? `openwritingkit-story-${storyId}-research` : 'openwritingkit-research-noactive';
+export const getActivityLogKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-activity-log-user-${user.uid}` : 'openwritingkit-activity-log-noactive';
+}
+
+export const getDocumentsStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-documents-user-${user.uid}` : 'openwritingkit-documents-noactive';
+}
+
+export const getWorldBuildingStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-world-building-v2-user-${user.uid}` : 'openwritingkit-world-building-v2-noactive';
+}
+
+export const getLocaleSheetStorageKey = (storyId: string | null, localeId: string | null): string => {
+  const { user } = useAuth();
+  return (storyId && localeId && user) ? `openwritingkit-story-${storyId}-locale-${localeId}-sheet-user-${user.uid}` : 'openwritingkit-locale-sheet-noactive';
+}
+
+export const getResearchStorageKey = (storyId: string | null): string => {
+    const { user } = useAuth();
+    return storyId && user ? `openwritingkit-story-${storyId}-research-user-${user.uid}` : 'openwritingkit-research-noactive';
+}
 
 
 export type { CharacterProfile, Locale };

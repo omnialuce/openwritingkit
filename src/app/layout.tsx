@@ -7,7 +7,7 @@ import { StoryProvider } from '@/contexts/StoryContext';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
   title: 'OpenWritingKit',
@@ -44,6 +44,8 @@ export default function RootLayout({
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
+        <SpeedInsights/>
+        <Analytics/>
       </body>
     </html>
   );

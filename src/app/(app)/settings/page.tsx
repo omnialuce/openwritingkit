@@ -142,14 +142,12 @@ export default function SettingsPage() {
         return;
     }
     const backupData: { [key: string]: any } = {};
-    const userPrefix = `openwritingkit-user-${user.email}`;
     const generalPrefix = 'openwritingkit-';
 
 
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        // Backup keys specific to the logged-in user or general app settings not tied to a specific user
-        if (key && (key.startsWith(userPrefix) || (key.startsWith(generalPrefix) && !key.includes('-user-')))) {
+        if (key && (key.startsWith(generalPrefix))) {
             try {
                 backupData[key] = JSON.parse(localStorage.getItem(key)!);
             } catch(e) {
