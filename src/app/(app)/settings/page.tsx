@@ -137,7 +137,7 @@ export default function SettingsPage() {
   };
   
   const handleExportAllData = () => {
-    if (!user || !user.email) {
+    if (!user) {
         toast({ title: t('settings.toast.data_export_error_title'), description: t('settings.toast.data_export_error_desc'), variant: "destructive" });
         return;
     }
@@ -160,7 +160,7 @@ export default function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `openwritingkit_backup_${user.email}_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `openwritingkit_backup_${user.email || 'user'}_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -171,7 +171,7 @@ export default function SettingsPage() {
   
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) {
+    if (!file || !user) {
         toast({ title: t('settings.toast.data_import_no_file_title'), description: t('settings.toast.data_import_no_file_desc'), variant: "destructive" });
         return;
     }
