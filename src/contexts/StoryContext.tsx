@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -24,6 +25,9 @@ interface StoryContextType {
   documentToOpen: string | null;
   setDocumentToOpen: (docId: string | null) => void;
   consumeDocumentToOpen: () => string | null;
+  historyDocumentId: string | null;
+  setHistoryDocumentId: (docId: string | null) => void;
+  consumeHistoryDocumentId: () => string | null;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
@@ -39,6 +43,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const [activeStoryName, setActiveStoryName] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [documentToOpen, setDocumentToOpen] = useState<string | null>(null);
+  const [historyDocumentId, setHistoryDocumentId] = useState<string | null>(null);
 
   const storiesStorageKey = getStoriesStorageKey(user?.email); // Use email or another stable ID
   const activeStoryIdKey = user?.email ? `openwritingkit-user-${user.email}-active-story-id` : 'openwritingkit-active-story-id-anonymous';
@@ -46,6 +51,12 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const consumeDocumentToOpen = (): string | null => {
     const docId = documentToOpen;
     setDocumentToOpen(null); // Consume it
+    return docId;
+  };
+
+  const consumeHistoryDocumentId = (): string | null => {
+    const docId = historyDocumentId;
+    setHistoryDocumentId(null);
     return docId;
   };
 
@@ -165,7 +176,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen }}>
+    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen, historyDocumentId, setHistoryDocumentId, consumeHistoryDocumentId }}>
       {children}
     </StoryContext.Provider>
   );

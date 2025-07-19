@@ -689,6 +689,17 @@
       "filename_label": "Filename",
       "filename_placeholder": "e.g., Chapter 1 Draft",
       "save_button": "Save Document"
+    },
+    "history": {
+      "title": "Version History",
+      "description": "Review and revert to past versions of this document.",
+      "close_button": "Close History",
+      "no_history": "No saved versions for this document yet.",
+      "preview_title": "Preview",
+      "revert_button": "Revert to this version",
+      "revert_confirm": "Are you sure you want to revert to this version? The current content will be overwritten, but will be saved in the history.",
+      "revert_success_title": "Version Reverted",
+      "revert_success_desc": "The document has been reverted to the selected version."
     }
   },
   "outline": {
@@ -841,6 +852,7 @@
     "words": "words",
     "last_modified": "Last modified",
     "details_button": "Details",
+    "history_button": "View History",
     "delete_dialog": {
       "title": "Delete {{name}}?",
       "description": "This action cannot be undone and will permanently delete this item."

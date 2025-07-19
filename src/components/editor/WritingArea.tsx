@@ -1,3 +1,4 @@
+
 // src/components/editor/WritingArea.tsx
 'use client';
 
@@ -10,8 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type } from 'lucide-react';
-import useAutosave from '@/hooks/useAutosave';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo } from 'lucide-react';
+import useAutosave, { type VersionHistoryEntry } from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
   DropdownMenu,
@@ -33,7 +34,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
 import { useSidebar } from '@/components/ui/sidebar';
-import { formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { useStoryContext, getEditorContentKey, getDocumentsStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -72,16 +73,16 @@ interface DocumentItem {
 
 export function WritingArea() {
   const { t, language } = useLanguage();
-  const { activeStoryId, documentToOpen, consumeDocumentToOpen } = useStoryContext();
+  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId } = useStoryContext();
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   
   const editorStorageKey = getEditorContentKey(activeStoryId, activeDocumentId);
 
-  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime] = useAutosave<string>(
+  const [savedContent, setSavedContent, isSaving, clearSavedContent, lastSavedTime, versionHistory] = useAutosave<string>(
     editorStorageKey,
     '<p></p>',
     2000,
-    !!documentToOpen // Prevent autoload when a document is about to be opened
+    !!documentToOpen || !!historyDocumentId // Prevent autoload when a document is about to be opened
   );
   
   const [wordCount, setWordCount] = useState(0);
@@ -101,6 +102,10 @@ export function WritingArea() {
   const [feedbackResult, setFeedbackResult] = useState<GetWritingFeedbackOutput | null>(null);
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
   const [feedbackTimestamp, setFeedbackTimestamp] = useState<number | null>(null);
+  
+  const [isHistoryPanelOpen, setIsHistoryPanelOpen] = useState(false);
+  const [selectedHistoryVersion, setSelectedHistoryVersion] = useState<VersionHistoryEntry<string> | null>(null);
+
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   
@@ -184,9 +189,10 @@ export function WritingArea() {
       const content = doc.content || '<p></p>';
       setActiveDocumentId(doc.id);
       setActiveDocumentName(doc.name);
-      // Directly set editor content without triggering autosave's load
       setSavedContent(content); 
       editor.commands.setContent(content, false);
+      setIsHistoryPanelOpen(false);
+      setSelectedHistoryVersion(null);
     }
   }, [editor, setSavedContent]);
 
@@ -203,6 +209,18 @@ export function WritingArea() {
     }
   }, [documentToOpen, editor, allDocuments, consumeDocumentToOpen, openDocument]);
   
+  useEffect(() => {
+    if (editor && historyDocumentId) {
+        const docId = consumeHistoryDocumentId();
+        if (docId) {
+            const doc = findDocumentRecursive(allDocuments, docId);
+            if(doc) {
+              openDocument(doc);
+              setIsHistoryPanelOpen(true);
+            }
+        }
+    }
+  }, [historyDocumentId, editor, allDocuments, consumeHistoryDocumentId, openDocument]);
 
   useEffect(() => {
     if (editor && savedContent !== editor.getHTML()) {
@@ -252,6 +270,7 @@ export function WritingArea() {
             editor.commands.setContent('', false);
             setSavedContent('');
         }
+        setIsHistoryPanelOpen(false);
     }
   }
 
@@ -446,7 +465,8 @@ export function WritingArea() {
     if (isFocusMode) {
       toggleFocusMode(); 
     }
-
+    
+    setIsHistoryPanelOpen(false);
     setIsFetchingFeedback(true);
     setFeedbackResult(null);
     
@@ -530,6 +550,16 @@ export function WritingArea() {
       });
     };
 
+    const handleRevertVersion = (version: VersionHistoryEntry<string>) => {
+      if (editor && confirm(t('editor.history.revert_confirm'))) {
+        editor.commands.setContent(version.text, true);
+        // This will trigger the autosave with the reverted content
+        setSavedContent(version.text);
+        toast({ title: t('editor.history.revert_success_title'), description: t('editor.history.revert_success_desc') });
+        setSelectedHistoryVersion(null);
+      }
+    };
+
 
   if (!isMounted) {
     return (
@@ -566,6 +596,7 @@ export function WritingArea() {
   }
   
   const currentOverallTheme = editorTheme === 'dark' ? 'dark' : '';
+  const isSidePanelOpen = (isFeedbackPanelOpen || isHistoryPanelOpen) && !isMobile;
 
   const renderFeedbackContent = () => feedbackResult && (
     <div className="space-y-4 p-4">
@@ -620,6 +651,45 @@ export function WritingArea() {
     </div>
   );
 
+  const renderHistoryContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="flex-grow overflow-y-auto">
+        <ul className="p-2 space-y-2">
+          {versionHistory.map((version, index) => (
+            <li key={version.timestamp}>
+              <Button
+                variant="ghost"
+                className={cn("w-full justify-start text-left h-auto py-2", selectedHistoryVersion?.timestamp === version.timestamp && "bg-accent")}
+                onClick={() => setSelectedHistoryVersion(version)}
+              >
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">
+                    {formatDistanceToNow(new Date(version.timestamp), { addSuffix: true })}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(version.timestamp), 'MMM d, yyyy, h:mm a')}
+                  </span>
+                </div>
+              </Button>
+            </li>
+          ))}
+          {versionHistory.length === 0 && <p className="p-4 text-sm text-muted-foreground">{t('editor.history.no_history')}</p>}
+        </ul>
+      </div>
+      {selectedHistoryVersion && (
+        <div className="p-4 border-t">
+          <h4 className="font-semibold mb-2">{t('editor.history.preview_title')}</h4>
+          <ScrollArea className="h-32 border rounded-md p-2 bg-muted text-sm">
+            <div dangerouslySetInnerHTML={{ __html: selectedHistoryVersion.text }} className="prose dark:prose-invert prose-sm" />
+          </ScrollArea>
+          <Button className="w-full mt-3" onClick={() => handleRevertVersion(selectedHistoryVersion)}>
+            <Undo className="mr-2 h-4 w-4" /> {t('editor.history.revert_button')}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
 
   if (isFocusMode) {
     return (
@@ -641,7 +711,7 @@ export function WritingArea() {
   return (
     <TooltipProvider>
       <div className={cn("flex h-full", currentOverallTheme, themeClasses[editorTheme])}>
-        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none", (isFeedbackPanelOpen && !isMobile) ? "md:w-2/3" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none transition-all duration-300", isSidePanelOpen ? "md:w-2/3 lg:w-3/4" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
           {!isFocusMode && (
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
@@ -701,6 +771,9 @@ export function WritingArea() {
                       <p>{!activeStoryId ? t('editor.tooltip_no_story') : (aiFeaturesEnabled && isMounted ? t('editor.tooltip_get_feedback') : t('editor.tooltip_ai_disabled'))}</p>
                     </TooltipContent>
                   </Tooltip>
+                  <Button variant="ghost" size="icon" onClick={() => { setIsHistoryPanelOpen(!isHistoryPanelOpen); setIsFeedbackPanelOpen(false); }} title={t('editor.history.title')} disabled={!activeDocumentId}>
+                      <History className={cn("h-5 w-5", !activeDocumentId ? "text-muted-foreground/50" : "text-muted-foreground")}/>
+                  </Button>
                 </div>
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
                   <DropdownMenu>
@@ -793,26 +866,32 @@ export function WritingArea() {
           )}
         </Card>
 
-        {isFeedbackPanelOpen && !isMobile && feedbackResult && (
-          <Card className={cn("hidden md:flex md:flex-col md:w-1/3 h-full border-l rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
-            <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
-              <div>
-                <CardTitle className="text-lg">{t('editor.feedback.title')}</CardTitle>
-                {feedbackTimestamp && (
-                  <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}
-                  </p>
-                )}
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsFeedbackPanelOpen(false)} title={t('editor.feedback.close_button_title')}>
-                <X className="h-5 w-5" />
-              </Button>
-            </CardHeader>
-            <CardContent className="flex-grow overflow-y-auto p-0">
-              <ScrollArea className="h-full">
-                 {renderFeedbackContent()}
-              </ScrollArea>
-            </CardContent>
+        {isSidePanelOpen && (
+          <Card className={cn("hidden md:flex md:flex-col md:w-1/3 lg:w-1/4 h-full border-l rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+            {isFeedbackPanelOpen && feedbackResult && (
+              <>
+                <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
+                  <div>
+                    <CardTitle className="text-lg">{t('editor.feedback.title')}</CardTitle>
+                    {feedbackTimestamp && (<p className="text-xs text-muted-foreground">{formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}</p>)}
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setIsFeedbackPanelOpen(false)} title={t('editor.feedback.close_button_title')}><X className="h-5 w-5" /></Button>
+                </CardHeader>
+                <CardContent className="flex-grow overflow-y-auto p-0"><ScrollArea className="h-full">{renderFeedbackContent()}</ScrollArea></CardContent>
+              </>
+            )}
+            {isHistoryPanelOpen && (
+               <>
+                <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
+                  <div>
+                    <CardTitle className="text-lg">{t('editor.history.title')}</CardTitle>
+                    <p className="text-xs text-muted-foreground">{t('editor.history.description')}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setIsHistoryPanelOpen(false)} title={t('editor.history.close_button')}><X className="h-5 w-5" /></Button>
+                </CardHeader>
+                <CardContent className="flex-grow overflow-y-auto p-0">{renderHistoryContent()}</CardContent>
+              </>
+            )}
           </Card>
         )}
       </div>
@@ -821,22 +900,24 @@ export function WritingArea() {
         <DialogContent className="max-h-[90vh] flex flex-col p-0">
            <DialogHeader className="p-4 border-b">
               <DialogTitle>{t('editor.feedback.title')}</DialogTitle>
-              {feedbackTimestamp && (
-                <DialogDescription>
-                  {formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}
-                </DialogDescription>
-              )}
+              {feedbackTimestamp && (<DialogDescription>{formatDistanceToNow(feedbackTimestamp, { addSuffix: true })}</DialogDescription>)}
             </DialogHeader>
-          <ScrollArea className="flex-grow">
-            {renderFeedbackContent()}
-          </ScrollArea>
-           <DialogFooter className="p-4 border-t">
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">{t('common.close')}</Button>
-              </DialogClose>
-            </DialogFooter>
+          <ScrollArea className="flex-grow">{renderFeedbackContent()}</ScrollArea>
+           <DialogFooter className="p-4 border-t"><DialogClose asChild><Button type="button" variant="secondary">{t('common.close')}</Button></DialogClose></DialogFooter>
         </DialogContent>
       </Dialog>
+      
+       <Dialog open={isHistoryPanelOpen && isMobile} onOpenChange={setIsHistoryPanelOpen}>
+        <DialogContent className="max-h-[90vh] flex flex-col p-0">
+           <DialogHeader className="p-4 border-b">
+              <DialogTitle>{t('editor.history.title')}</DialogTitle>
+              <DialogDescription>{t('editor.history.description')}</DialogDescription>
+            </DialogHeader>
+          <div className="flex-grow overflow-hidden">{renderHistoryContent()}</div>
+           <DialogFooter className="p-4 border-t"><DialogClose asChild><Button type="button" variant="secondary">{t('common.close')}</Button></DialogClose></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
        <Dialog open={isSaveToDocDialogOpen} onOpenChange={setIsSaveToDocDialogOpen}>
         <DialogContent>

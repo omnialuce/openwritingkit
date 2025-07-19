@@ -10,9 +10,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const MAX_HISTORY_LENGTH = 20; 
 
+export interface VersionHistoryEntry<T> {
+  timestamp: string;
+  text: T;
+}
+
 interface DocumentData<T> {
   current: T;
-  history: Array<{ timestamp: string; text: T }>;
+  history: Array<VersionHistoryEntry<T>>;
   lastSaved: string | null;
 }
 
@@ -26,7 +31,7 @@ function useAutosave<T extends string>(
   initialValue: T,
   saveInterval: number = 2000,
   preventAutoload: boolean = false
-): [T, (value: T) => void, boolean, () => void, Date | null] {
+): [T, (value: T) => void, boolean, () => void, Date | null, Array<VersionHistoryEntry<T>>] {
   const { toast } = useToast(); 
   const { t } = useLanguage();
   const { activeStoryId } = useStoryContext();
@@ -35,6 +40,7 @@ function useAutosave<T extends string>(
   const [currentText, setCurrentTextInternal] = useState<T>(initialValue);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+  const [history, setHistory] = useState<Array<VersionHistoryEntry<T>>>([]);
 
   const getStorageKeyWithUser = useCallback((baseKey: string) => {
     if (!user) return null;
@@ -51,25 +57,32 @@ function useAutosave<T extends string>(
           if (item) {
             let loadedValue: T;
             let lastSaved: string | null = null;
+            let loadedHistory: Array<VersionHistoryEntry<T>> = [];
+
             if (typeof item === 'string') {
               loadedValue = item as T;
             } else {
               loadedValue = item.current || initialValue;
               lastSaved = item.lastSaved;
+              loadedHistory = item.history || [];
             }
             setCurrentTextInternal(loadedValue);
+            setHistory(loadedHistory);
             setLastSavedTime(lastSaved ? new Date(lastSaved) : null);
           } else {
             setCurrentTextInternal(initialValue);
+            setHistory([]);
             setLastSavedTime(null);
           }
         } catch (error) {
           console.warn(`Error reading storage key "${key}":`, error);
           setCurrentTextInternal(initialValue);
+          setHistory([]);
           setLastSavedTime(null);
         }
       } else {
         setCurrentTextInternal(initialValue); 
+        setHistory([]);
         setLastSavedTime(null);
       }
     };
@@ -88,7 +101,6 @@ function useAutosave<T extends string>(
         activityLog.push(newLogEntry);
         await storage.setItem(activityKey, activityLog);
         
-        // Dispatch a custom event to notify other components like the analytics page
         window.dispatchEvent(new CustomEvent('storage-change', { detail: { key: activityKey } }));
       } catch (error) {
         console.warn(`Error updating activity log:`, error);
@@ -97,7 +109,7 @@ function useAutosave<T extends string>(
   }, [activeStoryId, getStorageKeyWithUser]);
 
   const saveDocument = useCallback(
-    async (textToSave: T) => {
+    async (textToSave: T, forceHistory: boolean = false) => {
       const key = getStorageKeyWithUser(dynamicStorageKey);
       if (key) { 
         setIsSaving(true);
@@ -121,13 +133,14 @@ function useAutosave<T extends string>(
           }
 
           const latestHistoryEntry = documentData.history?.[0]?.text;
-          if (textToSave !== latestHistoryEntry) {
+          if (forceHistory || textToSave !== latestHistoryEntry) {
             const newHistoryEntry = { timestamp, text: textToSave };
             documentData.history = documentData.history || [];
             documentData.history.unshift(newHistoryEntry);
             if (documentData.history.length > MAX_HISTORY_LENGTH) {
               documentData.history.pop();
             }
+            setHistory(documentData.history);
           }
           
           documentData.current = textToSave;
@@ -222,9 +235,11 @@ function useAutosave<T extends string>(
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);
+    // Force a history save when manually reverting
+    saveDocument(value, true); 
   };
 
-  return [currentText, setAndSaveCurrentText, isSaving, clearSavedDocument, lastSavedTime];
+  return [currentText, setAndSaveCurrentText, isSaving, clearSavedDocument, lastSavedTime, history];
 }
 
 export default useAutosave;

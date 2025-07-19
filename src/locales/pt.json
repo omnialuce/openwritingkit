@@ -689,6 +689,17 @@
       "filename_label": "Nome do Arquivo",
       "filename_placeholder": "ex: Rascunho do Capítulo 1",
       "save_button": "Salvar Documento"
+    },
+    "history": {
+      "title": "Histórico de Versões",
+      "description": "Revise e reverta para versões passadas deste documento.",
+      "close_button": "Fechar Histórico",
+      "no_history": "Nenhuma versão salva para este documento ainda.",
+      "preview_title": "Pré-visualização",
+      "revert_button": "Reverter para esta versão",
+      "revert_confirm": "Tem certeza que deseja reverter para esta versão? O conteúdo atual será sobrescrito, mas salvo no histórico.",
+      "revert_success_title": "Versão Revertida",
+      "revert_success_desc": "O documento foi revertido para a versão selecionada."
     }
   },
   "outline": {
@@ -841,6 +852,7 @@
     "words": "palavras",
     "last_modified": "Última modificação",
     "details_button": "Detalhes",
+    "history_button": "Ver Histórico",
     "delete_dialog": {
       "title": "Excluir {{name}}?",
       "description": "Esta ação não pode ser desfeita e excluirá permanentemente este item."

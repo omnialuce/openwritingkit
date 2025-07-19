@@ -1,11 +1,12 @@
 
+
 // src/app/(app)/documents/page.tsx
 'use client';
 
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -219,7 +220,7 @@ const deleteItemRecursive = (nodes: DocumentItem[], itemId: string): DocumentIte
 
 
 export default function DocumentsPage() {
-  const { activeStoryId, setDocumentToOpen } = useStoryContext();
+  const { activeStoryId, setDocumentToOpen, setHistoryDocumentId } = useStoryContext();
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -309,6 +310,11 @@ export default function DocumentsPage() {
   
   const handleEditInEditor = (docId: string) => {
     setDocumentToOpen(docId);
+    router.push('/editor');
+  };
+
+  const handleViewHistory = (docId: string) => {
+    setHistoryDocumentId(docId);
     router.push('/editor');
   };
 
@@ -570,6 +576,11 @@ export default function DocumentsPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Button variant="outline" className="col-start-2 col-span-3" onClick={() => handleViewHistory(selectedItemForDialog.id)}>
+                      <History className="mr-2 h-4 w-4" /> {t('documents.history_button')}
+                    </Button>
                   </div>
                 </>
               )}
