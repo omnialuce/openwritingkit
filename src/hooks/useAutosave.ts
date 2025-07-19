@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast'; 
-import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext'; 
+import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext';
 import { storage } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,6 +24,7 @@ interface DocumentData<T> {
 interface ActivityLogEntry {
   timestamp: string;
   wordCount: number;
+  docId: string | null; // null for scratchpad
 }
 
 function useAutosave<T extends string>( 
@@ -79,10 +79,19 @@ function useAutosave<T extends string>(
 
   const logActivity = useCallback(async (textToSave: T) => {
     const activityKey = getActivityLogKey(activeStoryId, user?.uid);
+     // Extract docId from storageKey (e.g., '...-doc-123-user-...')
+    const docIdMatch = storageKey.match(/-doc-([^-]*)-/);
+    const docId = docIdMatch ? docIdMatch[1] : null;
+
+
     if (activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{') && activityKey) {
       const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
       const wordCount = words.length;
-      const newLogEntry: ActivityLogEntry = { timestamp: new Date().toISOString(), wordCount };
+      const newLogEntry: ActivityLogEntry = { 
+          timestamp: new Date().toISOString(), 
+          wordCount,
+          docId, // Log which document was updated
+      };
 
       try {
         let activityLog = await storage.getItem<ActivityLogEntry[]>(activityKey) || [];
@@ -94,7 +103,7 @@ function useAutosave<T extends string>(
         console.warn(`Error updating activity log:`, error);
       }
     }
-  }, [activeStoryId, user]);
+  }, [activeStoryId, user, storageKey]);
 
   const saveDocument = useCallback(
     async (textToSave: T, forceHistory: boolean = false) => {

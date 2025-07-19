@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
@@ -53,6 +52,7 @@ interface StoryContextType {
   historyDocumentId: string | null;
   setHistoryDocumentId: (docId: string | null) => void;
   consumeHistoryDocumentId: () => string | null;
+  getActivityLogKey: () => string | null;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
@@ -227,12 +227,17 @@ export function StoryProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loadDataForUser]);
 
+  const getActivityLogKey = useCallback(() => {
+    return activeStoryId && user?.uid ? `openwritingkit-story-${activeStoryId}-activity-log-user-${user.uid}` : null;
+  }, [activeStoryId, user?.uid]);
+
+
   if (!isLoaded) {
     return null;
   }
 
   return (
-    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen, historyDocumentId, setHistoryDocumentId, consumeHistoryDocumentId }}>
+    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen, historyDocumentId, setHistoryDocumentId, consumeHistoryDocumentId, getActivityLogKey }}>
       {children}
     </StoryContext.Provider>
   );
@@ -277,10 +282,6 @@ export const getWordGoalKey = (storyId: string | null, userId: string | undefine
     return storyId && userId ? `openwritingkit-story-${storyId}-word-goal-user-${userId}` : 'openwritingkit-word-goal-noactive';
 }
 
-export const getActivityLogKey = (storyId: string | null, userId: string | undefined | null): string => {
-    return storyId && userId ? `openwritingkit-story-${storyId}-activity-log-user-${userId}` : 'openwritingkit-activity-log-noactive';
-}
-
 export const getDocumentsStorageKey = (storyId: string | null, userId: string | undefined | null): string => {
     return storyId && userId ? `openwritingkit-story-${storyId}-documents-user-${userId}` : 'openwritingkit-documents-noactive';
 }
@@ -295,6 +296,10 @@ export const getLocaleSheetStorageKey = (storyId: string | null, localeId: strin
 
 export const getResearchStorageKey = (storyId: string | null, userId: string | undefined | null): string => {
     return storyId && userId ? `openwritingkit-story-${storyId}-research-user-${userId}` : 'openwritingkit-research-noactive';
+}
+
+export function getActivityLogKey(storyId: string | null, userId: string | undefined | null): string | null {
+    return storyId && userId ? `openwritingkit-story-${storyId}-activity-log-user-${userId}` : null;
 }
 
 

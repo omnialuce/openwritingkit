@@ -8,19 +8,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
+import { useStoryContext } from "@/contexts/StoryContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from "@/lib/storage";
+import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 
 const HOW_TO_BANNER_DISMISSED_KEY = 'openwritingkit-how-to-banner-dismissed';
 
 export default function DashboardPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { activeStoryId, activeStoryName } = useStoryContext();
+  const { activeStoryId, activeStoryName, getActivityLogKey } = useStoryContext();
   const [writingStreak, setWritingStreak] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const [showHowToBanner, setShowHowToBanner] = useState(false);
@@ -285,23 +286,7 @@ export default function DashboardPage() {
                  {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-2">{t('dashboard.select_story_for_streak')}</p>}
               </CardContent>
             </Card>
-            <Card className="rounded-lg border">
-              <CardHeader>
-                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                  <CardTitle>{t('dashboard.word_goal_title')} {activeStoryName ? `(${t('common.for')} ${activeStoryName})` : ''}</CardTitle>
-                </div>
-                <CardDescription>{t('dashboard.word_goal_desc')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-muted-foreground text-center py-4">
-                    <Link href="/analytics" passHref>
-                        <Button variant="link" disabled={!activeStoryId}>{t('dashboard.word_goal_cta')}</Button>
-                    </Link>
-                    {!activeStoryId && <p className="text-xs text-center text-muted-foreground mt-1">{t('dashboard.select_story_for_goal')}</p>}
-                </div>
-              </CardContent>
-            </Card>
+            <WordGoalCard />
           </section>
         </>
       )}

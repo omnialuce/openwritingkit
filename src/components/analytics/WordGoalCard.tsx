@@ -1,27 +1,62 @@
 // src/components/analytics/WordGoalCard.tsx
 'use client';
 
-import { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Target, Edit3, Save, AlertTriangle } from 'lucide-react';
-import { useStoryContext, getWordGoalKey, getEditorContentKey } from '@/contexts/StoryContext';
+import { useStoryContext, getWordGoalKey, getDocumentsStorageKey, getEditorContentKey, type DocumentItem } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/lib/storage';
 
-interface DocumentData {
-  current: string;
+interface EditorData {
+    current: string;
 }
+
+const countWords = (htmlString: string): number => {
+    if (!htmlString) return 0;
+    const text = htmlString.replace(/<[^>]*>/g, ' ').trim();
+    if (!text) return 0;
+    return text.split(/\s+/).filter(Boolean).length;
+};
+
+
+const getTotalWordCount = async (storyId: string, userId: string): Promise<number> => {
+    let totalWords = 0;
+    const documentsKey = getDocumentsStorageKey(storyId, userId);
+    const documents = await storage.getItem<DocumentItem[]>(documentsKey) || [];
+  
+    const processItems = async (items: DocumentItem[]) => {
+      for (const item of items) {
+        if (item.type === 'file' || item.type === 'scene') {
+          const editorKey = getEditorContentKey(storyId, item.id, userId);
+          const editorData = await storage.getItem<EditorData>(editorKey);
+          if (editorData?.current) {
+            totalWords += countWords(editorData.current);
+          }
+        }
+        if (item.children) {
+          await processItems(item.children);
+        }
+      }
+    };
+  
+    await processItems(documents);
+    return totalWords;
+  };
 
 export function WordGoalCard() {
   const { t } = useLanguage();
   const { activeStoryId } = useStoryContext();
-  const wordGoalStorageKey = getWordGoalKey(activeStoryId);
-  const editorDocStorageKey = getEditorContentKey(activeStoryId);
+  const { user } = useAuth();
+  
+  const wordGoalStorageKey = getWordGoalKey(activeStoryId, user?.uid);
 
-  const [goal, setGoal] = useState<number>(1000);
+  const [goal, setGoal] = useState<number>(50000);
   const [currentWords, setCurrentWords] = useState<number>(0);
   const [progress, setProgress] = useState<number>(0);
   const [isEditingGoal, setIsEditingGoal] = useState<boolean>(false);
@@ -29,46 +64,34 @@ export function WordGoalCard() {
   const [isMounted, setIsMounted] = useState(false);
 
 
-  const updateCurrentWords = () => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const editorDocRaw = localStorage.getItem(editorDocStorageKey);
-      if (editorDocRaw) {
-        try {
-          const docData = JSON.parse(editorDocRaw) as DocumentData;
-          const editorContent = docData.current || "";
-          const words = editorContent.trim() ? editorContent.trim().split(/\s+/).filter(w => w.length > 0) : [];
-          setCurrentWords(words.length);
-        } catch (e) {
-          setCurrentWords(0);
-          console.error("Error parsing editor document data for word goal:", e);
-        }
-      } else {
-        setCurrentWords(0);
-      }
+  const updateCurrentWords = useCallback(async () => {
+    if (activeStoryId && user?.uid) {
+        const words = await getTotalWordCount(activeStoryId, user.uid);
+        setCurrentWords(words);
     } else {
-      setCurrentWords(0);
+        setCurrentWords(0);
     }
-  };
+  }, [activeStoryId, user?.uid]);
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== 'undefined' && activeStoryId) {
+    if (activeStoryId && user?.uid) {
       const savedGoal = localStorage.getItem(wordGoalStorageKey);
       if (savedGoal) {
         const numGoal = parseInt(savedGoal, 10);
         setGoal(numGoal);
         setInputValue(numGoal.toString());
       } else {
-        setGoal(1000);
-        setInputValue("1000");
+        setGoal(50000);
+        setInputValue("50000");
       }
       updateCurrentWords(); 
     } else if (!activeStoryId) {
-      setGoal(1000);
-      setInputValue("1000");
+      setGoal(50000);
+      setInputValue("50000");
       setCurrentWords(0);
     }
-  }, [activeStoryId, wordGoalStorageKey]);
+  }, [activeStoryId, wordGoalStorageKey, user?.uid, updateCurrentWords]);
 
   useEffect(() => {
     if (goal > 0) {
@@ -80,11 +103,12 @@ export function WordGoalCard() {
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === editorDocStorageKey) {
+        // A bit broad, but if any story-related doc changes, re-calc word count
+      if (event.key?.startsWith(`openwritingkit-story-${activeStoryId}`)) {
         updateCurrentWords();
       }
       if (event.key === wordGoalStorageKey) {
-         const newGoal = parseInt(event.newValue || '1000', 10);
+         const newGoal = parseInt(event.newValue || '50000', 10);
          setGoal(newGoal);
          setInputValue(newGoal.toString());
       }
@@ -94,7 +118,7 @@ export function WordGoalCard() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [editorDocStorageKey, wordGoalStorageKey]);
+  }, [wordGoalStorageKey, activeStoryId, updateCurrentWords]);
 
   const handleGoalChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);

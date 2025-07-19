@@ -6,7 +6,7 @@ import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, Calen
 import Image from "next/image";
 import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 import { useEffect, useState, useCallback } from "react";
-import { useStoryContext, getActivityLogKey } from "@/contexts/StoryContext";
+import { useStoryContext } from "@/contexts/StoryContext";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -62,11 +62,11 @@ function InsightCard({ title, description, icon: Icon, value, unit, children, co
 export default function AnalyticsPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { activeStoryId, activeStoryName } = useStoryContext();
+  const { activeStoryId, activeStoryName, getActivityLogKey } = useStoryContext();
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   
-  const activityLogStorageKey = user ? `openwritingkit-story-${activeStoryId}-activity-log-user-${user.uid}` : null;
+  const activityLogStorageKey = getActivityLogKey();
 
   const loadActivityLog = useCallback(async () => {
     if (activityLogStorageKey) {
@@ -105,8 +105,10 @@ export default function AnalyticsPage() {
     
     if (todayEntries.length === 0) return t('analytics.word_count_today.no_words');
 
-    const lastEntryToday = todayEntries[todayEntries.length - 1];
-    return t('analytics.word_count_today.words_recorded', { count: lastEntryToday.wordCount.toLocaleString() });
+    // This is a simplified calculation. A more complex one would track net words added.
+    // For now, let's show the highest word count recorded today.
+    const maxWordCountToday = todayEntries.reduce((max, entry) => Math.max(max, entry.wordCount), 0);
+    return t('analytics.word_count_today.words_recorded', { count: maxWordCountToday.toLocaleString() });
   };
 
   const calculateProductiveTimes = () => {
