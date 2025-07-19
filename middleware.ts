@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const PROTECTED_ROUTES = ['/', '/editor', '/documents', '/outline', '/characters', '/plot-tools', '/ai-tools', '/analytics', '/settings', '/resources', '/feedback', '/stories'];
+const PROTECTED_ROUTES = ['/', '/editor', '/documents', '/outline', '/characters', '/plot-tools', '/world-building', '/research', '/ai-tools', '/analytics', '/settings', '/resources', '/feedback', '/stories'];
 const PUBLIC_ROUTES = ['/login'];
 
 export function middleware(request: NextRequest) {

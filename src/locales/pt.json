@@ -24,6 +24,8 @@
     "outline": "Estrutura",
     "characters": "Personagens",
     "plot_tools": "Ferramentas de Enredo",
+    "world_building": "Criação de Mundo",
+    "research": "Pesquisa",
     "ai_tools": "Ferramentas de IA",
     "analytics": "Análises",
     "resources": "Recursos",
@@ -915,6 +917,66 @@
       "export_started_desc": "Seus documentos estão sendo compactados para download.",
       "export_failed_title": "Falha na Exportação",
       "export_failed_desc": "Não foi possível gerar o arquivo zip."
+    }
+  },
+  "world_building": {
+    "title": "Criação de Mundo",
+    "description": "Crie e gerencie os locais do mundo da sua história.",
+    "create_button": "Criar Novo Local",
+    "no_locales": "Nenhum local para esta história ainda. Comece criando um!",
+    "no_description": "Nenhuma descrição fornecida.",
+    "no_story": {
+      "title": "Nenhuma História Ativa",
+      "description_1": "Por favor, selecione ou crie uma história na",
+      "description_2": "página de Histórias",
+      "description_3": "para gerenciar locais."
+    },
+    "delete_dialog": {
+      "title": "Tem certeza?",
+      "description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente este local."
+    },
+    "edit_dialog": {
+      "title": "Editar Local",
+      "description": "Atualize os detalhes para este local."
+    },
+    "create_dialog": {
+      "title": "Criar Novo Local",
+      "description": "Adicione uma nova cidade, região ou ponto de interesse ao seu mundo."
+    },
+    "fields": {
+      "name": "Nome do Local",
+      "description": "Descrição",
+      "description_placeholder": "Descreva o local, sua atmosfera, características principais, etc."
+    }
+  },
+  "research": {
+    "title": "Notas de Pesquisa",
+    "description": "Colete e organize suas pesquisas, ideias e fragmentos.",
+    "create_button": "Criar Nova Nota",
+    "no_notes": "Nenhuma nota de pesquisa para esta história ainda. Comece criando uma!",
+    "no_story": {
+      "title": "Nenhuma História Ativa",
+      "description_1": "Por favor, selecione ou crie uma história na",
+      "description_2": "página de Histórias",
+      "description_3": "para gerenciar pesquisas."
+    },
+    "delete_dialog": {
+      "title": "Tem certeza?",
+      "description": "Esta ação não pode ser desfeita. Isso excluirá permanentemente esta nota de pesquisa."
+    },
+    "edit_dialog": {
+      "title": "Editar Nota de Pesquisa",
+      "description": "Atualize os detalhes desta nota."
+    },
+    "create_dialog": {
+      "title": "Criar Nova Nota de Pesquisa",
+      "description": "Adicione uma nova pesquisa à sua coleção."
+    },
+    "fields": {
+      "title": "Título",
+      "content": "Conteúdo",
+      "tags": "Tags (separadas por vírgula)",
+      "tags_placeholder": "ex: história, tecnologia, inspiração de personagem"
     }
   }
 }

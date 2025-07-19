@@ -135,6 +135,8 @@ export function StoryProvider({ children }: { children: ReactNode }) {
         getWordGoalKey(storyId),
         getActivityLogKey(storyId),
         getDocumentsStorageKey(storyId),
+        getWorldBuildingStorageKey(storyId),
+        getResearchStorageKey(storyId),
     ];
     // Also remove character sheets and individual documents
     const documentsKey = getDocumentsStorageKey(storyId);
@@ -221,5 +223,12 @@ export const getActivityLogKey = (storyId: string | null): string =>
 
 export const getDocumentsStorageKey = (storyId: string | null): string =>
   storyId ? `openwritingkit-story-${storyId}-documents` : 'openwritingkit-documents-noactive';
+
+export const getWorldBuildingStorageKey = (storyId: string | null): string =>
+  storyId ? `openwritingkit-story-${storyId}-world-building` : 'openwritingkit-world-building-noactive';
+
+export const getResearchStorageKey = (storyId: string | null): string =>
+  storyId ? `openwritingkit-story-${storyId}-research` : 'openwritingkit-research-noactive';
+
 
 export type { CharacterProfile };

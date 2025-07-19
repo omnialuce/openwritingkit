@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Home, BookText, Cpu, BarChart3, FolderOpen, Settings, ListTree, Users, Network, BookOpenCheck, Bookmark, MessageSquare } from 'lucide-react';
+import { Home, BookText, Cpu, BarChart3, FolderOpen, Settings, ListTree, Users, Network, BookOpenCheck, Bookmark, MessageSquare, Globe, Microscope } from 'lucide-react';
 
 export interface NavItem {
   href: string;
@@ -16,6 +16,8 @@ export const getMainNavItems = (t: (key: string) => string): NavItem[] => [
   { href: '/outline', label: t('nav.outline'), icon: ListTree },
   { href: '/characters', label: t('nav.characters'), icon: Users },
   { href: '/plot-tools', label: t('nav.plot_tools'), icon: Network },
+  { href: '/world-building', label: t('nav.world_building'), icon: Globe },
+  { href: '/research', label: t('nav.research'), icon: Microscope },
   { href: '/ai-tools', label: t('nav.ai_tools'), icon: Cpu },
   { href: '/analytics', label: t('nav.analytics'), icon: BarChart3 },
   { href: '/resources', label: t('nav.resources'), icon: Bookmark },

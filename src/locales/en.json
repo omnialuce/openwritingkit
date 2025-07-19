@@ -24,6 +24,8 @@
     "outline": "Outline Builder",
     "characters": "Characters",
     "plot_tools": "Plot Tools",
+    "world_building": "World Building",
+    "research": "Research",
     "ai_tools": "AI Tools",
     "analytics": "Analytics",
     "resources": "Resources",
@@ -916,6 +918,66 @@
       "export_started_desc": "Your documents are being zipped for download.",
       "export_failed_title": "Export Failed",
       "export_failed_desc": "Could not generate the zip file."
+    }
+  },
+  "world_building": {
+    "title": "World Building",
+    "description": "Create and manage the locales of your story's world.",
+    "create_button": "Create New Locale",
+    "no_locales": "No locales for this story yet. Start by creating one!",
+    "no_description": "No description provided.",
+    "no_story": {
+      "title": "No Active Story",
+      "description_1": "Please select or create a story from the",
+      "description_2": "Stories page",
+      "description_3": "to manage locales."
+    },
+    "delete_dialog": {
+      "title": "Are you sure?",
+      "description": "This action cannot be undone. This will permanently delete this locale."
+    },
+    "edit_dialog": {
+      "title": "Edit Locale",
+      "description": "Update the details for this locale."
+    },
+    "create_dialog": {
+      "title": "Create New Locale",
+      "description": "Add a new city, region, or point of interest to your world."
+    },
+    "fields": {
+      "name": "Locale Name",
+      "description": "Description",
+      "description_placeholder": "Describe the location, its atmosphere, key features, etc."
+    }
+  },
+  "research": {
+    "title": "Research Notes",
+    "description": "Collect and organize your research, ideas, and snippets.",
+    "create_button": "Create New Note",
+    "no_notes": "No research notes for this story yet. Start by creating one!",
+    "no_story": {
+      "title": "No Active Story",
+      "description_1": "Please select or create a story from the",
+      "description_2": "Stories page",
+      "description_3": "to manage research."
+    },
+    "delete_dialog": {
+      "title": "Are you sure?",
+      "description": "This action cannot be undone. This will permanently delete this research note."
+    },
+    "edit_dialog": {
+      "title": "Edit Research Note",
+      "description": "Update the details for this note."
+    },
+    "create_dialog": {
+      "title": "Create New Research Note",
+      "description": "Add a new piece of research to your collection."
+    },
+    "fields": {
+      "title": "Title",
+      "content": "Content",
+      "tags": "Tags (comma-separated)",
+      "tags_placeholder": "e.g., history, technology, character inspiration"
     }
   }
 }
