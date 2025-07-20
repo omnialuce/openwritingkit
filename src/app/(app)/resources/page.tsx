@@ -49,7 +49,6 @@ const resources: Resource[] = [
   // Inspiration
   { titleKey: "resources.list.inspiration_youtube_1.title", descriptionKey: "resources.list.inspiration_youtube_1.description", href: "https://youtu.be/lwhOd65gGoY", type: "Inspiration", icon: Lightbulb },
   { titleKey: "resources.list.emotion_thesaurus.title", descriptionKey: "resources.list.emotion_thesaurus.description", href: "https://www.bookdepository.com/Emotion-Thesaurus-Angela-Ackerman/9780999296349", type: "Inspiration", icon: BookHeart },
-  { titleKey: "resources.list.inspiration_youtube_2.title", descriptionKey: "resources.list.inspiration_youtube_2.description", href: "https://youtu.be/86x-u-tz0MA", type: "Inspiration", icon: Lightbulb },
   { titleKey: "resources.list.inspiration_youtube_3.title", descriptionKey: "resources.list.inspiration_youtube_3.description", href: "https://youtu.be/5ifMRNag2XU", type: "Inspiration", icon: Lightbulb },
   { titleKey: "resources.list.bird_by_bird.title", descriptionKey: "resources.list.bird_by_bird.description", href: "https://www.bookdepository.com/Bird-By-Bird-Anne-Lamott/9780385480017", type: "Inspiration", icon: BookHeart },
   { titleKey: "resources.list.inspiration_youtube_4.title", descriptionKey: "resources.list.inspiration_youtube_4.description", href: "https://m.youtube.com/watch?v=vIcnmiT0Mc8&index=1&list=PLTCv6n1whoI23GmdBZienRW0Q0nFCU_ay", type: "Inspiration", icon: Lightbulb },
