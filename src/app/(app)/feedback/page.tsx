@@ -52,7 +52,7 @@ export default function FeedbackPage() {
         setFeedbackType('general');
         setPage('general');
       } else {
-        throw new Error(result.message);
+        throw new Error(result.message || t('feedback.toast.error_desc'));
       }
     } catch (error) {
        toast({
