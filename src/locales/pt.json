@@ -584,45 +584,71 @@
       "button": "Me Pague um Café"
     }
   },
-    "resources": {
+  "resources": {
     "title": "Recursos de Escrita",
     "description": "Uma lista curada de artigos, ferramentas e comunidades úteis para escritores.",
     "visit_site": "Visitar Site",
+    "no_results": "Nenhum resultado encontrado para o filtro '{{filter}}'.",
     "suggestion_box": {
       "title": "Tem uma sugestão?",
-      "description": "Este é um projeto de código aberto. Se você tem um recurso que adoraria ver aqui, considere contribuir no GitHub!"
+      "description": "Este é um projeto de código aberto. Se você tem um recurso que adoraria ver aqui, considere contribuir no GitHub!",
+      "source_credit": "Fonte de muitos links: Writer's Side of Life"
     },
     "types": {
-      "article": "Artigo",
+      "all": "Todos",
       "podcast": "Podcast",
+      "blog": "Blog",
       "tool": "Ferramenta",
-      "guide": "Guia"
+      "inspiration": "Inspiração",
+      "article": "Artigo",
+      "guide": "Guia",
+      "planning": "Planejamento"
     },
     "list": {
-      "nanowrimo": {
-        "title": "NaNoWriMo",
-        "description": "Participe do desafio do Mês Nacional de Escrita de Romances. Uma ótima comunidade para motivação."
-      },
-      "reedsy": {
-        "title": "Blog da Reedsy",
-        "description": "Uma vasta gama de artigos sobre escrita, edição e publicação."
-      },
-      "writing_excuses": {
-        "title": "Podcast Writing Excuses",
-        "description": "Quinze minutos de duração, porque você está com pressa, e nós não somos tão espertos."
-      },
-      "creative_penn": {
-        "title": "The Creative Penn",
-        "description": "Artigos, podcast e recursos para autores sobre escrita e o negócio da escrita."
-      },
-      "helping_writers": {
-        "title": "Helping Writers Become Authors",
-        "description": "O site de K.M. Weiland oferece insights profundos sobre estrutura de história e arcos de personagem."
-      },
-      "one_stop": {
-        "title": "One Stop for Writers",
-        "description": "Uma potência de ferramentas e recursos para escritores, incluindo dicionários de sinônimos e construtores de personagens."
-      }
+      "reedsy_blog": { "title": "Blog da Reedsy", "description": "Uma vasta gama de artigos sobre escrita, edição e publicação." },
+      "creative_penn": { "title": "The Creative Penn", "description": "Artigos, podcast e recursos para autores sobre escrita e o negócio da escrita." },
+      "helping_writers": { "title": "Helping Writers Become Authors", "description": "O site de K.M. Weiland oferece insights profundos sobre estrutura de história e arcos de personagem." },
+      "one_stop": { "title": "One Stop for Writers", "description": "Uma potência de ferramentas e recursos para escritores, incluindo dicionários de sinônimos e construtores de personagens." },
+      "self_publishing_podcast": { "title": "Self Publishing Podcast", "description": "Entrevistas e discussões sobre autopublicação, marketing e ofício da escrita." },
+      "shutup_write": { "title": "Podcast Shut Up & Write!", "description": "Foca nos aspectos práticos e disciplina da vida de escritor." },
+      "rocking_self_publishing": { "title": "Rocking Self Publishing", "description": "Insights e entrevistas para autores autopublicados que buscam o sucesso." },
+      "dead_robots_society": { "title": "Dead Robots' Society", "description": "Um podcast de aspirantes a escritores para aspirantes a escritores, cobrindo tudo sobre escrita." },
+      "grammar_girl": { "title": "Grammar Girl", "description": "Dicas rápidas e diretas para melhorar sua escrita, com foco em gramática e estilo." },
+      "terrible_minds": { "title": "TerribleMinds", "description": "O blog de Chuck Wendig sobre escrita, narração de histórias e a vida de autor." },
+      "storyfix": { "title": "Story-Fix", "description": "Larry Brooks oferece coaching e insights sobre estrutura de história e ficção comercial." },
+      "copyblogger": { "title": "Copyblogger", "description": "Conselhos sobre marketing de conteúdo e escrita que podem ser aplicados à ficção." },
+      "litreactor": { "title": "LitReactor", "description": "Uma comunidade online de escrita que oferece aulas, workshops e uma revista." },
+      "rewrite_reword": { "title": "Rewrite, Reword, Rework", "description": "Um blog focado nos aspectos práticos de edição e revisão de seu trabalho." },
+      "slushpile_hell": { "title": "Slush-Pile Hell", "description": "Contos humorísticos e de advertência da pilha de manuscritos de um agente literário." },
+      "scribophile": { "title": "Scribophile", "description": "Uma das maiores e mais ativas comunidades de escrita e grupos de crítica online." },
+      "submittable": { "title": "Submittable", "description": "Uma plataforma para descobrir e enviar para revistas literárias e concursos." },
+      "the_grinder": { "title": "The Grinder", "description": "Uma ferramenta gratuita para escritores encontrarem mercados para sua ficção e acompanharem os envios." },
+      "reedsy_title_gen": { "title": "Gerador de Títulos de Livros", "description": "Uma ferramenta da Reedsy para ajudar a brainstorm de títulos para seu livro." },
+      "behind_the_name": { "title": "Behind the Name", "description": "Um recurso abrangente para encontrar a etimologia e a história dos nomes." },
+      "word_counters": { "title": "WordCounters", "description": "Uma ferramenta para contar palavras e analisar texto para densidade de palavras-chave e outras métricas." },
+      "inspiration_youtube_1": { "title": "Kurt Vonnegut sobre as Formas das Histórias", "description": "Uma palestra clássica e humorística sobre as formas básicas de enredos de histórias." },
+      "emotion_thesaurus": { "title": "The Emotion Thesaurus", "description": "Um livro popular para escritores para ajudar a mostrar, não contar, as emoções dos personagens." },
+      "inspiration_youtube_2": { "title": "J.K. Rowling Discursa em Harvard", "description": "Um discurso inspirador sobre os benefícios do fracasso e o poder da imaginação." },
+      "inspiration_youtube_3": { "title": "As Pistas para uma Ótima História", "description": "A palestra TED de Andrew Stanton sobre os fundamentos da narração de histórias." },
+      "bird_by_bird": { "title": "Bird by Bird por Anne Lamott", "description": "Um livro querido que oferece conselhos sobre escrita e vida com humor e sabedoria." },
+      "inspiration_youtube_4": { "title": "Série de Palestras de Brandon Sanderson", "description": "Um curso universitário completo sobre escrita de ficção científica e fantasia, disponível no YouTube." },
+      "article_character_setting": { "title": "Mostrando Personagem Através do Cenário", "description": "Um artigo sobre como usar o cenário para revelar traços de personagem." },
+      "article_research_tips": { "title": "7 Dicas para Pesquisar Seu Romance", "description": "Conselhos práticos sobre como pesquisar eficazmente para sua história." },
+      "article_after_book": { "title": "O Que Fazer Depois de Terminar Seu Livro", "description": "Um guia sobre os próximos passos após concluir seu manuscrito." },
+      "article_beta_reader": { "title": "Seis Conjuntos de Perguntas para Fazer como Leitor Beta", "description": "Um quadro útil para dar e receber feedback construtivo." },
+      "article_free_marketing": { "title": "50+ Maneiras de Divulgar Seu Livro de Graça", "description": "Uma lista de estratégias de marketing gratuitas para autores." },
+      "article_pinterest": { "title": "Pinterest para Blogueiros e Escritores", "description": "Como usar o Pinterest como ferramenta de inspiração e marketing." },
+      "article_book_genre": { "title": "Você Conhece o Gênero do Seu Livro?", "description": "Um artigo explicando a importância de entender os gêneros de livros." },
+      "article_who_reading": { "title": "Quem Você Está Lendo?", "description": "Discute a importância de ler dentro do seu gênero." },
+      "article_short_story_comps": { "title": "Competições de Contos", "description": "Uma lista de competições de escrita para participar." },
+      "article_legal_tips": { "title": "7 Dicas Legais para Escritores", "description": "Conselhos legais essenciais que todo escritor deve saber." },
+      "article_copyright": { "title": "Entendendo Direitos Autorais e Direitos Conexos", "description": "Um guia em PDF da Organização Mundial da Propriedade Intelectual." },
+      "article_100_websites": { "title": "Os 100 Melhores Sites para Escritores em 2018", "description": "Uma lista abrangente de valiosos recursos online para escritores." },
+      "writing_bad": { "title": "Writing Bad", "description": "Um guia sobre o que não fazer, oferecendo lições através de maus exemplos." },
+      "writers_digest": { "title": "Writer's Digest", "description": "Um recurso de longa data para escritores com artigos, competições e conselhos." },
+      "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "Um site e curso dedicado a ajudar autores a se autopublicarem." },
+      "planning_worksheets": { "title": "Planilhas de Jami Gold", "description": "Uma coleção de planilhas detalhadas para planejamento de enredo, personagens e cenas." },
+      "planning_take_off_pants": { "title": "Tire as Calças! por Libbie Hawker", "description": "Um livro focado em um método simples e eficaz para estruturar seu romance." }
     }
   },
   "editor": {

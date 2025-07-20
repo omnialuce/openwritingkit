@@ -584,45 +584,71 @@
       "button": "Buy Me a Coffee"
     }
   },
-    "resources": {
+  "resources": {
     "title": "Writing Resources",
     "description": "A curated list of helpful articles, tools, and communities for writers.",
     "visit_site": "Visit Site",
+    "no_results": "No results found for the '{{filter}}' filter.",
     "suggestion_box": {
       "title": "Have a suggestion?",
-      "description": "This is an open-source project. If you have a resource you'd love to see here, consider contributing on GitHub!"
+      "description": "This is an open-source project. If you have a resource you'd love to see here, consider contributing on GitHub!",
+      "source_credit": "Source for many links: Writer's Side of Life"
     },
     "types": {
-      "article": "Article",
+      "all": "All",
       "podcast": "Podcast",
+      "blog": "Blog",
       "tool": "Tool",
-      "guide": "Guide"
+      "inspiration": "Inspiration",
+      "article": "Article",
+      "guide": "Guide",
+      "planning": "Planning"
     },
     "list": {
-      "nanowrimo": {
-        "title": "NaNoWriMo",
-        "description": "Join the National Novel Writing Month challenge. A great community for motivation."
-      },
-      "reedsy": {
-        "title": "Reedsy Blog",
-        "description": "A wealth of articles on writing, editing, and publishing."
-      },
-      "writing_excuses": {
-        "title": "Writing Excuses Podcast",
-        "description": "Fifteen minutes long, because you're in a hurry, and we're not that smart."
-      },
-      "creative_penn": {
-        "title": "The Creative Penn",
-        "description": "Articles, podcast, and resources for authors on writing and the business of writing."
-      },
-      "helping_writers": {
-        "title": "Helping Writers Become Authors",
-        "description": "K.M. Weiland's site offers deep insights into story structure and character arcs."
-      },
-      "one_stop": {
-        "title": "One Stop for Writers",
-        "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders."
-      }
+      "reedsy_blog": { "title": "Reedsy Blog", "description": "A wealth of articles on writing, editing, and publishing." },
+      "creative_penn": { "title": "The Creative Penn", "description": "Articles, podcast, and resources for authors on writing and the business of writing." },
+      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
+      "one_stop": { "title": "One Stop for Writers", "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders." },
+      "self_publishing_podcast": { "title": "Self Publishing Podcast", "description": "Interviews and discussions on self-publishing, marketing, and writing craft." },
+      "shutup_write": { "title": "Shut Up & Write! Podcast", "description": "Focuses on the practical aspects and discipline of a writing life." },
+      "rocking_self_publishing": { "title": "Rocking Self Publishing", "description": "Insights and interviews for self-published authors looking to succeed." },
+      "dead_robots_society": { "title": "Dead Robots' Society", "description": "A podcast by aspiring writers for aspiring writers, covering all things writing." },
+      "grammar_girl": { "title": "Grammar Girl", "description": "Quick and dirty tips to improve your writing, focusing on grammar and style." },
+      "terrible_minds": { "title": "TerribleMinds", "description": "Chuck Wendig's blog on writing, storytelling, and the author life." },
+      "storyfix": { "title": "Story-Fix", "description": "Larry Brooks offers coaching and insights on story structure and commercial fiction." },
+      "copyblogger": { "title": "Copyblogger", "description": "Content marketing and writing advice that can be applied to fiction." },
+      "litreactor": { "title": "LitReactor", "description": "An online writing community offering classes, workshops, and a magazine." },
+      "rewrite_reword": { "title": "Rewrite, Reword, Rework", "description": "A blog focused on the practicalities of editing and revising your work." },
+      "slushpile_hell": { "title": "Slush-Pile Hell", "description": "Humorous and cautionary tales from the slush pile of a literary agent." },
+      "scribophile": { "title": "Scribophile", "description": "One of the largest and most active online writing communities and critique groups." },
+      "submittable": { "title": "Submittable", "description": "A platform for discovering and submitting to literary magazines and contests." },
+      "the_grinder": { "title": "The Grinder", "description": "A free tool for writers to find markets for their fiction and track submissions." },
+      "reedsy_title_gen": { "title": "Book Title Generator", "description": "A tool by Reedsy to help you brainstorm titles for your book." },
+      "behind_the_name": { "title": "Behind the Name", "description": "A comprehensive resource for finding the etymology and history of names." },
+      "word_counters": { "title": "WordCounters", "description": "A tool to count words and analyze text for keyword density and other metrics." },
+      "inspiration_youtube_1": { "title": "Kurt Vonnegut on the Shapes of Stories", "description": "A classic, humorous lecture on the basic shapes of story plots." },
+      "emotion_thesaurus": { "title": "The Emotion Thesaurus", "description": "A popular book for writers to help show, not tell, character emotions." },
+      "inspiration_youtube_2": { "title": "J.K. Rowling Speaks at Harvard", "description": "An inspiring speech on the benefits of failure and the power of imagination." },
+      "inspiration_youtube_3": { "title": "The Clues to a Great Story", "description": "Andrew Stanton's TED talk on the fundamentals of storytelling." },
+      "bird_by_bird": { "title": "Bird by Bird by Anne Lamott", "description": "A beloved book offering advice on writing and life with humor and wisdom." },
+      "inspiration_youtube_4": { "title": "Brandon Sanderson's Lecture Series", "description": "A full university course on writing science fiction and fantasy, available on YouTube." },
+      "article_character_setting": { "title": "Showing Character Through Setting", "description": "An article on how to use setting to reveal character traits." },
+      "article_research_tips": { "title": "Top 7 Tips for Researching Your Novel", "description": "Practical advice on how to effectively research for your story." },
+      "article_after_book": { "title": "What To Do After You Finish Your Book", "description": "A guide on the next steps after completing your manuscript." },
+      "article_beta_reader": { "title": "Six Sets of Questions to Ask as a Beta Reader", "description": "A useful framework for giving and receiving constructive feedback." },
+      "article_free_marketing": { "title": "50+ Ways To Market Your Book For Free", "description": "A list of free marketing strategies for authors." },
+      "article_pinterest": { "title": "Pinterest For Bloggers and Writers", "description": "How to use Pinterest as a tool for inspiration and marketing." },
+      "article_book_genre": { "title": "Do You Know Your Book Genre?", "description": "An article explaining the importance of understanding book genres." },
+      "article_who_reading": { "title": "Who Are You Reading?", "description": "Discusses the importance of reading within your genre." },
+      "article_short_story_comps": { "title": "Short Story Competitions", "description": "A list of writing competitions to enter." },
+      "article_legal_tips": { "title": "7 Legal Tips for Writers", "description": "Essential legal advice every writer should know." },
+      "article_copyright": { "title": "Understanding Copyright and Related Rights", "description": "A PDF guide from the World Intellectual Property Organization." },
+      "article_100_websites": { "title": "The 100 Best Websites for Writers in 2018", "description": "A comprehensive list of valuable online resources for writers." },
+      "writing_bad": { "title": "Writing Bad", "description": "A guide on what not to do, offering lessons through bad examples." },
+      "writers_digest": { "title": "Writer's Digest", "description": "A long-standing resource for writers with articles, competitions, and advice." },
+      "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "A website and course dedicated to helping authors self-publish." },
+      "planning_worksheets": { "title": "Jami Gold's Worksheets", "description": "A collection of in-depth worksheets for plot, character, and scene planning." },
+      "planning_take_off_pants": { "title": "Take Off Your Pants! by Libbie Hawker", "description": "A book focused on a simple, effective method for outlining your novel." }
     }
   },
   "editor": {
@@ -631,7 +657,7 @@
     "no_story_description": "The editor is disabled until a story is selected.",
     "no_story_message": "Please select a story to start writing.",
     "go_to_stories": "Go to Stories Page",
-    "initializing": "Initialising editor...",
+    "initializing": "Initializing editor...",
     "open_doc_button": "Open Document",
     "open_doc_button_title": "Open Document",
     "close_doc_button_title": "Close Document",
@@ -647,8 +673,8 @@
     "focus_mode": "Focus Mode",
     "exit_focus_mode": "Exit Focus Mode",
     "full_screen_mode": "Full Screen Mode",
-    "customize_theme_title": "Customise Theme",
-    "customize_view_title": "Customise View",
+    "customize_theme_title": "Customize Theme",
+    "customize_view_title": "Customize View",
     "customize_view": {
       "view_options": "View Options",
       "focus_mode": "Focus Mode",
