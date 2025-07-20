@@ -34,7 +34,7 @@ This is a Next.js app designed to be an intelligent,comprehensive, open-source w
 - Next.js (App Router)
 - React & TypeScript
 - Tailwind CSS & ShadCN UI Components
-- Firebase (for Authentication)
+- Firebase (for Authentication and Email Triggering)
 - Genkit (for AI features)
 
 ---
@@ -74,20 +74,28 @@ npm install
 
 ### 4. Set Up Firebase
 
-This application uses Firebase for user authentication. You will need to create a free Firebase project to get the required credentials.
+This application uses Firebase for user authentication and for sending feedback emails. You will need to create a free Firebase project to get the required credentials.
 
 1.  **Create a Firebase Project**: Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
 2.  **Enable Email/Password Authentication**:
     - In your Firebase project, go to the **Authentication** section.
     - Click the **"Sign-in method"** tab.
     - Enable the **Email/Password** provider.
-3.  **Create a Web App**:
+3.  **Enable Firestore**:
+    - In your Firebase project, go to the **Firestore Database** section.
+    - Create a new database in **Production mode**. You can choose any region.
+4.  **Install the "Trigger Email" Extension**:
+    - In the Firebase Console, navigate to **Build > Extensions**.
+    - Search for the **"Trigger Email"** extension and click **Install**.
+    - You will be asked to configure it. For the **"SMTP connection URI"**, you will need credentials from an email service like SendGrid, Mailgun, or your own SMTP server. A common choice is to use a new Gmail "App Password".
+    - Set the **"Mail documents collection"** to `mail`. This is the collection the app will write to.
+5.  **Create a Web App**:
     - Go to your Project Settings (click the gear icon).
     - Under "Your apps", click the web icon (`</>`) to create a new web app.
     - Give it a nickname and register the app.
-4.  **Get Firebase Credentials**:
+6.  **Get Firebase Credentials**:
     - After registering, Firebase will give you a `firebaseConfig` object. This contains your API keys. You will need these for the next step.
-5.  **Create an Environment File**:
+7.  **Create an Environment File**:
     - In the root of your project, create a new file named `.env`.
     - Copy the contents of your `firebaseConfig` object into this file, adding the `NEXT_PUBLIC_` prefix to each key. It should look like this:
 

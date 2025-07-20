@@ -6,23 +6,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Coffee, Send, MessageCircleQuestion } from 'lucide-react';
+import { MessageSquare, Coffee, Send, MessageCircleQuestion, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { sendFeedback } from '@/ai/flows/send-feedback-flow';
 
 export default function FeedbackPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [feedbackType, setFeedbackType] = useState('general');
   const [page, setPage] = useState('general');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) {
+    if (!message.trim() || !user) {
       toast({
         title: t('feedback.toast.empty_title'),
         description: t('feedback.toast.empty_desc'),
@@ -31,16 +34,35 @@ export default function FeedbackPage() {
       return;
     }
 
-    const subject = `OpenWritingKit Feedback: [${feedbackType}] on [${page}]`;
-    const body = encodeURIComponent(message);
-    const mailtoLink = `mailto:owk@omnialuce.tech?subject=${encodeURIComponent(subject)}&body=${body}`;
-
-    window.location.href = mailtoLink;
-    
-    toast({
-      title: t('feedback.toast.success_title'),
-      description: t('feedback.toast.success_desc'),
-    });
+    setIsSubmitting(true);
+    try {
+      const result = await sendFeedback({
+        type: feedbackType,
+        page,
+        message,
+        from: user.email || 'anonymous',
+      });
+      
+      if (result.success) {
+        toast({
+          title: t('feedback.toast.success_title'),
+          description: t('feedback.toast.success_desc_direct'),
+        });
+        setMessage('');
+        setFeedbackType('general');
+        setPage('general');
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+       toast({
+        title: t('common.error'),
+        description: (error as Error).message || t('feedback.toast.error_desc'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -67,7 +89,7 @@ export default function FeedbackPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="feedback-type">{t('feedback.form.type_label')}</Label>
-                <Select value={feedbackType} onValueChange={setFeedbackType}>
+                <Select value={feedbackType} onValueChange={setFeedbackType} disabled={isSubmitting}>
                   <SelectTrigger id="feedback-type">
                     <SelectValue placeholder={t('feedback.form.type_placeholder')} />
                   </SelectTrigger>
@@ -80,7 +102,7 @@ export default function FeedbackPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="page-context">{t('feedback.form.page_label')}</Label>
-                <Select value={page} onValueChange={setPage}>
+                <Select value={page} onValueChange={setPage} disabled={isSubmitting}>
                   <SelectTrigger id="page-context">
                     <SelectValue placeholder={t('feedback.form.page_placeholder')} />
                   </SelectTrigger>
@@ -107,12 +129,13 @@ export default function FeedbackPage() {
                   placeholder={t('feedback.form.message_placeholder')}
                   rows={8}
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </CardContent>
             <CardContent>
-               <Button type="submit" className="w-full">
-                <Send className="mr-2 h-4 w-4" />
+               <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                 {t('feedback.form.submit_button')}
               </Button>
             </CardContent>

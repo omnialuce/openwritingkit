@@ -568,8 +568,10 @@
     "toast": {
       "empty_title": "Message is empty",
       "empty_desc": "Please write something before submitting.",
-      "success_title": "Opening Email Client",
-      "success_desc": "Please send your feedback through your email application."
+      "success_title": "Feedback Sent",
+      "success_desc": "Please send your feedback through your email application.",
+      "success_desc_direct": "Thank you! Your feedback has been sent.",
+      "error_desc": "Could not send feedback. Please try again or use the support email."
     },
     "contact": {
         "title": "Contact Support",
