@@ -11,32 +11,44 @@ import { Loader2, Activity } from 'lucide-react';
 import { analyzeTextPacing, type AnalyzeTextPacingInput } from '@/ai/flows/analyze-text-insights';
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useStoryContext, getDocumentsStorageKey } from '@/contexts/StoryContext';
+import { useStoryContext, getDocumentsStorageKey, getEditorContentKey } from '@/contexts/StoryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { storage } from '@/lib/storage';
+import { useAuth } from '@/contexts/AuthContext';
+
+
+interface DocumentItemFlat {
+  id: string;
+  name: string;
+}
 
 interface DocumentItem {
   id: string;
   name: string;
   type: string;
-  content?: string;
   children?: DocumentItem[];
+}
+
+interface EditorData {
+    current: string;
 }
 
 export function PacingAnalyzerCard() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
-  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [documents, setDocuments] = useState<DocumentItemFlat[]>([]);
   const [selectedDocumentId, setSelectedDocumentId] = useState('');
   const [genre, setGenre] = useState('');
   const [analysis, setAnalysis] = useState<{ pacingAnalysis: string; recommendations: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const flattenDocuments = (items: DocumentItem[]): DocumentItem[] => {
-    let flatList: DocumentItem[] = [];
+  const flattenDocuments = (items: DocumentItem[]): DocumentItemFlat[] => {
+    let flatList: DocumentItemFlat[] = [];
     for (const item of items) {
       if (item.type === 'file' || item.type === 'scene') {
-        flatList.push(item);
+        flatList.push({id: item.id, name: item.name});
       }
       if (item.children) {
         flatList = flatList.concat(flattenDocuments(item.children));
@@ -46,8 +58,8 @@ export function PacingAnalyzerCard() {
   };
   
   useEffect(() => {
-    if (activeStoryId) {
-      const docKey = getDocumentsStorageKey(activeStoryId);
+    if (activeStoryId && user) {
+      const docKey = getDocumentsStorageKey(activeStoryId, user.uid);
       const storedDocs = localStorage.getItem(docKey);
       if (storedDocs) {
         try {
@@ -63,18 +75,21 @@ export function PacingAnalyzerCard() {
       setDocuments([]);
     }
     setSelectedDocumentId('');
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDocumentId) {
+    if (!selectedDocumentId || !activeStoryId || !user) {
         toast({ title: t('pacing_analyzer.toast.no_doc_title'), description: t('pacing_analyzer.toast.no_doc_desc'), variant: "destructive" });
         return;
     }
     
-    const selectedDoc = documents.find(d => d.id === selectedDocumentId);
-    if (!selectedDoc || !selectedDoc.content) {
+    const editorKey = getEditorContentKey(activeStoryId, selectedDocumentId, user.uid);
+    const editorData = await storage.getItem<EditorData>(editorKey);
+    const content = editorData?.current;
+
+    if (!content || content === '<p></p>') {
         toast({ title: t('pacing_analyzer.toast.doc_empty_title'), description: t('pacing_analyzer.toast.doc_empty_desc'), variant: "destructive" });
         return;
     }
@@ -83,7 +98,7 @@ export function PacingAnalyzerCard() {
     setAnalysis(null);
 
     try {
-      const input: AnalyzeTextPacingInput = { text: selectedDoc.content, genre: genre || undefined };
+      const input: AnalyzeTextPacingInput = { text: content, genre: genre || undefined };
       const result = await analyzeTextPacing(input);
       setAnalysis(result);
     } catch (error) {
@@ -113,7 +128,7 @@ export function PacingAnalyzerCard() {
             <Label htmlFor="document-to-analyze">{t('pacing_analyzer.doc_label')}</Label>
             <Select value={selectedDocumentId} onValueChange={setSelectedDocumentId} disabled={!activeStoryId || documents.length === 0}>
                 <SelectTrigger id="document-to-analyze">
-                    <SelectValue placeholder={!activeStoryId ? t('pacing_analyzer.no_story_placeholder') : t('pacing_analyzer.doc_placeholder')} />
+                    <SelectValue placeholder={!activeStoryId ? t('pacing_analyzer.no_story_placeholder') : (documents.length > 0 ? t('pacing_analyzer.doc_placeholder') : t('documents.empty_state.message'))} />
                 </SelectTrigger>
                 <SelectContent>
                     {documents.map(doc => (

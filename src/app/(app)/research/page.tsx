@@ -9,12 +9,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Microscope, PlusCircle, Edit, Trash2, AlertTriangle, Badge } from 'lucide-react';
+import { Microscope, PlusCircle, Edit, Trash2, AlertTriangle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getResearchStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 export interface ResearchNote {
   id: string;
@@ -36,8 +37,8 @@ export default function ResearchPage() {
   const [tags, setTags] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getResearchStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getResearchStorageKey(activeStoryId, user.uid);
       const storedNotes = localStorage.getItem(storageKey);
       if (storedNotes) {
         setNotes(JSON.parse(storedNotes));
@@ -50,8 +51,8 @@ export default function ResearchPage() {
   }, [activeStoryId, user]);
 
   const saveNotes = (updatedNotes: ResearchNote[]) => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getResearchStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getResearchStorageKey(activeStoryId, user.uid);
       setNotes(updatedNotes);
       localStorage.setItem(storageKey, JSON.stringify(updatedNotes));
     }

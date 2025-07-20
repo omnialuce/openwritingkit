@@ -30,8 +30,8 @@ export default function WorldBuildingPage() {
   const [tags, setTags] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getWorldBuildingStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getWorldBuildingStorageKey(activeStoryId, user.uid);
       const storedLocales = localStorage.getItem(storageKey);
       if (storedLocales) {
         setLocales(JSON.parse(storedLocales));
@@ -44,8 +44,8 @@ export default function WorldBuildingPage() {
   }, [activeStoryId, user]);
 
   const saveLocales = (updatedLocales: Locale[]) => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getWorldBuildingStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getWorldBuildingStorageKey(activeStoryId, user.uid);
       setLocales(updatedLocales);
       localStorage.setItem(storageKey, JSON.stringify(updatedLocales));
     }

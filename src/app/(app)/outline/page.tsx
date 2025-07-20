@@ -226,8 +226,8 @@ export default function OutlineBuilderPage() {
   const [editNotes, setEditNotes] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
       const storedItems = localStorage.getItem(outlineStorageKey);
       if (storedItems) {
         try {
@@ -250,8 +250,8 @@ export default function OutlineBuilderPage() {
   }, [activeStoryId, user]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
       localStorage.setItem(outlineStorageKey, JSON.stringify(items));
     }
   }, [items, activeStoryId, user]);

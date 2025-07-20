@@ -76,8 +76,8 @@ export default function PlotToolsPage() {
 
   // Load Plot Points
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user.uid);
       const storedPlotPoints = localStorage.getItem(plotPointsStorageKey);
       if (storedPlotPoints) {
         setPlotPoints(JSON.parse(storedPlotPoints));
@@ -93,8 +93,8 @@ export default function PlotToolsPage() {
 
   // Load Timeline Events
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user.uid);
       const storedTimelineEvents = localStorage.getItem(timelineEventsStorageKey);
       if (storedTimelineEvents) {
         setTimelineEvents(JSON.parse(storedTimelineEvents));
@@ -108,8 +108,8 @@ export default function PlotToolsPage() {
   
   // Load Outline Items for Scene Summaries
   useEffect(() => {
-      if (typeof window !== 'undefined' && activeStoryId) {
-          const outlineStorageKey = getOutlineStorageKey(activeStoryId, user?.uid);
+      if (typeof window !== 'undefined' && activeStoryId && user) {
+          const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
           const storedOutline = localStorage.getItem(outlineStorageKey);
           if (storedOutline) {
               try {
@@ -144,8 +144,8 @@ export default function PlotToolsPage() {
 
   // Save Plot Points
   const handlePlotPointChange = (id: string, newDescription: string) => {
-    if (!activeStoryId) return;
-    const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user?.uid);
+    if (!activeStoryId || !user) return;
+    const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user.uid);
     const updatedPlotPoints = plotPoints.map(pp => 
       pp.id === id ? { ...pp, description: newDescription } : pp
     );
@@ -157,8 +157,8 @@ export default function PlotToolsPage() {
 
   // Save Timeline Events (helper)
   const saveTimelineEvents = (updatedEvents: TimelineEvent[]) => {
-    if (!activeStoryId) return;
-    const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user?.uid);
+    if (!activeStoryId || !user) return;
+    const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user.uid);
     setTimelineEvents(updatedEvents);
     if (typeof window !== 'undefined') {
       localStorage.setItem(timelineEventsStorageKey, JSON.stringify(updatedEvents));

@@ -66,7 +66,7 @@ export default function AnalyticsPage() {
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   
-  const activityLogStorageKey = getActivityLogKey();
+  const activityLogStorageKey = getActivityLogKey(activeStoryId, user?.uid);
 
   const loadActivityLog = useCallback(async () => {
     if (activityLogStorageKey) {

@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import type { CharacterProfile } from '@/app/(app)/characters/page';
+import { storage } from '@/lib/storage';
 
 export interface Locale {
   id: string;
@@ -52,7 +53,7 @@ interface StoryContextType {
   historyDocumentId: string | null;
   setHistoryDocumentId: (docId: string | null) => void;
   consumeHistoryDocumentId: () => string | null;
-  getActivityLogKey: () => string | null;
+  getActivityLogKey: (storyId: string | null, userId: string | null | undefined) => string | null;
 }
 
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
@@ -208,7 +209,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
         getResearchStorageKey(storyId, uid),
     ];
 
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    keysToRemove.forEach(key => key && localStorage.removeItem(key));
     
     // Finally remove the story itself from the stories list
     const updatedStories = stories.filter(s => s.id !== storyId);
@@ -227,9 +228,9 @@ export function StoryProvider({ children }: { children: ReactNode }) {
     }
   }, [user, loadDataForUser]);
 
-  const getActivityLogKey = useCallback(() => {
-    return activeStoryId && user?.uid ? `openwritingkit-story-${activeStoryId}-activity-log-user-${user.uid}` : null;
-  }, [activeStoryId, user?.uid]);
+  const getActivityLogKey = useCallback((storyId: string | null, userId: string | null | undefined): string | null => {
+    return storyId && userId ? `openwritingkit-story-${storyId}-activity-log-user-${userId}` : null;
+  }, []);
 
 
   if (!isLoaded) {
@@ -297,10 +298,5 @@ export const getLocaleSheetStorageKey = (storyId: string | null, localeId: strin
 export const getResearchStorageKey = (storyId: string | null, userId: string | undefined | null): string => {
     return storyId && userId ? `openwritingkit-story-${storyId}-research-user-${userId}` : 'openwritingkit-research-noactive';
 }
-
-export function getActivityLogKey(storyId: string | null, userId: string | undefined | null): string | null {
-    return storyId && userId ? `openwritingkit-story-${storyId}-activity-log-user-${userId}` : null;
-}
-
 
 export type { CharacterProfile, Locale, Story };

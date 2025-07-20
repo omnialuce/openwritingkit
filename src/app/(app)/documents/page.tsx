@@ -1,5 +1,3 @@
-
-
 // src/app/(app)/documents/page.tsx
 'use client';
 
@@ -502,38 +500,42 @@ export default function DocumentsPage() {
       {/* CREATE ITEM DIALOG */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent>
-            <DialogHeader>
-                <DialogTitle>{t('documents.create_dialog.title')}</DialogTitle>
-                <DialogDescription>
-                    {t('documents.create_dialog.description')}
-                </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateItem}>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="create-name" className="text-right">{t('documents.fields.name')}</Label>
-                        <Input id="create-name" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} className="col-span-3" required />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="create-type" className="text-right">{t('documents.fields.type')}</Label>
-                        <Select value={newItemType} onValueChange={(v) => setNewItemType(v as DocumentItem['type'])}>
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder={t('documents.fields.select_type_placeholder')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="file">{t('documents.types.file')}</SelectItem>
-                                <SelectItem value="scene">{t('documents.types.scene')}</SelectItem>
-                                <SelectItem value="chapter">{t('documents.types.chapter')}</SelectItem>
-                                <SelectItem value="folder">{t('documents.types.folder')}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <DialogClose asChild><Button type="button" variant="outline">{t('common.cancel')}</Button></DialogClose>
-                    <Button type="submit">{t('documents.create_dialog.create_button')}</Button>
-                </DialogFooter>
-            </form>
+          <ScrollArea className="max-h-[80vh]">
+            <div className="p-1 pr-3">
+              <DialogHeader>
+                  <DialogTitle>{t('documents.create_dialog.title')}</DialogTitle>
+                  <DialogDescription>
+                      {t('documents.create_dialog.description')}
+                  </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateItem}>
+                  <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="create-name" className="text-right">{t('documents.fields.name')}</Label>
+                          <Input id="create-name" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} className="col-span-3" required />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="create-type" className="text-right">{t('documents.fields.type')}</Label>
+                          <Select value={newItemType} onValueChange={(v) => setNewItemType(v as DocumentItem['type'])}>
+                              <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder={t('documents.fields.select_type_placeholder')} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                  <SelectItem value="file">{t('documents.types.file')}</SelectItem>
+                                  <SelectItem value="scene">{t('documents.types.scene')}</SelectItem>
+                                  <SelectItem value="chapter">{t('documents.types.chapter')}</SelectItem>
+                                  <SelectItem value="folder">{t('documents.types.folder')}</SelectItem>
+                              </SelectContent>
+                          </Select>
+                      </div>
+                  </div>
+                  <DialogFooter>
+                      <DialogClose asChild><Button type="button" variant="outline">{t('common.cancel')}</Button></DialogClose>
+                      <Button type="submit">{t('documents.create_dialog.create_button')}</Button>
+                  </DialogFooter>
+              </form>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
@@ -541,60 +543,64 @@ export default function DocumentsPage() {
       {selectedItemForDialog && (
         <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
           <DialogContent className="sm:max-w-[525px]">
-            <DialogHeader>
-              <DialogTitle>{t('documents.details_dialog.title', { name: selectedItemForDialog.name })}</DialogTitle>
-              <DialogDescription>
-                {t('documents.details_dialog.description', { type: selectedItemForDialog.type })}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">{t('documents.fields.name')}</Label>
-                <Input id="name" value={editedName} onChange={(e) => setEditedName(e.target.value)} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="notes" className="text-right pt-2">{t('documents.fields.notes')}</Label>
-                <Textarea id="notes" value={editedNotes} onChange={(e) => setEditedNotes(e.target.value)} className="col-span-3" placeholder={t('documents.fields.notes_placeholder')} rows={3}/>
-              </div>
+            <ScrollArea className="max-h-[80vh]">
+              <div className="p-1 pr-3">
+                <DialogHeader>
+                  <DialogTitle>{t('documents.details_dialog.title', { name: selectedItemForDialog.name })}</DialogTitle>
+                  <DialogDescription>
+                    {t('documents.details_dialog.description', { type: selectedItemForDialog.type })}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">{t('documents.fields.name')}</Label>
+                    <Input id="name" value={editedName} onChange={(e) => setEditedName(e.target.value)} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-start gap-4">
+                    <Label htmlFor="notes" className="text-right pt-2">{t('documents.fields.notes')}</Label>
+                    <Textarea id="notes" value={editedNotes} onChange={(e) => setEditedNotes(e.target.value)} className="col-span-3" placeholder={t('documents.fields.notes_placeholder')} rows={3}/>
+                  </div>
 
-              {(selectedItemForDialog.type === 'scene' || selectedItemForDialog.type === 'file') && (
-                <>
+                  {(selectedItemForDialog.type === 'scene' || selectedItemForDialog.type === 'file') && (
+                    <>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="words" className="text-right">{t('documents.fields.word_count')}</Label>
+                        <Input id="words" type="number" value={editedWords} onChange={(e) => setEditedWords(e.target.value)} className="col-span-3" />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status" className="text-right">{t('documents.fields.status')}</Label>
+                        <Select value={editedStatus} onValueChange={(value: DocumentItem['status']) => setEditedStatus(value)}>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder={t('documents.fields.select_status_placeholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['Draft', 'Revised', 'Complete'].map((status) => (
+                              <SelectItem key={status} value={status}>{t(`documents.status.${status.toLowerCase()}` as any)}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Button variant="outline" className="col-start-2 col-span-3" onClick={() => handleViewHistory(selectedItemForDialog.id)}>
+                          <History className="mr-2 h-4 w-4" /> {t('documents.history_button')}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                  
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="words" className="text-right">{t('documents.fields.word_count')}</Label>
-                    <Input id="words" type="number" value={editedWords} onChange={(e) => setEditedWords(e.target.value)} className="col-span-3" />
+                    <Label htmlFor="tags" className="text-right">{t('documents.fields.tags')}</Label>
+                    <Input id="tags" value={editedTagsString} onChange={(e) => setEditedTagsString(e.target.value)} className="col-span-3" placeholder={t('documents.fields.tags_placeholder')}/>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="status" className="text-right">{t('documents.fields.status')}</Label>
-                    <Select value={editedStatus} onValueChange={(value: DocumentItem['status']) => setEditedStatus(value)}>
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder={t('documents.fields.select_status_placeholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {['Draft', 'Revised', 'Complete'].map((status) => (
-                          <SelectItem key={status} value={status}>{t(`documents.status.${status.toLowerCase()}` as any)}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Button variant="outline" className="col-start-2 col-span-3" onClick={() => handleViewHistory(selectedItemForDialog.id)}>
-                      <History className="mr-2 h-4 w-4" /> {t('documents.history_button')}
-                    </Button>
-                  </div>
-                </>
-              )}
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="tags" className="text-right">{t('documents.fields.tags')}</Label>
-                <Input id="tags" value={editedTagsString} onChange={(e) => setEditedTagsString(e.target.value)} className="col-span-3" placeholder={t('documents.fields.tags_placeholder')}/>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">{t('common.cancel')}</Button>
+                  </DialogClose>
+                  <Button type="button" onClick={handleSaveDetails}>{t('documents.details_dialog.save_button')}</Button>
+                </DialogFooter>
               </div>
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">{t('common.cancel')}</Button>
-              </DialogClose>
-              <Button type="button" onClick={handleSaveDetails}>{t('documents.details_dialog.save_button')}</Button>
-            </DialogFooter>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       )}

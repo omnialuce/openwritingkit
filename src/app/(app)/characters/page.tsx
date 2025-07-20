@@ -47,8 +47,8 @@ export default function CharactersPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getCharactersStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getCharactersStorageKey(activeStoryId, user.uid);
       const storedCharacters = localStorage.getItem(storageKey);
       if (storedCharacters) {
         setCharacters(JSON.parse(storedCharacters));
@@ -61,8 +61,8 @@ export default function CharactersPage() {
   }, [activeStoryId, user]);
 
   const saveCharacters = (updatedCharacters: CharacterProfile[]) => {
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getCharactersStorageKey(activeStoryId, user?.uid);
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getCharactersStorageKey(activeStoryId, user.uid);
       setCharacters(updatedCharacters);
       localStorage.setItem(storageKey, JSON.stringify(updatedCharacters));
     }
