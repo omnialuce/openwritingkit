@@ -1,7 +1,7 @@
 // src/app/(app)/world-building/[localeId]/page.tsx
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,9 +13,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { ArrowLeft, Globe, Save, Loader2, AlertTriangle, Download, Info } from 'lucide-react';
 import { useStoryContext, getWorldBuildingStorageKey, getLocaleSheetStorageKey, type Locale } from '@/contexts/StoryContext';
 import { useToast } from '@/hooks/use-toast';
-import useAutosave from '@/hooks/useAutosave';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/lib/storage';
 
 const localeSheetSections = {
   // Based on https://www.storyplanner.com/story/plan/world-building-detailed-plan
@@ -110,46 +110,53 @@ export default function LocaleSheetPage() {
   const [locale, setLocale] = useState<Locale | null>(null);
   const sheetStorageKey = useMemo(() => getLocaleSheetStorageKey(activeStoryId, localeId, user?.uid), [activeStoryId, localeId, user?.uid]);
   
-  const [savedContent, setSavedContent, isSaving, , lastSavedTime] = useAutosave<string>(sheetStorageKey, '{}');
   const [sheetData, setSheetData] = useState<SheetData>({});
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dynamicLocaleSheetFields = getLocaleSheetFields(t);
 
-  useEffect(() => {
-    setIsMounted(true);
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getWorldBuildingStorageKey(activeStoryId, user?.uid);
-      const storedLocales = localStorage.getItem(storageKey);
+  const loadLocaleData = useCallback(async () => {
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+      const storageKey = getWorldBuildingStorageKey(activeStoryId, user.uid);
+      const storedLocales = await storage.getItem<Locale[]>(storageKey);
       if (storedLocales) {
-        try {
-          const locales: Locale[] = JSON.parse(storedLocales);
-          const foundLocale = locales.find(c => c.id === localeId);
+          const foundLocale = storedLocales.find(c => c.id === localeId);
           setLocale(foundLocale || null);
-        } catch(e) {
-            console.error("Error parsing locales from local storage", e);
-            setLocale(null);
-        }
+      }
+      
+      const storedSheet = await storage.getItem<SheetData>(sheetStorageKey);
+      if (storedSheet) {
+          setSheetData(storedSheet);
       }
     }
-  }, [activeStoryId, localeId, user]);
+    setIsMounted(true);
+  }, [activeStoryId, localeId, user, sheetStorageKey]);
+
 
   useEffect(() => {
-    if(isMounted) {
-      try {
-        const parsedData = JSON.parse(savedContent);
-        setSheetData(parsedData);
-      } catch (e) {
-        setSheetData({});
-      }
-    }
-  }, [savedContent, isMounted]);
+    loadLocaleData();
+  }, [loadLocaleData]);
+
 
   const handleFieldChange = (fieldId: string, value: string) => {
-    const newData = { ...sheetData, [fieldId]: value };
-    setSheetData(newData);
-    setSavedContent(JSON.stringify(newData));
+    setSheetData(prev => ({ ...prev, [fieldId]: value }));
   };
   
+  const handleSaveChanges = async () => {
+    if (!sheetStorageKey) return;
+    setIsLoading(true);
+    try {
+      await storage.setItem(sheetStorageKey, sheetData);
+      toast({ title: t('common.save'), description: t('world_building_sheet.toast_save_success') });
+    } catch(e) {
+      console.error("Failed to save locale sheet:", e);
+      toast({ title: t('common.error'), description: t('world_building_sheet.toast_save_error'), variant: 'destructive'});
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const handleExportSheet = () => {
     if (!locale || !sheetData) return;
 
@@ -230,13 +237,18 @@ export default function LocaleSheetPage() {
             <Globe className="mr-3 h-10 w-10 text-primary" /> {t('world_building_sheet.title')}: {locale.name}
           </h1>
           <p className="text-muted-foreground">
-            {t('world_building_sheet.autosave_notice')} {lastSavedTime ? lastSavedTime.toLocaleTimeString() : t('world_building_sheet.autosave_na')}
-            {isSaving && <Loader2 className="inline-block ml-2 h-4 w-4 animate-spin" />}
+            {t('world_building_sheet.save_notice')}
           </p>
         </div>
-         <Button variant="outline" onClick={handleExportSheet}>
-            <Download className="mr-2 h-4 w-4" /> {t('world_building_sheet.export_button')}
-          </Button>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportSheet} disabled={isLoading}>
+                <Download className="mr-2 h-4 w-4" /> {t('world_building_sheet.export_button')}
+            </Button>
+            <Button onClick={handleSaveChanges} disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {t('common.save')}
+            </Button>
+        </div>
       </div>
 
        <Card className="border-primary/20 bg-primary/5">
@@ -269,6 +281,7 @@ export default function LocaleSheetPage() {
                           onChange={(e) => handleFieldChange(field.id, e.target.value)}
                           rows={3}
                           placeholder={t('world_building_sheet.field_placeholder', { label: field.label.toLowerCase() })}
+                          disabled={isLoading}
                         />
                       )}
                     </div>

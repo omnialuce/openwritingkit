@@ -10,12 +10,16 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download } from 'lucide-react';
+import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download, Save, GripVertical, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { cn } from '@/lib/utils';
+import { storage } from '@/lib/storage';
 
 // --- Plot Point Tracker ---
 interface PlotPoint {
@@ -47,9 +51,11 @@ export default function PlotToolsPage() {
   const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { t } = useLanguage();
+  const { toast } = useToast();
 
   // Plot Point State
   const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
+  const [isLoadingPlotPoints, setIsLoadingPlotPoints] = useState(false);
 
   // Timeline Event State
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
@@ -58,6 +64,7 @@ export default function PlotToolsPage() {
   const [eventTitle, setEventTitle] = useState('');
   const [eventDateTime, setEventDateTime] = useState('');
   const [eventDescription, setEventDescription] = useState('');
+  const [isLoadingTimeline, setIsLoadingTimeline] = useState(false);
   
   // Scene Summaries State
   const [sceneSummaries, setSceneSummaries] = useState<OutlineItem[]>([]);
@@ -78,16 +85,17 @@ export default function PlotToolsPage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId && user) {
       const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user.uid);
-      const storedPlotPoints = localStorage.getItem(plotPointsStorageKey);
-      if (storedPlotPoints) {
-        setPlotPoints(JSON.parse(storedPlotPoints));
-      } else {
-        const initialTemplate = getPlotPointTemplate();
-        setPlotPoints(initialTemplate);
-        localStorage.setItem(plotPointsStorageKey, JSON.stringify(initialTemplate));
-      }
+      storage.getItem<PlotPoint[]>(plotPointsStorageKey).then(storedPlotPoints => {
+        if (storedPlotPoints) {
+            setPlotPoints(storedPlotPoints);
+        } else {
+            const initialTemplate = getPlotPointTemplate();
+            setPlotPoints(initialTemplate);
+            storage.setItem(plotPointsStorageKey, initialTemplate);
+        }
+      });
     } else if (!activeStoryId) {
-      setPlotPoints([]); // Clear if no active story
+      setPlotPoints([]); 
     }
   }, [activeStoryId, user, getPlotPointTemplate]);
 
@@ -95,14 +103,11 @@ export default function PlotToolsPage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId && user) {
       const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user.uid);
-      const storedTimelineEvents = localStorage.getItem(timelineEventsStorageKey);
-      if (storedTimelineEvents) {
-        setTimelineEvents(JSON.parse(storedTimelineEvents));
-      } else {
-        setTimelineEvents([]); // No timeline events for this story yet
-      }
+      storage.getItem<TimelineEvent[]>(timelineEventsStorageKey).then(storedEvents => {
+        setTimelineEvents(storedEvents || []);
+      });
     } else if (!activeStoryId) {
-      setTimelineEvents([]); // Clear if no active story
+      setTimelineEvents([]); 
     }
   }, [activeStoryId, user]);
   
@@ -110,19 +115,20 @@ export default function PlotToolsPage() {
   useEffect(() => {
       if (typeof window !== 'undefined' && activeStoryId && user) {
           const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
-          const storedOutline = localStorage.getItem(outlineStorageKey);
-          if (storedOutline) {
-              try {
-                  const allItems: OutlineItem[] = JSON.parse(storedOutline);
-                  const scenes = extractScenesRecursive(allItems);
-                  setSceneSummaries(scenes);
-              } catch (e) {
-                  console.error("Failed to parse outline for scenes", e);
-                  setSceneSummaries([]);
-              }
-          } else {
-              setSceneSummaries([]);
-          }
+          storage.getItem<OutlineItem[]>(outlineStorageKey).then(storedOutline => {
+            if (storedOutline) {
+                try {
+                    const allItems: OutlineItem[] = storedOutline;
+                    const scenes = extractScenesRecursive(allItems);
+                    setSceneSummaries(scenes);
+                } catch (e) {
+                    console.error("Failed to parse outline for scenes", e);
+                    setSceneSummaries([]);
+                }
+            } else {
+                setSceneSummaries([]);
+            }
+          });
       } else if (!activeStoryId) {
           setSceneSummaries([]);
       }
@@ -141,31 +147,43 @@ export default function PlotToolsPage() {
     return scenes;
   };
 
-
-  // Save Plot Points
   const handlePlotPointChange = (id: string, newDescription: string) => {
     if (!activeStoryId || !user) return;
+    setPlotPoints(prev => prev.map(pp => pp.id === id ? { ...pp, description: newDescription } : pp));
+  };
+  
+  const handleSavePlotPoints = async () => {
+    if (!activeStoryId || !user) return;
+    setIsLoadingPlotPoints(true);
     const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user.uid);
-    const updatedPlotPoints = plotPoints.map(pp => 
-      pp.id === id ? { ...pp, description: newDescription } : pp
-    );
-    setPlotPoints(updatedPlotPoints);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(plotPointsStorageKey, JSON.stringify(updatedPlotPoints));
+    try {
+        await storage.setItem(plotPointsStorageKey, plotPoints);
+        toast({ title: t('common.save'), description: t('plot_tools.toast.plot_points_saved') });
+    } catch (e) {
+        toast({ title: t('common.error'), description: t('plot_tools.toast.plot_points_error'), variant: 'destructive'});
+    } finally {
+        setIsLoadingPlotPoints(false);
     }
   };
 
-  // Save Timeline Events (helper)
   const saveTimelineEvents = (updatedEvents: TimelineEvent[]) => {
+     setTimelineEvents(updatedEvents);
+  };
+  
+  const handleSaveTimeline = async () => {
     if (!activeStoryId || !user) return;
+    setIsLoadingTimeline(true);
     const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user.uid);
-    setTimelineEvents(updatedEvents);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(timelineEventsStorageKey, JSON.stringify(updatedEvents));
+     try {
+        await storage.setItem(timelineEventsStorageKey, timelineEvents);
+        toast({ title: t('common.save'), description: t('plot_tools.toast.timeline_saved') });
+    } catch (e) {
+        toast({ title: t('common.error'), description: t('plot_tools.toast.timeline_error'), variant: 'destructive'});
+    } finally {
+        setIsLoadingTimeline(false);
     }
   };
   
-  // Timeline Event Dialog and CRUD
   const resetEventForm = () => {
     setEventTitle('');
     setEventDateTime('');
@@ -215,6 +233,18 @@ export default function PlotToolsPage() {
     if(!activeStoryId) return;
     const updatedEvents = timelineEvents.filter(event => event.id !== id);
     saveTimelineEvents(updatedEvents);
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source } = result;
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+    
+    const newItems = Array.from(timelineEvents);
+    const [reorderedItem] = newItems.splice(source.index, 1);
+    newItems.splice(destination.index, 0, reorderedItem);
+
+    setTimelineEvents(newItems);
   };
   
   const handleExport = () => {
@@ -280,8 +310,16 @@ export default function PlotToolsPage() {
       {/* Plot Point Tracker Section */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('plot_tools.plot_points.title')}</CardTitle>
-          <CardDescription>{t('plot_tools.plot_points.description')}</CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <CardTitle>{t('plot_tools.plot_points.title')}</CardTitle>
+              <CardDescription>{t('plot_tools.plot_points.description')}</CardDescription>
+            </div>
+            <Button onClick={handleSavePlotPoints} disabled={isLoadingPlotPoints}>
+              {isLoadingPlotPoints ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {t('common.save')} {t('plot_tools.plot_points.title_short')}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {plotPoints.map(pp => (
@@ -312,62 +350,88 @@ export default function PlotToolsPage() {
                 <CardTitle>{t('plot_tools.timeline.title')}</CardTitle>
                 <CardDescription>{t('plot_tools.timeline.description')}</CardDescription>
             </div>
-            <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0" disabled={!activeStoryId}>
-              <PlusCircle className="mr-2 h-5 w-5" /> {t('plot_tools.timeline.add_button')}
-            </Button>
+            <div className="flex gap-2">
+                <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0" disabled={!activeStoryId}>
+                  <PlusCircle className="mr-2 h-5 w-5" /> {t('plot_tools.timeline.add_button')}
+                </Button>
+                <Button onClick={handleSaveTimeline} disabled={isLoadingTimeline}>
+                    {isLoadingTimeline ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {t('common.save')} {t('plot_tools.timeline.title_short')}
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           {timelineEvents.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">{t('plot_tools.timeline.empty')}</p>
           ) : (
-            <ScrollArea className="h-auto max-h-[60vh]">
-              <div className="space-y-4 pr-3">
-                {timelineEvents.map(event => (
-                  <Card key={event.id} className="bg-muted/30">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                            <CardTitle className="text-lg">{event.title}</CardTitle>
-                            {event.dateTime && <p className="text-xs text-muted-foreground font-medium">{event.dateTime}</p>}
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditEventDialog(event)} title={t('plot_tools.timeline.edit_button_title')} disabled={!activeStoryId}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" title={t('plot_tools.timeline.delete_button_title')} disabled={!activeStoryId}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>{t('plot_tools.timeline.delete_dialog.title')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {t('plot_tools.timeline.delete_dialog.description_1')} "{event.title}". {t('plot_tools.timeline.delete_dialog.description_2')}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteEvent(event.id)} className="bg-destructive hover:bg-destructive/90">
-                                  {t('common.delete')}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="timeline-droppable">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                    <ScrollArea className="h-auto max-h-[60vh]">
+                      <div className="space-y-4 pr-3">
+                        {timelineEvents.map((event, index) => (
+                          <Draggable key={event.id} draggableId={event.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div ref={provided.innerRef} {...provided.draggableProps} className={cn(snapshot.isDragging && "shadow-lg opacity-80")}>
+                                <Card className="bg-muted/30">
+                                  <CardHeader className="pb-3">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex items-start gap-2">
+                                        <div {...provided.dragHandleProps} className="pt-1">
+                                            <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                                        </div>
+                                        <div>
+                                          <CardTitle className="text-lg">{event.title}</CardTitle>
+                                          {event.dateTime && <p className="text-xs text-muted-foreground font-medium">{event.dateTime}</p>}
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-1">
+                                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditEventDialog(event)} title={t('plot_tools.timeline.edit_button_title')} disabled={!activeStoryId}>
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <AlertDialog>
+                                          <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" title={t('plot_tools.timeline.delete_button_title')} disabled={!activeStoryId}>
+                                              <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                          </AlertDialogTrigger>
+                                          <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                              <AlertDialogTitle>{t('plot_tools.timeline.delete_dialog.title')}</AlertDialogTitle>
+                                              <AlertDialogDescription>
+                                                {t('plot_tools.timeline.delete_dialog.description_1')} "{event.title}". {t('plot_tools.timeline.delete_dialog.description_2')}
+                                              </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                              <AlertDialogAction onClick={() => handleDeleteEvent(event.id)} className="bg-destructive hover:bg-destructive/90">
+                                                {t('common.delete')}
+                                              </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                          </AlertDialogContent>
+                                        </AlertDialog>
+                                      </div>
+                                    </div>
+                                  </CardHeader>
+                                  {event.description && (
+                                    <CardContent>
+                                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+                                    </CardContent>
+                                  )}
+                                </Card>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </CardHeader>
-                    {event.description && (
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{event.description}</p>
-                      </CardContent>
-                    )}
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
+                    </ScrollArea>
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           )}
         </CardContent>
       </Card>

@@ -445,8 +445,9 @@
     "not_found_desc": "O personagem que você está procurando não existe na história ativa.",
     "back_to_characters": "Voltar para Todos os Personagens",
     "title": "Ficha de Personagem",
-    "autosave_notice": "Todas as alterações são salvas automaticamente. Último salvamento:",
-    "autosave_na": "N/D",
+    "save_notice": "Lembre-se de salvar suas alterações.",
+    "toast_save_success": "Ficha de personagem salva com sucesso.",
+    "toast_save_error": "Falha ao salvar a ficha do personagem.",
     "export_button": "Exportar Ficha",
     "field_placeholder": "Detalhes sobre {{label}}...",
     "export": {
@@ -828,7 +829,9 @@
     },
     "export": {
       "notes": "Notas"
-    }
+    },
+    "toast_save_success": "Estrutura salva com sucesso.",
+    "toast_save_error": "Falha ao salvar a estrutura."
   },
   "plot_tools": {
     "title": "Ferramentas de Desenvolvimento de Enredo",
@@ -842,6 +845,7 @@
     },
     "plot_points": {
       "title": "Rastreador de Pontos da Trama",
+      "title_short": "Pontos da Trama",
       "description": "Descreva os momentos-chave da sua história usando uma estrutura comum. Descreva o que acontece em cada ponto.",
       "placeholder": "Descreva a/o {{name}} da sua história...",
       "loading": "Carregando pontos da trama ou nenhum ponto definido para esta história ainda.",
@@ -858,6 +862,7 @@
     },
     "timeline": {
       "title": "Criador de Linha do Tempo",
+      "title_short": "Linha do Tempo",
       "description": "Registre eventos importantes, cenas ou pontos históricos em ordem cronológica. Use o campo de data/hora de forma flexível.",
       "add_button": "Adicionar Evento na Linha do Tempo",
       "empty": "Nenhum evento na linha do tempo ainda para esta história. Adicione um para começar a construir.",
@@ -903,6 +908,12 @@
       "scene_title": "Cena",
       "scene_notes": "Notas",
       "no_notes": "Sem notas."
+    },
+    "toast": {
+      "plot_points_saved": "Pontos da trama salvos.",
+      "plot_points_error": "Falha ao salvar os pontos da trama.",
+      "timeline_saved": "Linha do tempo salva.",
+      "timeline_error": "Falha ao salvar a linha do tempo."
     }
   },
   "documents": {
@@ -1028,8 +1039,9 @@
     "not_found_desc": "O local que você está procurando não existe na história ativa.",
     "back_to_locales": "Voltar para Todos os Locais",
     "title": "Ficha do Mundo",
-    "autosave_notice": "Todas as alterações são salvas automaticamente. Último salvamento:",
-    "autosave_na": "N/D",
+    "save_notice": "Lembre-se de salvar suas alterações.",
+    "toast_save_success": "Ficha do mundo salva com sucesso.",
+    "toast_save_error": "Falha ao salvar a ficha do mundo.",
     "export_button": "Exportar Ficha",
     "field_placeholder": "Detalhes sobre {{label}}...",
     "template_citation": "Este modelo é inspirado no plano detalhado de criação de mundos do",

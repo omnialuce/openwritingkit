@@ -445,8 +445,9 @@
     "not_found_desc": "The character you are looking for does not exist in the active story.",
     "back_to_characters": "Back to All Characters",
     "title": "Character Sheet",
-    "autosave_notice": "All changes are saved automatically. Last saved:",
-    "autosave_na": "N/A",
+    "save_notice": "Remember to save your changes.",
+    "toast_save_success": "Character sheet saved successfully.",
+    "toast_save_error": "Failed to save character sheet.",
     "export_button": "Export Sheet",
     "field_placeholder": "Details about {{label}}...",
     "export": {
@@ -624,21 +625,20 @@
       "planning": "Planning"
     },
     "list": {
-      "reedsy_blog": { "title": "Reedsy Blog", "description": "A wealth of articles on writing, editing, and publishing." },
-      "creative_penn": { "title": "The Creative Penn", "description": "Articles, podcast, and resources for authors on writing and the business of writing." },
-      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
-      "one_stop": { "title": "One Stop for Writers", "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders." },
       "self_publishing_podcast": { "title": "Self Publishing Podcast", "description": "Interviews and discussions on self-publishing, marketing, and writing craft." },
       "shutup_write": { "title": "Shut Up & Write! Podcast", "description": "Focuses on the practical aspects and discipline of a writing life." },
       "rocking_self_publishing": { "title": "Rocking Self Publishing", "description": "Insights and interviews for self-published authors looking to succeed." },
       "dead_robots_society": { "title": "Dead Robots' Society", "description": "A podcast by aspiring writers for aspiring writers, covering all things writing." },
       "grammar_girl": { "title": "Grammar Girl", "description": "Quick and dirty tips to improve your writing, focusing on grammar and style." },
+      "reedsy_blog": { "title": "Reedsy Blog", "description": "A wealth of articles on writing, editing, and publishing." },
+      "creative_penn": { "title": "The Creative Penn", "description": "Articles, podcast, and resources for authors on writing and the business of writing." },
       "terrible_minds": { "title": "TerribleMinds", "description": "Chuck Wendig's blog on writing, storytelling, and the author life." },
       "storyfix": { "title": "Story-Fix", "description": "Larry Brooks offers coaching and insights on story structure and commercial fiction." },
       "copyblogger": { "title": "Copyblogger", "description": "Content marketing and writing advice that can be applied to fiction." },
       "litreactor": { "title": "LitReactor", "description": "An online writing community offering classes, workshops, and a magazine." },
       "rewrite_reword": { "title": "Rewrite, Reword, Rework", "description": "A blog focused on the practicalities of editing and revising your work." },
       "slushpile_hell": { "title": "Slush-Pile Hell", "description": "Humorous and cautionary tales from the slush pile of a literary agent." },
+      "one_stop": { "title": "One Stop for Writers", "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders." },
       "scribophile": { "title": "Scribophile", "description": "One of the largest and most active online writing communities and critique groups." },
       "submittable": { "title": "Submittable", "description": "A platform for discovering and submitting to literary magazines and contests." },
       "the_grinder": { "title": "The Grinder", "description": "A free tool for writers to find markets for their fiction and track submissions." },
@@ -662,6 +662,7 @@
       "article_legal_tips": { "title": "7 Legal Tips for Writers", "description": "Essential legal advice every writer should know." },
       "article_copyright": { "title": "Understanding Copyright and Related Rights", "description": "A PDF guide from the World Intellectual Property Organization." },
       "article_100_websites": { "title": "The 100 Best Websites for Writers in 2018", "description": "A comprehensive list of valuable online resources for writers." },
+      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
       "writing_bad": { "title": "Writing Bad", "description": "A guide on what not to do, offering lessons through bad examples." },
       "writers_digest": { "title": "Writer's Digest", "description": "A long-standing resource for writers with articles, competitions, and advice." },
       "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "A website and course dedicated to helping authors self-publish." },
@@ -828,7 +829,9 @@
     },
     "export": {
       "notes": "Notes"
-    }
+    },
+    "toast_save_success": "Outline saved successfully.",
+    "toast_save_error": "Failed to save outline."
   },
   "plot_tools": {
     "title": "Plot Development Tools",
@@ -842,6 +845,7 @@
     },
     "plot_points": {
       "title": "Plot Point Tracker",
+      "title_short": "Plot Points",
       "description": "Outline your story's key moments using a common structure. Describe what happens at each point.",
       "placeholder": "Describe your story's {{name}}...",
       "loading": "Loading plot points or no points defined for this story yet.",
@@ -858,6 +862,7 @@
     },
     "timeline": {
       "title": "Timeline Creator",
+      "title_short": "Timeline",
       "description": "Log important events, scenes, or historical points in chronological order. Use the date/time field flexibly.",
       "add_button": "Add Timeline Event",
       "empty": "No timeline events yet for this story. Add one to start building.",
@@ -903,6 +908,12 @@
       "scene_title": "Scene",
       "scene_notes": "Notes",
       "no_notes": "No notes."
+    },
+    "toast": {
+      "plot_points_saved": "Plot points saved.",
+      "plot_points_error": "Failed to save plot points.",
+      "timeline_saved": "Timeline saved.",
+      "timeline_error": "Failed to save timeline."
     }
   },
   "documents": {
@@ -1028,8 +1039,9 @@
     "not_found_desc": "The locale you are looking for does not exist in the active story.",
     "back_to_locales": "Back to All Locales",
     "title": "World Sheet",
-    "autosave_notice": "All changes are saved automatically. Last saved:",
-    "autosave_na": "N/A",
+    "save_notice": "Remember to save your changes.",
+    "toast_save_success": "World sheet saved successfully.",
+    "toast_save_error": "Failed to save world sheet.",
     "export_button": "Export Sheet",
     "field_placeholder": "Details about {{label}}...",
     "template_citation": "This template is inspired by the detailed world-building plan from",

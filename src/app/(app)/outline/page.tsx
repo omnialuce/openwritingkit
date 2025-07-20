@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle, GripVertical, AlertTriangle, Download } from 'lucide-react';
+import { ListTree, PlusCircle, Edit3, Trash2, Save, XCircle, GripVertical, AlertTriangle, Download, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -30,6 +30,9 @@ import { useStoryContext, getOutlineStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { storage } from '@/lib/storage';
+
 
 type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
 
@@ -214,6 +217,7 @@ export default function OutlineBuilderPage() {
   const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [items, setItems] = useState<OutlineItem[]>([]);
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -224,37 +228,44 @@ export default function OutlineBuilderPage() {
   const [editingItem, setEditingItem] = useState<OutlineItem | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId && user) {
       const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
-      const storedItems = localStorage.getItem(outlineStorageKey);
-      if (storedItems) {
-        try {
-          const parsedItems = JSON.parse(storedItems).map((item: any): OutlineItem => ({
-            ...item,
-            type: item.type || 'Plot Point/Notes',
-            children: item.children || [] 
-          }));
-          setItems(parsedItems);
-        } catch (e) {
-          console.error("Failed to parse outline items from localStorage", e);
-          setItems([]);
+      storage.getItem<OutlineItem[]>(outlineStorageKey).then(storedItems => {
+        if (storedItems) {
+            const parsedItems = storedItems.map((item: any): OutlineItem => ({
+                ...item,
+                type: item.type || 'Plot Point/Notes',
+                children: item.children || [] 
+            }));
+            setItems(parsedItems);
+        } else {
+            setItems([]);
         }
-      } else {
-        setItems([]); // No items for this story yet
-      }
+      });
     } else if (!activeStoryId) {
-      setItems([]); // Clear items if no story is active
+      setItems([]);
     }
   }, [activeStoryId, user]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId && user) {
-      const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
-      localStorage.setItem(outlineStorageKey, JSON.stringify(items));
+  const handleSaveChanges = async () => {
+    if (!activeStoryId || !user) return;
+    setIsLoading(true);
+    const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
+    try {
+        await storage.setItem(outlineStorageKey, items);
+        toast({title: t('common.save'), description: t('outline.toast_save_success')});
+    } catch (e) {
+        console.error("Failed to save outline:", e);
+        toast({title: t('common.error'), description: t('outline.toast_save_error'), variant: 'destructive'});
+    } finally {
+        setIsLoading(false);
     }
-  }, [items, activeStoryId, user]);
+  };
+
 
   const resetAddForm = () => {
     setNewItemTitle('');
@@ -467,6 +478,10 @@ export default function OutlineBuilderPage() {
             </Button>
             <Button onClick={handleOpenAddDialog} disabled={!activeStoryId}>
               <PlusCircle className="mr-2 h-5 w-5" /> {t('outline.add_button')}
+            </Button>
+            <Button onClick={handleSaveChanges} disabled={isLoading || !activeStoryId}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {t('common.save')}
             </Button>
           </div>
         </div>

@@ -13,9 +13,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { ArrowLeft, User, Save, Loader2, AlertTriangle, Download } from 'lucide-react';
 import { useStoryContext, getCharactersStorageKey, getCharacterSheetStorageKey, type CharacterProfile } from '@/contexts/StoryContext';
 import { useToast } from '@/hooks/use-toast';
-import useAutosave from '@/hooks/useAutosave';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/lib/storage';
 
 const characterSheetSections = {
   demographics: 'character_sheet.sections.demographics',
@@ -161,44 +161,49 @@ export default function CharacterSheetPage() {
   const [character, setCharacter] = useState<CharacterProfile | null>(null);
   const sheetStorageKey = useMemo(() => getCharacterSheetStorageKey(activeStoryId, characterId, user?.uid), [activeStoryId, characterId, user?.uid]);
   
-  const [savedContent, setSavedContent, isSaving, , lastSavedTime] = useAutosave<string>(sheetStorageKey, '{}');
   const [sheetData, setSheetData] = useState<SheetData>({});
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dynamicCharacterSheetFields = getCharacterSheetFields(t);
 
-  useEffect(() => {
-    setIsMounted(true);
-    if (typeof window !== 'undefined' && activeStoryId) {
-      const storageKey = getCharactersStorageKey(activeStoryId, user?.uid);
-      const storedCharacters = localStorage.getItem(storageKey);
-      if (storedCharacters) {
-        try {
-          const chars: CharacterProfile[] = JSON.parse(storedCharacters);
-          const foundChar = chars.find(c => c.id === characterId);
-          setCharacter(foundChar || null);
-        } catch(e) {
-            console.error("Error parsing characters from local storage", e);
-            setCharacter(null);
+  const loadCharacterData = useCallback(async () => {
+    if (typeof window !== 'undefined' && activeStoryId && user) {
+        const storageKey = getCharactersStorageKey(activeStoryId, user.uid);
+        const storedCharacters = await storage.getItem<CharacterProfile[]>(storageKey);
+        if (storedCharacters) {
+            const foundChar = storedCharacters.find(c => c.id === characterId);
+            setCharacter(foundChar || null);
         }
-      }
+        
+        const storedSheet = await storage.getItem<SheetData>(sheetStorageKey);
+        if(storedSheet) {
+            setSheetData(storedSheet);
+        }
     }
-  }, [activeStoryId, characterId, user?.uid]);
+    setIsMounted(true);
+  }, [activeStoryId, characterId, user, sheetStorageKey]);
 
   useEffect(() => {
-    if(isMounted) {
-      try {
-        const parsedData = JSON.parse(savedContent);
-        setSheetData(parsedData);
-      } catch (e) {
-        setSheetData({});
-      }
-    }
-  }, [savedContent, isMounted]);
+    loadCharacterData();
+  }, [loadCharacterData]);
+
 
   const handleFieldChange = (fieldId: string, value: string) => {
-    const newData = { ...sheetData, [fieldId]: value };
-    setSheetData(newData);
-    setSavedContent(JSON.stringify(newData));
+    setSheetData(prev => ({ ...prev, [fieldId]: value }));
+  };
+
+  const handleSaveChanges = async () => {
+    if (!sheetStorageKey) return;
+    setIsLoading(true);
+    try {
+        await storage.setItem(sheetStorageKey, sheetData);
+        toast({ title: t('common.save'), description: t('character_sheet.toast_save_success') });
+    } catch(e) {
+        console.error("Failed to save character sheet:", e);
+        toast({ title: t('common.error'), description: t('character_sheet.toast_save_error'), variant: 'destructive'});
+    } finally {
+        setIsLoading(false);
+    }
   };
   
   const handleExportSheet = () => {
@@ -282,13 +287,18 @@ export default function CharacterSheetPage() {
             <User className="mr-3 h-10 w-10 text-primary" /> {t('character_sheet.title')}: {character.name}
           </h1>
           <p className="text-muted-foreground">
-            {t('character_sheet.autosave_notice')} {lastSavedTime ? lastSavedTime.toLocaleTimeString() : t('character_sheet.autosave_na')}
-            {isSaving && <Loader2 className="inline-block ml-2 h-4 w-4 animate-spin" />}
+            {t('character_sheet.save_notice')}
           </p>
         </div>
-         <Button variant="outline" onClick={handleExportSheet}>
-            <Download className="mr-2 h-4 w-4" /> {t('character_sheet.export_button')}
-          </Button>
+        <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportSheet} disabled={isLoading}>
+                <Download className="mr-2 h-4 w-4" /> {t('character_sheet.export_button')}
+            </Button>
+            <Button onClick={handleSaveChanges} disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {t('common.save')}
+            </Button>
+        </div>
       </div>
 
       <Accordion type="multiple" defaultValue={['demographics', 'physicalAppearance']} className="w-full space-y-4">
@@ -312,6 +322,7 @@ export default function CharacterSheetPage() {
                           onChange={(e) => handleFieldChange(field.id, e.target.value)}
                           rows={3}
                           placeholder={t('character_sheet.field_placeholder', { label: field.label.toLowerCase() })}
+                          disabled={isLoading}
                         />
                       )}
                     </div>
