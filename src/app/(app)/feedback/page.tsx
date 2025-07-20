@@ -136,7 +136,7 @@ export default function FeedbackPage() {
             <CardContent>
                <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                {t('feedback.form.submit_button')}
+                {isSubmitting ? t('common.saving') : t('feedback.form.submit_button')}
               </Button>
             </CardContent>
           </form>
