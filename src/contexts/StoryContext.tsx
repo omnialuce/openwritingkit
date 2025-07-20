@@ -207,6 +207,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
         getWordGoalKey(storyId, uid),
         getActivityLogKey(storyId, uid),
         getResearchStorageKey(storyId, uid),
+        getDeadlineKey(storyId, uid),
     ];
 
     keysToRemove.forEach(key => key && localStorage.removeItem(key));
@@ -297,6 +298,10 @@ export const getLocaleSheetStorageKey = (storyId: string | null, localeId: strin
 
 export const getResearchStorageKey = (storyId: string | null, userId: string | undefined | null): string => {
     return storyId && userId ? `openwritingkit-story-${storyId}-research-user-${userId}` : 'openwritingkit-research-noactive';
+}
+
+export const getDeadlineKey = (storyId: string | null, userId: string | undefined | null): string | null => {
+    return storyId && userId ? `openwritingkit-story-${storyId}-deadline-user-${userId}` : null;
 }
 
 export type { CharacterProfile, Locale, Story };

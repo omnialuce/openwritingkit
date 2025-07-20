@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart3, Clock, BookOpen, Users, FileText, Percent, TrendingUp, CalendarClock, AlertTriangle, AlignLeft, SpellCheck2, GitMerge } from "lucide-react"; 
 import Image from "next/image";
 import { WordGoalCard } from "@/components/analytics/WordGoalCard";
+import { DeadlineCard } from "@/components/analytics/DeadlineCard";
 import { useEffect, useState, useCallback } from "react";
 import { useStoryContext } from "@/contexts/StoryContext";
 import Link from "next/link";
@@ -178,11 +179,8 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-        <WordGoalCard /> 
-        <InsightCard title={t('analytics.word_count_today.title')} description={t('analytics.word_count_today.description')} icon={TrendingUp}>
-           <p className="text-2xl font-bold">{calculateWordCountTrends()}</p>
-           <p className="text-xs text-muted-foreground mt-1">{t('analytics.word_count_today.footer')}</p>
-        </InsightCard>
+        <WordGoalCard />
+        <DeadlineCard />
         <InsightCard title={t('analytics.productive_times.title')} description={t('analytics.productive_times.description')} icon={CalendarClock}>
            <p className="text-2xl font-bold">{calculateProductiveTimes()}</p>
            <p className="text-xs text-muted-foreground mt-1">{t('analytics.productive_times.footer')}</p>

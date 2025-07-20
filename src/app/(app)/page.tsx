@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { storage } from "@/lib/storage";
 import { WordGoalCard } from "@/components/analytics/WordGoalCard";
+import { DeadlineCard } from "@/components/analytics/DeadlineCard";
 
 const HOW_TO_BANNER_DISMISSED_KEY = 'openwritingkit-how-to-banner-dismissed';
 
@@ -273,7 +274,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="grid md:grid-cols-2 gap-6">
+          <section className="grid md:grid-cols-3 gap-6">
             <Card className="rounded-lg border">
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -291,6 +292,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
             <WordGoalCard />
+            <DeadlineCard />
           </section>
         </>
       )}

@@ -360,11 +360,30 @@
     "go_to_stories": "Ir para Histórias",
     "placeholder": "Digite a meta de palavras",
     "set_button": "Definir",
-    "goal_prefix": "Meta",
+    "goal_prefix": "Meta:",
     "words": "palavras",
     "progress": "Progresso Atual",
     "complete": "{{progress}}% completo",
-    "footer": "Sua meta é salva para esta história no seu navegador."
+    "footer": "A contagem de palavras é calculada a partir de todos os documentos salvos nesta história.",
+    "deadline_title": "Prazo do Projeto",
+    "deadline_description": "Defina um prazo opcional para se manter no caminho certo.",
+    "no_deadline_set": "Nenhum prazo definido para esta história.",
+    "set_deadline_button": "Definir Prazo",
+    "edit_deadline_button": "Editar Prazo",
+    "remove_deadline_button": "Remover Prazo",
+    "deadline_date": "Prazo",
+    "deadline_passed": "O prazo já passou!",
+    "day": "dia",
+    "days": "dias",
+    "hour": "hora",
+    "hours": "horas",
+    "minute": "minuto",
+    "minutes": "minutos",
+    "toast": {
+        "deadline_set_title": "Prazo Definido",
+        "deadline_set_desc": "Prazo definido para",
+        "deadline_removed_title": "Prazo Removido"
+    }
   },
   "characters": {
     "title": "Desenvolvimento de Personagens",

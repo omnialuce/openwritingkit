@@ -364,7 +364,26 @@
     "words": "words",
     "progress": "Current Progress",
     "complete": "{{progress}}% complete",
-    "footer": "Your goal is saved for this story in your browser."
+    "footer": "Word count is calculated from all saved documents in this story.",
+    "deadline_title": "Project Deadline",
+    "deadline_description": "Set an optional deadline to keep yourself on track.",
+    "no_deadline_set": "No deadline set for this story.",
+    "set_deadline_button": "Set Deadline",
+    "edit_deadline_button": "Edit Deadline",
+    "remove_deadline_button": "Remove Deadline",
+    "deadline_date": "Deadline",
+    "deadline_passed": "Deadline has passed!",
+    "day": "day",
+    "days": "days",
+    "hour": "hour",
+    "hours": "hours",
+    "minute": "minute",
+    "minutes": "minutes",
+    "toast": {
+        "deadline_set_title": "Deadline Set",
+        "deadline_set_desc": "Deadline set for",
+        "deadline_removed_title": "Deadline Removed"
+    }
   },
   "characters": {
     "title": "Character Development",
