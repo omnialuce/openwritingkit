@@ -41,6 +41,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getEditorContentKey } from '@/contexts/StoryContext';
 import { storage } from '@/lib/storage';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 interface DocumentListItemProps {
