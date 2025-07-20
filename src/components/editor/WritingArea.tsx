@@ -42,6 +42,8 @@ import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/lib/storage';
+
 
 type EditorTheme = 'light' | 'dark';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -59,8 +61,9 @@ const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings';
 export function WritingArea() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId, setDocumentToOpen } = useStoryContext();
+  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId } = useStoryContext();
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
+  const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
   
   const editorStorageKey = getEditorContentKey(activeStoryId, activeDocumentId, user?.uid);
 
@@ -108,8 +111,7 @@ export function WritingArea() {
   const [newDocFilename, setNewDocFilename] = useState('');
   
   const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([]);
-  const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
-
+  
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId, user?.uid);
   
   const isMobile = useIsMobile();
@@ -156,9 +158,10 @@ export function WritingArea() {
   };
 
   const loadAllDocuments = useCallback(() => {
-    if (activeStoryId && user?.uid) {
-        const stored = localStorage.getItem(documentsStorageKey);
-        setAllDocuments(stored ? JSON.parse(stored) : []);
+    if (activeStoryId && user?.uid && documentsStorageKey) {
+        storage.getItem<DocumentItem[]>(documentsStorageKey).then(stored => {
+          setAllDocuments(stored || []);
+        });
     } else {
         setAllDocuments([]);
     }
@@ -183,8 +186,6 @@ export function WritingArea() {
       if (doc) {
         setActiveDocumentId(doc.id);
         setActiveDocumentName(doc.name);
-        // The useAutosave hook will now handle loading the content via its useEffect
-        // when editorStorageKey changes.
         setIsHistoryPanelOpen(false);
         setSelectedHistoryVersion(null);
       }
@@ -194,11 +195,11 @@ export function WritingArea() {
   useEffect(() => {
     if (documentToOpen) {
       const docToLoadId = consumeDocumentToOpen();
-      if (docToLoadId) {
-        openDocument(docToLoadId);
+      if (docToLoadId && docToLoadId !== activeDocumentId) {
+         openDocument(docToLoadId);
       }
     }
-  }, [documentToOpen, consumeDocumentToOpen, openDocument]);
+  }, [documentToOpen, consumeDocumentToOpen, openDocument, activeDocumentId]);
   
   useEffect(() => {
     if (historyDocumentId) {
@@ -220,25 +221,28 @@ export function WritingArea() {
   const saveCurrentContentToDocument = useCallback((content: string, docId: string) => {
     if (!activeStoryId || !user?.uid) return;
 
-    const storedData = localStorage.getItem(documentsStorageKey);
-    let documents: DocumentItem[] = storedData ? JSON.parse(storedData) : [];
-    
-    const updateRecursive = (items: DocumentItem[]): DocumentItem[] => {
-        return items.map(item => {
-            if (item.id === docId) {
-                const textContent = content.replace(/<[^>]*>/g, '').trim();
-                const wordCount = textContent.split(/\s+/).filter(Boolean).length;
-                return { ...item, words: wordCount, lastModified: new Date().toISOString() };
-            }
-            if (item.children) {
-                return { ...item, children: updateRecursive(item.children) };
-            }
-            return item;
-        });
-    };
+    if (documentsStorageKey) {
+        storage.getItem<DocumentItem[]>(documentsStorageKey).then(storedData => {
+            let documents: DocumentItem[] = storedData || [];
+            
+            const updateRecursive = (items: DocumentItem[]): DocumentItem[] => {
+                return items.map(item => {
+                    if (item.id === docId) {
+                        const textContent = content.replace(/<[^>]*>/g, '').trim();
+                        const wordCount = textContent.split(/\s+/).filter(Boolean).length;
+                        return { ...item, words: wordCount, lastModified: new Date().toISOString() };
+                    }
+                    if (item.children) {
+                        return { ...item, children: updateRecursive(item.children) };
+                    }
+                    return item;
+                });
+            };
 
-    const updatedDocuments = updateRecursive(documents);
-    localStorage.setItem(documentsStorageKey, JSON.stringify(updatedDocuments));
+            const updatedDocuments = updateRecursive(documents);
+            storage.setItem(documentsStorageKey, updatedDocuments);
+        });
+    }
     
   }, [activeStoryId, user?.uid, documentsStorageKey]);
 
@@ -252,10 +256,10 @@ export function WritingArea() {
   const closeDocument = () => {
     if(editor && activeDocumentId) {
         saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
-        setActiveDocumentId(null);
-        setActiveDocumentName(null);
-        setIsHistoryPanelOpen(false);
     }
+    setActiveDocumentId(null);
+    setActiveDocumentName(null);
+    setIsHistoryPanelOpen(false);
   }
 
   useEffect(() => {
@@ -485,7 +489,7 @@ export function WritingArea() {
   
   const handleSaveToDocuments = (e: React.FormEvent) => {
       e.preventDefault();
-      if (!editor || !activeStoryId || !newDocFilename.trim()) return;
+      if (!editor || !activeStoryId || !newDocFilename.trim() || !user) return;
 
       const contentToSave = editor.getHTML();
       
@@ -500,20 +504,28 @@ export function WritingArea() {
       };
 
       try {
-        const storedData = localStorage.getItem(documentsStorageKey);
-        const documents: DocumentItem[] = storedData ? JSON.parse(storedData) : [];
-        documents.push(newFile);
-        localStorage.setItem(documentsStorageKey, JSON.stringify(documents));
-        
-        // Save content to its own key
-        setSavedContent(contentToSave);
-        // Switch active document to the new one
-        setActiveDocumentId(newFile.id);
-        setActiveDocumentName(newFile.name);
+        if (!documentsStorageKey) return;
+        storage.getItem<DocumentItem[]>(documentsStorageKey).then(storedData => {
+            const documents: DocumentItem[] = storedData || [];
+            documents.push(newFile);
+            storage.setItem(documentsStorageKey, documents);
 
-        toast({ title: t('editor.toast.doc_saved_title'), description: t('editor.toast.doc_saved_desc', { name: newDocFilename }) });
-        setIsSaveToDocDialogOpen(false);
-        setNewDocFilename('');
+            // Create the content entry for the new document
+            const newEditorKey = getEditorContentKey(activeStoryId, newFile.id, user.uid);
+            storage.setItem(newEditorKey, {
+                current: contentToSave,
+                history: [{ timestamp: new Date().toISOString(), text: contentToSave }],
+                lastSaved: new Date().toISOString(),
+            });
+
+            // Switch active document to the new one
+            setActiveDocumentId(newFile.id);
+            setActiveDocumentName(newFile.name);
+
+            toast({ title: t('editor.toast.doc_saved_title'), description: t('editor.toast.doc_saved_desc', { name: newDocFilename }) });
+            setIsSaveToDocDialogOpen(false);
+            setNewDocFilename('');
+        })
       } catch (error) {
         console.error("Failed to save to documents:", error);
         toast({ title: t('common.error'), description: t('editor.toast.doc_save_error'), variant: "destructive" });
