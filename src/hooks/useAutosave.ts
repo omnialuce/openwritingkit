@@ -34,7 +34,7 @@ function useAutosave<T extends string>(
 ): [T, (value: T) => void, boolean, () => void, Date | null, Array<VersionHistoryEntry<T>>] {
   const { t } = useLanguage();
   const { toast } = useToast(); 
-  const { activeStoryId, getActivityLogKey } = useStoryContext();
+  const { activeStoryId, getActivityLogKey, updateDocumentMetadata } = useStoryContext();
   const { user } = useAuth();
 
   const [currentText, setCurrentTextInternal] = useState<T>(initialValue);
@@ -42,12 +42,18 @@ function useAutosave<T extends string>(
   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
   const [history, setHistory] = useState<Array<VersionHistoryEntry<T>>>([]);
   const isInitialLoad = useRef(true);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load data effect
   useEffect(() => {
     isInitialLoad.current = true;
     let isCancelled = false;
     
+    // Clear any pending save operations when the storage key changes
+    if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+    }
+
     const loadData = async () => {
       if (storageKey) {
         try {
@@ -88,6 +94,9 @@ function useAutosave<T extends string>(
 
     return () => {
         isCancelled = true;
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+        }
     }
   }, [storageKey, initialValue]);
 
@@ -147,6 +156,14 @@ function useAutosave<T extends string>(
 
         await storage.setItem(storageKey, documentData);
         setLastSavedTime(now);
+
+        const docIdMatch = storageKey.match(/-doc-([^-]*)-/);
+        const docId = docIdMatch ? docIdMatch[1] : null;
+        if (docId) {
+            const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
+            updateDocumentMetadata(docId, { words: words.length, lastModified: timestamp });
+        }
+
         await logActivity(textToSave);
         
         if(activeStoryId && user){
@@ -187,21 +204,29 @@ function useAutosave<T extends string>(
         setTimeout(() => setIsSaving(false), 500); 
       }
     },
-    [storageKey, initialValue, toast, logActivity, activeStoryId, user, t]
+    [storageKey, initialValue, toast, logActivity, activeStoryId, user, t, updateDocumentMetadata]
   );
   
   // Autosave effect
   useEffect(() => {
     if (isInitialLoad.current || !storageKey) return;
+    
+    if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+    }
 
-    const handler = setTimeout(async () => {
+    saveTimeoutRef.current = setTimeout(async () => {
       const item = await storage.getItem<DocumentData<T>>(storageKey);
       if (currentText !== item?.current) {
         await saveDocument(currentText);
       }
     }, saveInterval);
 
-    return () => clearTimeout(handler);
+    return () => {
+        if(saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+        }
+    };
   }, [currentText, saveInterval, saveDocument, storageKey]);
 
   const clearSavedDocument = useCallback(async () => {
@@ -220,7 +245,7 @@ function useAutosave<T extends string>(
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);
-    saveDocument(value, true); 
+    // saveDocument(value, true); // this will be picked up by the useEffect
   };
 
   return [currentText, setAndSaveCurrentText, isSaving, clearSavedDocument, lastSavedTime, history];

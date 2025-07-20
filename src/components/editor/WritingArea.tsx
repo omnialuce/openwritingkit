@@ -169,13 +169,17 @@ export function WritingArea() {
 
   useEffect(() => {
       loadAllDocuments();
-      const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === documentsStorageKey) {
+      const handleStorageChange = (event: StorageEvent | CustomEvent) => {
+        if ('detail' in event && event.detail.key === documentsStorageKey) {
+          loadAllDocuments();
+        } else if ('key' in event && event.key === documentsStorageKey) {
           loadAllDocuments();
         }
       };
+      window.addEventListener('storage-change', handleStorageChange);
       window.addEventListener('storage', handleStorageChange);
       return () => {
+        window.removeEventListener('storage-change', handleStorageChange);
         window.removeEventListener('storage', handleStorageChange);
       };
   }, [loadAllDocuments, documentsStorageKey]);
@@ -196,10 +200,14 @@ export function WritingArea() {
     if (documentToOpen) {
       const docToLoadId = consumeDocumentToOpen();
       if (docToLoadId && docToLoadId !== activeDocumentId) {
-         openDocument(docToLoadId);
+         setActiveDocumentId(docToLoadId); // this triggers the editor reload
+         const doc = findDocumentRecursive(allDocuments, docToLoadId);
+         if (doc) {
+            setActiveDocumentName(doc.name);
+         }
       }
     }
-  }, [documentToOpen, consumeDocumentToOpen, openDocument, activeDocumentId]);
+  }, [documentToOpen, consumeDocumentToOpen, activeDocumentId, allDocuments]);
   
   useEffect(() => {
     if (historyDocumentId) {
@@ -218,45 +226,7 @@ export function WritingArea() {
   }, [savedContent, editor]);
 
 
-  const saveCurrentContentToDocument = useCallback((content: string, docId: string) => {
-    if (!activeStoryId || !user?.uid) return;
-
-    if (documentsStorageKey) {
-        storage.getItem<DocumentItem[]>(documentsStorageKey).then(storedData => {
-            let documents: DocumentItem[] = storedData || [];
-            
-            const updateRecursive = (items: DocumentItem[]): DocumentItem[] => {
-                return items.map(item => {
-                    if (item.id === docId) {
-                        const textContent = content.replace(/<[^>]*>/g, '').trim();
-                        const wordCount = textContent.split(/\s+/).filter(Boolean).length;
-                        return { ...item, words: wordCount, lastModified: new Date().toISOString() };
-                    }
-                    if (item.children) {
-                        return { ...item, children: updateRecursive(item.children) };
-                    }
-                    return item;
-                });
-            };
-
-            const updatedDocuments = updateRecursive(documents);
-            storage.setItem(documentsStorageKey, updatedDocuments);
-        });
-    }
-    
-  }, [activeStoryId, user?.uid, documentsStorageKey]);
-
-
-  useEffect(() => {
-    if(activeDocumentId && savedContent) {
-        saveCurrentContentToDocument(savedContent, activeDocumentId);
-    }
-  }, [savedContent, activeDocumentId, saveCurrentContentToDocument]);
-
   const closeDocument = () => {
-    if(editor && activeDocumentId) {
-        saveCurrentContentToDocument(editor.getHTML(), activeDocumentId);
-    }
     setActiveDocumentId(null);
     setActiveDocumentName(null);
     setIsHistoryPanelOpen(false);
@@ -851,6 +821,11 @@ export function WritingArea() {
               <EditorToolbar editor={editor} />
             </>
           )}
+          <CardHeader className="p-2 border-b">
+             <h2 className="text-lg font-semibold text-center text-muted-foreground">
+                {activeDocumentId ? `${t('editor.editing', { name: activeDocumentName || '' })}` : t('editor.editing_scratchpad')}
+            </h2>
+          </CardHeader>
           <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
             <ScrollArea className="h-full w-full" ref={editorContentRef}>
                <div ref={editorRef} className="min-h-full">
@@ -861,13 +836,12 @@ export function WritingArea() {
           {!isFullScreen && (
             <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <div className="flex-1 truncate">
-                <span>{activeDocumentId ? t('editor.editing', { name: activeDocumentName || '' }) : t('editor.editing_scratchpad')}</span>
+                <span>{activeStoryId ? (isSaving ? t('common.saving') : lastSavedTime ? `${t('common.saved')} ${formatDistanceToNow(lastSavedTime, { addSuffix: true })}` : t('editor.not_yet_saved')) : t('editor.no_active_story_footer')}</span>
               </div>
               <div className="flex-1 text-center">
                 <span>{t('editor.words')}: {activeStoryId ? wordCount : '-'} | {t('editor.chars')}: {activeStoryId ? charCount : '-'}</span>
               </div>
               <div className="flex-1 text-right">
-                <span>{activeStoryId ? (isSaving ? t('common.saving') : lastSavedTime ? `${t('common.saved')}: ${lastSavedTime.toLocaleTimeString()}` : t('editor.not_yet_saved')) : t('editor.no_active_story_footer')}</span>
               </div>
             </CardFooter>
           )}

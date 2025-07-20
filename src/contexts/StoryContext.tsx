@@ -45,6 +45,7 @@ interface StoryContextType {
   setActiveStory: (storyId: string | null) => void;
   addStory: (newStory: Story) => void;
   updateStory: (updatedStory: Story) => void;
+  updateDocumentMetadata: (docId: string, metadata: { words: number; lastModified: string }) => void;
   deleteStory: (storyId: string) => void;
   refreshStories: () => void;
   documentToOpen: string | null;
@@ -149,6 +150,33 @@ export function StoryProvider({ children }: { children: ReactNode }) {
       setActiveStoryName(updatedStoryData.title);
     }
   }, [user, stories, activeStoryId, storiesStorageKey]);
+  
+  const updateDocumentMetadata = useCallback((docId: string, metadata: { words: number; lastModified: string }) => {
+    if (!activeStoryId || !user) return;
+
+    const docsKey = getDocumentsStorageKey(activeStoryId, user.uid);
+    storage.getItem<DocumentItem[]>(docsKey).then(storedData => {
+      if (!storedData) return;
+
+      const updateRecursive = (items: DocumentItem[]): DocumentItem[] => {
+        return items.map(item => {
+          if (item.id === docId) {
+            return { ...item, ...metadata };
+          }
+          if (item.children) {
+            return { ...item, children: updateRecursive(item.children) };
+          }
+          return item;
+        });
+      };
+      
+      const updatedDocs = updateRecursive(storedData);
+      storage.setItem(docsKey, updatedDocs);
+      // Dispatch a custom event to notify other components (like Documents page) of the change
+      window.dispatchEvent(new CustomEvent('storage-change', { detail: { key: docsKey } }));
+    });
+  }, [activeStoryId, user]);
+
 
   const deleteStory = useCallback((storyId: string) => {
     if (!user) return;
@@ -239,7 +267,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen, historyDocumentId, setHistoryDocumentId, consumeHistoryDocumentId, getActivityLogKey }}>
+    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, updateDocumentMetadata, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen, historyDocumentId, setHistoryDocumentId, consumeHistoryDocumentId, getActivityLogKey }}>
       {children}
     </StoryContext.Provider>
   );
