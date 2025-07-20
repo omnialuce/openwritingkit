@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast'; 
-import { useStoryContext, getActivityLogKey } from '@/contexts/StoryContext';
+import { useStoryContext } from '@/contexts/StoryContext';
 import { storage } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,7 +34,7 @@ function useAutosave<T extends string>(
 ): [T, (value: T) => void, boolean, () => void, Date | null, Array<VersionHistoryEntry<T>>] {
   const { t } = useLanguage();
   const { toast } = useToast(); 
-  const { activeStoryId } = useStoryContext();
+  const { activeStoryId, getActivityLogKey } = useStoryContext();
   const { user } = useAuth();
 
   const [currentText, setCurrentTextInternal] = useState<T>(initialValue);
@@ -46,43 +46,55 @@ function useAutosave<T extends string>(
   // Load data effect
   useEffect(() => {
     isInitialLoad.current = true;
+    let isCancelled = false;
+    
     const loadData = async () => {
       if (storageKey) {
         try {
           const item = await storage.getItem<DocumentData<T>>(storageKey);
-          if (item) {
-            setCurrentTextInternal(item.current || initialValue);
-            setHistory(item.history || []);
-            setLastSavedTime(item.lastSaved ? new Date(item.lastSaved) : null);
-          } else {
-            setCurrentTextInternal(initialValue);
-            setHistory([]);
-            setLastSavedTime(null);
+          if (!isCancelled) {
+              if (item) {
+                setCurrentTextInternal(item.current || initialValue);
+                setHistory(item.history || []);
+                setLastSavedTime(item.lastSaved ? new Date(item.lastSaved) : null);
+              } else {
+                setCurrentTextInternal(initialValue);
+                setHistory([]);
+                setLastSavedTime(null);
+              }
           }
         } catch (error) {
           console.warn(`Error reading storage key "${storageKey}":`, error);
-          setCurrentTextInternal(initialValue);
-          setHistory([]);
-          setLastSavedTime(null);
+           if (!isCancelled) {
+              setCurrentTextInternal(initialValue);
+              setHistory([]);
+              setLastSavedTime(null);
+           }
         } finally {
-            isInitialLoad.current = false;
+             if (!isCancelled) {
+                isInitialLoad.current = false;
+             }
         }
       } else {
-        setCurrentTextInternal(initialValue); 
-        setHistory([]);
-        setLastSavedTime(null);
-        isInitialLoad.current = false;
+         if (!isCancelled) {
+            setCurrentTextInternal(initialValue); 
+            setHistory([]);
+            setLastSavedTime(null);
+            isInitialLoad.current = false;
+         }
       }
     };
     loadData();
+
+    return () => {
+        isCancelled = true;
+    }
   }, [storageKey, initialValue]);
 
   const logActivity = useCallback(async (textToSave: T) => {
     const activityKey = getActivityLogKey(activeStoryId, user?.uid);
-     // Extract docId from storageKey (e.g., '...-doc-123-user-...')
     const docIdMatch = storageKey.match(/-doc-([^-]*)-/);
     const docId = docIdMatch ? docIdMatch[1] : null;
-
 
     if (activeStoryId && textToSave && typeof textToSave === 'string' && !textToSave.startsWith('{') && activityKey) {
       const words = textToSave.trim() ? textToSave.trim().split(/\s+/).filter(word => word.length > 0) : [];
@@ -90,7 +102,7 @@ function useAutosave<T extends string>(
       const newLogEntry: ActivityLogEntry = { 
           timestamp: new Date().toISOString(), 
           wordCount,
-          docId, // Log which document was updated
+          docId,
       };
 
       try {
@@ -103,11 +115,11 @@ function useAutosave<T extends string>(
         console.warn(`Error updating activity log:`, error);
       }
     }
-  }, [activeStoryId, user, storageKey]);
+  }, [activeStoryId, user, storageKey, getActivityLogKey]);
 
   const saveDocument = useCallback(
     async (textToSave: T, forceHistory: boolean = false) => {
-      if (!storageKey) return;
+      if (!storageKey || isInitialLoad.current) return;
 
       setIsSaving(true);
       try {
@@ -180,7 +192,7 @@ function useAutosave<T extends string>(
   
   // Autosave effect
   useEffect(() => {
-    if (isInitialLoad.current || !storageKey) return; 
+    if (isInitialLoad.current || !storageKey) return;
 
     const handler = setTimeout(async () => {
       const item = await storage.getItem<DocumentData<T>>(storageKey);
@@ -208,7 +220,6 @@ function useAutosave<T extends string>(
 
   const setAndSaveCurrentText = (value: T) => {
     setCurrentTextInternal(value);
-    // Force a history save when manually reverting
     saveDocument(value, true); 
   };
 
