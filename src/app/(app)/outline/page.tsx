@@ -598,7 +598,7 @@ export default function OutlineBuilderPage() {
           </CardHeader>
           <CardContent>
             {items.length > 0 ? (
-              <ScrollArea className="h-auto max-h-[60vh] pr-4">
+              <ScrollArea className="h-[60vh] pr-4">
                 <Droppable droppableId="root" type="outline-item">
                   {(provided, snapshot) => (
                     <ul 
