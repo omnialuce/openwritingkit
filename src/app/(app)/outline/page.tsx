@@ -221,14 +221,12 @@ export default function OutlineBuilderPage() {
   const { toast } = useToast();
   const [items, setItems] = useState<OutlineItem[]>([]);
   
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [newItemNotes, setNewItemNotes] = useState('');
-  const [newItemType, setNewItemType] = useState<OutlineItemType>('Plot Point/Notes');
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<OutlineItem | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editNotes, setEditNotes] = useState('');
+
+  const [formTitle, setFormTitle] = useState('');
+  const [formNotes, setFormNotes] = useState('');
+  const [formType, setFormType] = useState<OutlineItemType>('Plot Point/Notes');
   
   const [isLoading, setIsLoading] = useState(false);
 
@@ -267,59 +265,53 @@ export default function OutlineBuilderPage() {
     }
   };
 
-
-  const resetAddForm = () => {
-    setNewItemTitle('');
-    setNewItemNotes('');
-    setNewItemType('Plot Point/Notes');
+  const resetForm = () => {
+    setFormTitle('');
+    setFormNotes('');
+    setFormType('Plot Point/Notes');
+    setEditingItem(null);
   };
 
   const handleOpenAddDialog = () => {
     if (!activeStoryId) return;
-    resetAddForm();
-    setEditingItem(null); 
-    setIsAddDialogOpen(true);
+    resetForm();
+    setIsDialogOpen(true);
+  };
+  
+  const handleOpenEditDialog = (item: OutlineItem) => {
+    if (!activeStoryId) return;
+    setEditingItem(item);
+    setFormTitle(item.title);
+    setFormNotes(item.notes || '');
+    setFormType(item.type);
+    setIsDialogOpen(true);
   };
 
-  const handleAddItem = (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!newItemTitle.trim() || !activeStoryId) return;
-    const newItem = createNewItem(newItemTitle.trim(), newItemNotes.trim() || undefined, newItemType);
-    setItems(prevItems => [...prevItems, newItem]);
-    setIsAddDialogOpen(false);
-    resetAddForm();
+    if (!formTitle.trim() || !activeStoryId) return;
+
+    if (editingItem) {
+      const updatedDetails: Partial<OutlineItem> & { id: string } = { 
+        id: editingItem.id,
+        title: formTitle.trim(), 
+        notes: formNotes.trim() || undefined,
+        type: formType,
+      };
+      setItems(prevItems => updateItemRecursive(prevItems, updatedDetails));
+    } else {
+      const newItem = createNewItem(formTitle.trim(), formNotes.trim() || undefined, formType);
+      setItems(prevItems => [...prevItems, newItem]);
+    }
+
+    setIsDialogOpen(false);
+    resetForm();
   };
 
   const handleDeleteItem = useCallback((id: string) => {
     if (!activeStoryId) return;
     setItems(prevItems => deleteItemRecursive(prevItems, id));
   }, [activeStoryId]);
-
-  const handleStartEdit = useCallback((item: OutlineItem) => {
-    if (!activeStoryId) return;
-    setEditingItem(item);
-    setEditTitle(item.title);
-    setEditNotes(item.notes || '');
-    setIsAddDialogOpen(false); 
-  }, [activeStoryId]);
-
-  const handleCancelEdit = () => {
-    setEditingItem(null);
-    setEditTitle('');
-    setEditNotes('');
-  };
-
-  const handleSaveEdit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!editingItem || !editTitle.trim() || !activeStoryId) return;
-    const updatedDetails: Partial<OutlineItem> & { id: string } = { 
-      id: editingItem.id,
-      title: editTitle.trim(), 
-      notes: editNotes.trim() || undefined 
-    };
-    setItems(prevItems => updateItemRecursive(prevItems, updatedDetails));
-    handleCancelEdit();
-  };
   
   const findItemAndParentList = (
     itemId: string,
@@ -487,23 +479,23 @@ export default function OutlineBuilderPage() {
           </div>
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => {
-            setIsAddDialogOpen(isOpen);
-            if (!isOpen) resetAddForm();
+        <Dialog open={isDialogOpen} onOpenChange={(isOpen) => {
+            setIsDialogOpen(isOpen);
+            if (!isOpen) resetForm();
         }}>
           <DialogContent className="sm:max-w-[525px]">
             <ScrollArea className="max-h-[80vh]">
               <div className="p-1 pr-3">
                 <DialogHeader>
-                  <DialogTitle>{t('outline.add_dialog.title')}</DialogTitle>
+                  <DialogTitle>{editingItem ? t('outline.edit_form.title') + `: ${editingItem.title}` : t('outline.add_dialog.title')}</DialogTitle>
                   <DialogDescription>
-                    {t('outline.add_dialog.description')}
+                    {editingItem ? t('outline.edit_form.description') + ` (${editingItem.type})` : t('outline.add_dialog.description')}
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleAddItem} className="grid gap-4 py-4">
+                <form onSubmit={handleSubmit} className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="itemType" className="text-right">{t('outline.fields.type')}</Label>
-                    <Select value={newItemType} onValueChange={(value: OutlineItemType) => setNewItemType(value)}>
+                    <Select value={formType} onValueChange={(value: OutlineItemType) => setFormType(value)}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder={t('outline.fields.type_placeholder')} />
                       </SelectTrigger>
@@ -515,22 +507,22 @@ export default function OutlineBuilderPage() {
                     </Select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="newItemTitleDialog" className="text-right">{t('outline.fields.title')}</Label>
+                    <Label htmlFor="item-title" className="text-right">{t('outline.fields.title')}</Label>
                     <Input 
-                      id="newItemTitleDialog" 
-                      value={newItemTitle} 
-                      onChange={(e) => setNewItemTitle(e.target.value)} 
+                      id="item-title" 
+                      value={formTitle} 
+                      onChange={(e) => setFormTitle(e.target.value)} 
                       className="col-span-3" 
                       placeholder={t('outline.fields.title_placeholder')}
                       required 
                     />
                   </div>
                   <div className="grid grid-cols-4 items-start gap-4">
-                    <Label htmlFor="newItemNotesDialog" className="text-right pt-2">{t('outline.fields.notes')}</Label>
+                    <Label htmlFor="item-notes" className="text-right pt-2">{t('outline.fields.notes')}</Label>
                     <Textarea 
-                      id="newItemNotesDialog" 
-                      value={newItemNotes} 
-                      onChange={(e) => setNewItemNotes(e.target.value)} 
+                      id="item-notes" 
+                      value={formNotes} 
+                      onChange={(e) => setFormNotes(e.target.value)} 
                       className="col-span-3" 
                       rows={4}
                       placeholder={t('outline.fields.notes_placeholder')}
@@ -540,54 +532,13 @@ export default function OutlineBuilderPage() {
                     <DialogClose asChild>
                       <Button type="button" variant="outline">{t('common.cancel')}</Button>
                     </DialogClose>
-                    <Button type="submit">{t('outline.add_dialog.add_button')}</Button>
+                    <Button type="submit">{editingItem ? t('common.save') : t('outline.add_dialog.add_button')}</Button>
                   </DialogFooter>
                 </form>
               </div>
             </ScrollArea>
           </DialogContent>
         </Dialog>
-
-        {editingItem && (
-          <Card className="mt-6 border-primary border-2">
-            <CardHeader>
-              <CardTitle>{t('outline.edit_form.title')}: <span className="font-normal">{editingItem.title}</span></CardTitle>
-              <CardDescription>{t('outline.edit_form.description')} <Badge variant="outline">{editingItem.type}</Badge></CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSaveEdit}>
-              <CardContent className="space-y-4">
-                <div>
-                  <label htmlFor="editItemTitle" className="block text-sm font-medium mb-1">{t('outline.fields.title')}</label>
-                  <Input
-                    id="editItemTitle"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    required
-                    className="text-base"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="editItemNotes" className="block text-sm font-medium mb-1">{t('outline.fields.notes')}</label>
-                  <Textarea
-                    id="editItemNotes"
-                    value={editNotes}
-                    onChange={(e) => setEditNotes(e.target.value)}
-                    rows={3}
-                    className="text-base"
-                  />
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={handleCancelEdit}>
-                  <XCircle className="mr-2 h-5 w-5" /> {t('common.cancel')}
-                </Button>
-                <Button type="submit">
-                  <Save className="mr-2 h-5 w-5" /> {t('common.save')}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-        )}
 
         <Card className="mt-6">
           <CardHeader>
@@ -615,7 +566,7 @@ export default function OutlineBuilderPage() {
                           item={item}
                           index={index}
                           level={0}
-                          onEdit={handleStartEdit}
+                          onEdit={handleOpenEditDialog}
                           onDelete={handleDeleteItem}
                         />
                       ))}
