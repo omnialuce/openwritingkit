@@ -843,7 +843,9 @@
     },
     "export": {
       "notes": "Notes"
-    }
+    },
+    "toast_save_success": "Outline saved successfully.",
+    "toast_save_error": "Failed to save outline."
   },
   "plot_tools": {
     "title": "Plot Development Tools",
@@ -857,6 +859,7 @@
     },
     "plot_points": {
       "title": "Plot Point Tracker",
+      "title_short": "Plot Points",
       "description": "Outline your story's key moments using a common structure. Describe what happens at each point.",
       "placeholder": "Describe your story's {{name}}...",
       "loading": "Loading plot points or no points defined for this story yet.",
@@ -873,6 +876,7 @@
     },
     "timeline": {
       "title": "Timeline Creator",
+      "title_short": "Timeline",
       "description": "Log important events, scenes, or historical points in chronological order. Use the date/time field flexibly.",
       "add_button": "Add Timeline Event",
       "empty": "No timeline events yet for this story. Add one to start building.",
@@ -918,6 +922,12 @@
       "scene_title": "Scene",
       "scene_notes": "Notes",
       "no_notes": "No notes."
+    },
+    "toast": {
+      "plot_points_saved": "Plot points saved.",
+      "plot_points_error": "Failed to save plot points.",
+      "timeline_saved": "Timeline saved.",
+      "timeline_error": "Failed to save timeline."
     }
   },
   "documents": {
@@ -1113,8 +1123,8 @@
     }
   },
   "research": {
-    "title": "Research Notes",
-    "description": "Collect and organize your research, ideas, and snippets.",
+    "title": "Research & To-Do",
+    "description": "Collect notes and manage your tasks.",
     "create_button": "Create New Note",
     "no_notes": "No research notes for this story yet. Start by creating one!",
     "no_story": {
@@ -1140,6 +1150,15 @@
       "content": "Content",
       "tags": "Tags (comma-separated)",
       "tags_placeholder": "e.g., history, technology, character inspiration"
+    },
+    "notes": {
+      "title": "Research Notes"
+    },
+    "todo": {
+      "title": "To-Do List",
+      "description": "Tasks for this story.",
+      "placeholder": "Add a new task...",
+      "empty": "No tasks yet. Add one above."
     }
   }
 }

@@ -1,3 +1,4 @@
+
 // src/app/(app)/characters/[characterId]/page.tsx
 'use client';
 

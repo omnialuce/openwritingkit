@@ -1,3 +1,4 @@
+
 // src/app/(app)/world-building/[localeId]/page.tsx
 'use client';
 

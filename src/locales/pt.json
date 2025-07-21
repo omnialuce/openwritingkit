@@ -1123,8 +1123,8 @@
     }
   },
   "research": {
-    "title": "Notas de Pesquisa",
-    "description": "Colete e organize suas pesquisas, ideias e fragmentos.",
+    "title": "Pesquisa & Tarefas",
+    "description": "Colete notas e gerencie suas tarefas.",
     "create_button": "Criar Nova Nota",
     "no_notes": "Nenhuma nota de pesquisa para esta história ainda. Comece criando uma!",
     "no_story": {
@@ -1150,6 +1150,15 @@
       "content": "Conteúdo",
       "tags": "Tags (separadas por vírgula)",
       "tags_placeholder": "ex: história, tecnologia, inspiração de personagem"
+    },
+    "notes": {
+      "title": "Notas de Pesquisa"
+    },
+    "todo": {
+      "title": "Lista de Tarefas",
+      "description": "Tarefas para esta história.",
+      "placeholder": "Adicionar uma nova tarefa...",
+      "empty": "Nenhuma tarefa ainda. Adicione uma acima."
     }
   },
   "donation": {
