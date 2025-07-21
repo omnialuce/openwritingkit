@@ -19,6 +19,7 @@ const AnalyzeTextPacingInputSchema = z.object({
     .string()
     .optional()
     .describe('The genre of the story, which can influence pacing expectations.'),
+  language: z.string().optional().describe('The target language dialect for the response, specified as a BCP-47 tag (e.g., "en-US", "pt-BR").'),
 });
 
 export type AnalyzeTextPacingInput = z.infer<typeof AnalyzeTextPacingInputSchema>;
@@ -39,6 +40,9 @@ const analyzeTextPacingPrompt = ai.definePrompt({
   input: {schema: AnalyzeTextPacingInputSchema},
   output: {schema: AnalyzeTextPacingOutputSchema},
   prompt: `You are an AI writing assistant specializing in pacing analysis for stories.
+  {{#if language}}
+  Your response must be in the specified language dialect: {{{language}}}. Use appropriate cultural references and phrasing.
+  {{/if}}
 
   Analyze the provided text and determine if the pacing is appropriate for the genre (if provided).
   Identify sections where the pacing may be too fast, causing the reader to miss important details, or too slow, causing the reader to lose interest.

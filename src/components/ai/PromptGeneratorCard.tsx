@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStoryContext, getDocumentsStorageKey, getCharactersStorageKey } from '@/contexts/StoryContext';
 import type { CharacterProfile } from '@/app/(app)/characters/page';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DocumentItem {
   id: string;
@@ -27,6 +28,7 @@ interface DocumentItem {
 export function PromptGeneratorCard() {
   const { t, language } = useLanguage();
   const { activeStoryId } = useStoryContext();
+  const { user } = useAuth();
   const [genre, setGenre] = useState('');
   const [style, setStyle] = useState('');
   const [notes, setNotes] = useState('');
@@ -52,8 +54,8 @@ export function PromptGeneratorCard() {
   };
 
   useEffect(() => {
-    if (activeStoryId) {
-      const docKey = getDocumentsStorageKey(activeStoryId);
+    if (activeStoryId && user) {
+      const docKey = getDocumentsStorageKey(activeStoryId, user.uid);
       const storedDocs = localStorage.getItem(docKey);
       if (storedDocs) {
         try {
@@ -66,7 +68,7 @@ export function PromptGeneratorCard() {
         setDocuments([]);
       }
 
-      const charKey = getCharactersStorageKey(activeStoryId);
+      const charKey = getCharactersStorageKey(activeStoryId, user.uid);
       const storedChars = localStorage.getItem(charKey);
       if (storedChars) {
         setCharacters(JSON.parse(storedChars));
@@ -77,7 +79,7 @@ export function PromptGeneratorCard() {
       setDocuments([]);
       setCharacters([]);
     }
-  }, [activeStoryId]);
+  }, [activeStoryId, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

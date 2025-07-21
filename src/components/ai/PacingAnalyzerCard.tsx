@@ -34,7 +34,7 @@ interface EditorData {
 }
 
 export function PacingAnalyzerCard() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const [documents, setDocuments] = useState<DocumentItemFlat[]>([]);
@@ -98,7 +98,7 @@ export function PacingAnalyzerCard() {
     setAnalysis(null);
 
     try {
-      const input: AnalyzeTextPacingInput = { text: content, genre: genre || undefined };
+      const input: AnalyzeTextPacingInput = { text: content, genre: genre || undefined, language: language };
       const result = await analyzeTextPacing(input);
       setAnalysis(result);
     } catch (error) {
