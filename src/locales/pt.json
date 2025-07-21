@@ -38,7 +38,7 @@
       "tooltip_title": "Apenas Armazenamento Local",
       "tooltip_desc": "Todos os dados são salvos em seu navegador. Use o recurso de Backup nas Configurações para evitar a perda de dados."
     },
-    "coffee_button": "Me Pague um Café"
+    "coffee_button": "Apoiar Projeto"
   },
   "login": {
     "description": "Faça login na sua conta",
@@ -563,6 +563,20 @@
       "significant_events": "Eventos Significativos/Pontos da Trama"
     }
   },
+  "donation": {
+    "title": "Apoie o Projeto",
+    "description": "Gostando do OpenWritingKit? Considere apoiar o seu desenvolvimento!",
+    "sub_description": "Esta aplicação é 100% gratuita e de código aberto. No entanto, existem custos reais associados ao seu desenvolvimento e manutenção, incluindo hospedagem de servidores, APIs e inúmeras horas de desenvolvimento. O seu apoio ajuda a manter o projeto vivo e próspero.",
+    "pix": {
+      "title": "Para Usuários no Brasil (PIX)",
+      "description": "Você pode enviar qualquer valor diretamente via PIX usando a chave abaixo:"
+    },
+    "kofi": {
+      "title": "Internacional (Ko-fi)",
+      "description": "Para doações internacionais, você pode usar o Ko-fi, uma plataforma semelhante ao 'Buy Me a Coffee'.",
+      "button": "Apoiar no Ko-fi"
+    }
+  },
   "feedback": {
     "title": "Feedback, Sugestões e Suporte",
     "description": "Sua contribuição é valiosa para tornar o OpenWritingKit melhor para todos.",
@@ -601,7 +615,7 @@
     "support": {
       "title": "Apoie o Projeto",
       "description": "Se você acha esta ferramenta útil, considere apoiar seu desenvolvimento. Sua contribuição ajuda a cobrir custos e impulsiona melhorias futuras.",
-      "button": "Me Pague um Café"
+      "button": "Ajude a Financiar o Projeto"
     }
   },
   "resources": {
@@ -1136,6 +1150,20 @@
       "content": "Conteúdo",
       "tags": "Tags (separadas por vírgula)",
       "tags_placeholder": "ex: história, tecnologia, inspiração de personagem"
+    }
+  },
+  "donation": {
+    "title": "Apoie o Projeto",
+    "description": "Gostando do OpenWritingKit? Considere apoiar o seu desenvolvimento!",
+    "sub_description": "Esta aplicação é 100% gratuita e de código aberto. No entanto, existem custos reais associados ao seu desenvolvimento e manutenção, incluindo hospedagem de servidores, APIs e inúmeras horas de desenvolvimento. O seu apoio ajuda a manter o projeto vivo e próspero.",
+    "pix": {
+      "title": "Para Usuários no Brasil (PIX)",
+      "description": "Você pode enviar qualquer valor diretamente via PIX usando a chave abaixo:"
+    },
+    "kofi": {
+      "title": "Internacional (Ko-fi)",
+      "description": "Para doações internacionais, você pode usar o Ko-fi, uma plataforma semelhante ao 'Buy Me a Coffee'.",
+      "button": "Apoiar no Ko-fi"
     }
   }
 }

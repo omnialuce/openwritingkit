@@ -4,7 +4,7 @@
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History, GripVertical } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -42,17 +42,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { getEditorContentKey } from '@/contexts/StoryContext';
 import { storage } from '@/lib/storage';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { cn } from '@/lib/utils';
 
 
 interface DocumentListItemProps {
   item: DocumentItem;
+  index: number;
   level?: number;
   onOpenDetails: (item: DocumentItem) => void;
   onDelete: (id: string) => void;
   onEditInEditor: (id: string) => void;
 }
 
-function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEditor }: DocumentListItemProps) {
+function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEditor, index }: DocumentListItemProps) {
   const [isOpen, setIsOpen] = useState(level < 1);
   const { t } = useLanguage();
 
@@ -99,80 +102,98 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
   const isEditable = item.type === 'file' || item.type === 'scene';
 
   return (
-    <>
-      <li
-        className="flex flex-col p-3 border-b hover:bg-secondary/50 transition-colors"
-        style={{ paddingLeft: `${1 + level * 1.5}rem` }}
-      >
-        <div className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-3 flex-grow min-w-0">
-            {item.children && item.children.length > 0 ? (
-              <Button variant="ghost" size="sm" onClick={handleToggleOpen} className="p-1 h-auto">
-                <Icon className="h-5 w-5 text-primary" />
-              </Button>
-            ) : (
-              <Icon className="h-5 w-5 text-primary ml-1 mr-1" />
+    <Draggable draggableId={item.id} index={index}>
+      {(provided, snapshot) => (
+        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+           <li
+            className={cn(
+                "flex flex-col p-3 border-b hover:bg-secondary/50 transition-colors",
+                snapshot.isDragging && "shadow-lg bg-primary/10"
             )}
-            <div className="truncate">
-              <h3 className="font-semibold truncate">{item.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                {item.type === "folder" || item.type === "chapter" ?
-                 t('documents.item_count', {count: (item.children?.length || 0).toString()}) :
-                 `${item.words || 0} ${t('documents.words')} - ${t('documents.last_modified') ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
-              </p>
+            style={{ paddingLeft: `${1 + level * 1.5}rem` }}
+          >
+            <div className="flex justify-between items-center w-full">
+              <div className="flex items-center gap-3 flex-grow min-w-0">
+                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                {item.children && item.children.length > 0 ? (
+                  <Button variant="ghost" size="sm" onClick={handleToggleOpen} className="p-1 h-auto">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </Button>
+                ) : (
+                  <Icon className="h-5 w-5 text-primary ml-1 mr-1" />
+                )}
+                <div className="truncate">
+                  <h3 className="font-semibold truncate">{item.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {item.type === "folder" || item.type === "chapter" ?
+                     t('documents.item_count', {count: (item.children?.length || 0).toString()}) :
+                     `${item.words || 0} ${t('documents.words')} - ${t('documents.last_modified') ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 ml-2 shrink-0">
+                {(item.type === "scene" || item.type === 'file') && item.status && (
+                  <Badge variant={getStatusVariant(item.status)} className="text-xs">{getTranslatedStatus(item.status)}</Badge>
+                )}
+                {isEditable && (
+                    <Button variant="default" size="sm" onClick={() => onEditInEditor(item.id)}>
+                        <Edit className="h-4 w-4 mr-1" />
+                        {t('common.edit')}
+                    </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>{t('documents.details_button')}</Button>
+                 <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('documents.delete_dialog.title', { name: item.name })}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t('documents.delete_dialog.description')}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDelete(item.id)}>{t('common.delete')}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 ml-2 shrink-0">
-            {(item.type === "scene" || item.type === 'file') && item.status && (
-              <Badge variant={getStatusVariant(item.status)} className="text-xs">{getTranslatedStatus(item.status)}</Badge>
+            {item.tags && item.tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1 pl-8">
+                {item.tags.map(tag => (
+                  <Badge key={tag} variant={getTagVariant(tag as DocumentItem['tags'][number])} className="text-xs">{tag}</Badge>
+                ))}
+              </div>
             )}
-            {isEditable && (
-                <Button variant="default" size="sm" onClick={() => onEditInEditor(item.id)}>
-                    <Edit className="h-4 w-4 mr-1" />
-                    {t('common.edit')}
-                </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>{t('documents.details_button')}</Button>
-             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{t('documents.delete_dialog.title', { name: item.name })}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {t('documents.delete_dialog.description')}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(item.id)}>{t('common.delete')}</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          </li>
+          {isOpen && item.children && (
+            <Droppable droppableId={item.id} type="DOCUMENT">
+              {(provided, snapshot) => (
+                <ul ref={provided.innerRef} {...provided.droppableProps} className={cn(snapshot.isDraggingOver && 'bg-accent/50')}>
+                  {item.children.map((child, childIndex) => (
+                    <DocumentListItem
+                      key={child.id}
+                      item={child}
+                      index={childIndex}
+                      level={level + 1}
+                      onOpenDetails={onOpenDetails}
+                      onDelete={onDelete}
+                      onEditInEditor={onEditInEditor}
+                    />
+                  ))}
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          )}
         </div>
-        {item.tags && item.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1 pl-8">
-            {item.tags.map(tag => (
-              <Badge key={tag} variant={getTagVariant(tag as DocumentItem['tags'][number])} className="text-xs">{tag}</Badge>
-            ))}
-          </div>
-        )}
-      </li>
-      {isOpen && item.children && item.children.map(child => (
-        <DocumentListItem
-          key={child.id}
-          item={child}
-          level={level + 1}
-          onOpenDetails={onOpenDetails}
-          onDelete={onDelete}
-          onEditInEditor={onEditInEditor}
-        />
-      ))}
-    </>
+      )}
+    </Draggable>
   );
 }
 
@@ -200,6 +221,13 @@ const deleteItemRecursive = (nodes: DocumentItem[], itemId: string): DocumentIte
     }
     return node;
   });
+};
+
+const reorder = (list: any[], startIndex: number, endIndex: number) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+  return result;
 };
 
 
@@ -427,6 +455,18 @@ export default function DocumentsPage() {
     }
   };
 
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return;
+
+    // Reordering in the root list
+    if (source.droppableId === 'documents-droppable' && destination.droppableId === 'documents-droppable') {
+      const updatedDocuments = reorder(documents, source.index, destination.index);
+      setDocuments(updatedDocuments);
+      saveDocuments(updatedDocuments);
+    }
+  };
+
 
   if (!activeStoryId) {
     return (
@@ -477,17 +517,25 @@ export default function DocumentsPage() {
         </CardHeader>
         <CardContent>
           {documents.length > 0 ? (
-            <ul className="space-y-0 border-t">
-              {documents.map((doc) => (
-                <DocumentListItem
-                  key={doc.id}
-                  item={doc}
-                  onOpenDetails={handleOpenDetailsDialog}
-                  onDelete={handleDeleteItem}
-                  onEditInEditor={handleEditInEditor}
-                />
-              ))}
-            </ul>
+             <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="documents-droppable" type="DOCUMENT">
+                {(provided) => (
+                  <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-0 border-t">
+                    {documents.map((doc, index) => (
+                      <DocumentListItem
+                        key={doc.id}
+                        item={doc}
+                        index={index}
+                        onOpenDetails={handleOpenDetailsDialog}
+                        onDelete={handleDeleteItem}
+                        onEditInEditor={handleEditInEditor}
+                      />
+                    ))}
+                    {provided.placeholder}
+                  </ul>
+                )}
+              </Droppable>
+            </DragDropContext>
           ) : (
             <div className="text-center py-10">
               <FolderIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />

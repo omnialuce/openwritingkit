@@ -38,7 +38,7 @@
       "tooltip_title": "Local Storage Only",
       "tooltip_desc": "All data is saved in your browser. Use the Backup feature in Settings to prevent data loss."
     },
-    "coffee_button": "Buy Me a Coffee"
+    "coffee_button": "Fund Project"
   },
   "login": {
     "description": "Sign in to your account",
@@ -445,8 +445,9 @@
     "not_found_desc": "The character you are looking for does not exist in the active story.",
     "back_to_characters": "Back to All Characters",
     "title": "Character Sheet",
-    "autosave_notice": "All changes are saved automatically. Last saved:",
-    "autosave_na": "N/A",
+    "save_notice": "Remember to save your changes.",
+    "toast_save_success": "Character sheet saved successfully.",
+    "toast_save_error": "Failed to save character sheet.",
     "export_button": "Export Sheet",
     "field_placeholder": "Details about {{label}}...",
     "export": {
@@ -562,6 +563,20 @@
       "significant_events": "Significant Events/Plot Points"
     }
   },
+  "donation": {
+    "title": "Fund the Project",
+    "description": "Enjoying OpenWritingKit? Consider supporting its development!",
+    "sub_description": "This application is 100% free and open-source. However, there are real costs associated with its development and maintenance, including server hosting, APIs, and countless hours of development time. Your support helps keep the project alive and thriving.",
+    "pix": {
+      "title": "For Users in Brazil (PIX)",
+      "description": "You can send any amount directly via PIX using the key below:"
+    },
+    "kofi": {
+      "title": "International (Ko-fi)",
+      "description": "For international donations, you can use Ko-fi, a platform similar to 'Buy Me a Coffee'.",
+      "button": "Support on Ko-fi"
+    }
+  },
   "feedback": {
     "title": "Feedback, Suggestions & Support",
     "description": "Your input is valuable in making OpenWritingKit better for everyone.",
@@ -600,7 +615,7 @@
     "support": {
       "title": "Support the Project",
       "description": "If you find this tool useful, consider supporting its development. Your contribution helps cover costs and fuels further improvements.",
-      "button": "Buy Me a Coffee"
+      "button": "Help Fund the Project"
     }
   },
     "resources": {
@@ -1028,8 +1043,9 @@
     "not_found_desc": "The locale you are looking for does not exist in the active story.",
     "back_to_locales": "Back to All Locales",
     "title": "World Sheet",
-    "autosave_notice": "All changes are saved automatically. Last saved:",
-    "autosave_na": "N/A",
+    "save_notice": "Remember to save your changes.",
+    "toast_save_success": "World sheet saved successfully.",
+    "toast_save_error": "Failed to save world sheet.",
     "export_button": "Export Sheet",
     "field_placeholder": "Details about {{label}}...",
     "template_citation": "This template is inspired by the detailed world-building plan from",
