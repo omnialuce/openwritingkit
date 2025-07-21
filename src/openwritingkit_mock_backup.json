@@ -1,0 +1,169 @@
+{
+  "openwritingkit-user-test@example.com-stories": [
+    {
+      "id": "1720630737219",
+      "title": "Chronicles of Aethelgard",
+      "description": "A high-fantasy epic following a disgraced knight seeking redemption in a world torn apart by ancient magic and political strife.",
+      "lastModified": "2024-07-10T16:58:57.219Z"
+    },
+    {
+      "id": "1831730788431",
+      "title": "Neon Shadows",
+      "description": "A cyberpunk noir thriller set in the rain-slicked streets of Neo-Kyoto in 2142. A cynical detective hunts a phantom hacker who can erase memories.",
+      "lastModified": "2024-07-11T11:25:10.543Z"
+    }
+  ],
+  "openwritingkit-user-test@example.com-active-story-id": "1720630737219",
+  "openwritingkit-story-1720630737219-characters-user-test@example.com": [
+    {
+      "id": "1720630777443",
+      "name": "Kaelen",
+      "role": "Protagonist",
+      "description": "A skilled but disgraced knight from the fallen kingdom of Eldoria. Haunted by his past, he seeks to restore his honor.",
+      "backstory": "Once a celebrated captain of the Royal Guard, Kaelen was blamed for the king's assassination. He was exiled and now wanders the land as a sellsword, hiding his true identity.",
+      "imageUrl": "https://placehold.co/300x400.png",
+      "imageHint": "male knight fantasy"
+    },
+    {
+      "id": "1720630825310",
+      "name": "Lyra",
+      "role": "Sorceress",
+      "description": "A mysterious and powerful sorceress who possesses knowledge of the ancient magic that is returning to the world.",
+      "backstory": "Lyra is one of the last keepers of the old ways. She has lived in seclusion for decades, watching as the world forgot its magical past. The recent turmoil has forced her out of hiding.",
+      "imageUrl": "https://placehold.co/300x400.png",
+      "imageHint": "female sorceress fantasy"
+    }
+  ],
+  "openwritingkit-story-1720630737219-character-1720630777443-sheet-user-test@example.com": {
+    "age": "28",
+    "sexGender": "Male",
+    "occupation": "Exiled Knight, Sellsword",
+    "distinguishingFeatures": "A long scar over his left eye.",
+    "personalityType": "ISTJ",
+    "traits": "Loyal, brooding, honorable, stubborn.",
+    "motivations": "To clear his name and find the true assassins of the king."
+  },
+  "openwritingkit-story-1720630737219-doc-1720631024578-user-test@example.com": {
+    "current": "<h1>The Whispering Blade</h1><p>Kaelen gripped the hilt of his sword, the worn leather a familiar comfort in his palm.</p>",
+    "history": [
+      {
+        "timestamp": "2024-07-19T10:00:00.000Z",
+        "text": "<h1>The Whispering Blade</h1><p>Kaelen gripped the hilt of his sword, the worn leather a familiar comfort in his palm.</p>"
+      }
+    ],
+    "lastSaved": "2024-07-19T10:00:00.000Z"
+  },
+  "openwritingkit-story-1720630737219-documents-user-test@example.com": [
+    {
+      "id": "1720631024578",
+      "name": "Chapter 1 - Draft",
+      "type": "file",
+      "lastModified": "2024-07-10T17:04:00.187Z",
+      "words": 15,
+      "tags": ["Draft"],
+      "status": "Draft"
+    },
+    {
+        "id": "folder-1",
+        "name": "World Anvils",
+        "type": "folder",
+        "lastModified": "2024-07-10T18:00:00.00Z",
+        "children": [
+            {
+                "id": "nested-file-1",
+                "name": "History of the Five Kingdoms",
+                "type": "file",
+                "words": 0,
+                "status": "Draft",
+                "lastModified": "2024-07-10T18:01:00.00Z"
+            }
+        ]
+    }
+  ],
+  "openwritingkit-story-1720630737219-research-user-test@example.com": [
+    {
+      "id": "1720631217345",
+      "title": "Medieval Sword-Fighting Techniques",
+      "content": "Research notes on different stances and common moves for longsword combat. Useful for writing Kaelen's fight scenes.",
+      "tags": ["Combat", "History"]
+    }
+  ],
+  "openwritingkit-story-1831730788431-characters-user-test@example.com": [
+    {
+        "id": "char-jax-1",
+        "name": "Jax",
+        "role": "Detective",
+        "description": "A cynical, cybernetically enhanced detective working for the Neo-Kyoto Police Department. He's burned out but still has a strong sense of justice.",
+        "backstory": "Jax lost his partner in a case that went sideways years ago. The incident led him to get illegal cybernetic augmentations to keep up with the new breed of criminals.",
+        "imageUrl": "https://placehold.co/300x400.png",
+        "imageHint": "male detective cyberpunk"
+    },
+    {
+        "id": "char-ghost-1",
+        "name": "Ghost",
+        "role": "Antagonist / Hacker",
+        "description": "An enigmatic netrunner and hacker known only as 'Ghost'. They can manipulate digital memories and leave no trace.",
+        "backstory": "Ghost's identity is unknown. They seem to be targeting executives of the powerful OmniCorp, but their motives are unclear. They may be a victim of OmniCorp's illegal experiments.",
+        "imageUrl": "https://placehold.co/300x400.png",
+        "imageHint": "female hacker cyberpunk"
+    }
+  ],
+  "openwritingkit-story-1831730788431-documents-user-test@example.com": [
+    {
+        "id": "ns-ch1",
+        "name": "Chapter 1: The Erased Man",
+        "type": "chapter",
+        "lastModified": "2024-07-11T12:00:00.00Z",
+        "children": [
+            {
+                "id": "ns-sc1",
+                "name": "Scene 1 - The Crime Scene",
+                "type": "scene",
+                "words": 150,
+                "status": "Revised",
+                "lastModified": "2024-07-11T12:05:00.00Z",
+                "children": []
+            },
+            {
+                "id": "ns-sc2",
+                "name": "Scene 2 - Jax's Apartment",
+                "type": "scene",
+                "words": 80,
+                "status": "Draft",
+                "lastModified": "2024-07-11T12:15:00.00Z",
+                "children": []
+            }
+        ]
+    },
+    {
+        "id": "ns-notes-folder",
+        "name": "Case Notes",
+        "type": "folder",
+        "lastModified": "2024-07-11T12:20:00.00Z",
+        "children": [
+            {
+                "id": "ns-file-1",
+                "name": "OmniCorp Profile",
+                "type": "file",
+                "words": 200,
+                "status": "Complete",
+                "lastModified": "2024-07-11T12:22:00.00Z"
+            }
+        ]
+    }
+  ],
+   "openwritingkit-story-1831730788431-doc-ns-sc1-user-test@example.com": {
+    "current": "<h2>Rain and Neon</h2><p>The rain fell in sheets, washing the neon glow of the signs down the grimy alleyway. Jax pulled up the collar of his trench coat, the synth-leather squeaking in protest.</p><p>Before him, the body lay sprawled. But it wasn't the cause of death that was disturbing. It was the face. Or the lack thereof. It was a perfect, featureless blank.</p>",
+    "history": [],
+    "lastSaved": "2024-07-11T12:05:00.00Z"
+  },
+  "openwritingkit-language-v2": "en-US",
+  "openwritingkit-ai-opt-in": "true",
+  "openwritingkit-editor-settings": {
+    "fontFamily": "sans",
+    "fontSize": "base",
+    "lineHeight": "normal",
+    "paragraphSpacing": "base",
+    "focusMode": false
+  }
+}
