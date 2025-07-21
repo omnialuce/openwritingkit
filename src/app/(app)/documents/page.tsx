@@ -4,7 +4,7 @@
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History, GripVertical } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History, GripVertical, ChevronDown, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,10 @@ interface DocumentListItemProps {
   onEditInEditor: (id: string) => void;
 }
 
+const canAcceptDrop = (itemType: DocumentItem['type']) => {
+  return itemType === 'folder' || itemType === 'chapter' || itemType === 'scene';
+};
+
 function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEditor, index }: DocumentListItemProps) {
   const [isOpen, setIsOpen] = useState(level < 1);
   const { t } = useLanguage();
@@ -68,7 +72,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
       setIsOpen(!isOpen);
     }
   };
-
+  
   const getStatusVariant = (status?: DocumentItem['status']) => {
     switch (status) {
       case "Draft": return "secondary";
@@ -104,24 +108,27 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
   return (
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => (
-        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-           <li
+        <div ref={provided.innerRef} {...provided.draggableProps}>
+           <div
             className={cn(
                 "flex flex-col p-3 border-b hover:bg-secondary/50 transition-colors",
-                snapshot.isDragging && "shadow-lg bg-primary/10"
+                snapshot.isDragging && "shadow-lg bg-primary/10 rounded-md"
             )}
             style={{ paddingLeft: `${1 + level * 1.5}rem` }}
           >
             <div className="flex justify-between items-center w-full">
-              <div className="flex items-center gap-3 flex-grow min-w-0">
-                 <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
-                {item.children && item.children.length > 0 ? (
-                  <Button variant="ghost" size="sm" onClick={handleToggleOpen} className="p-1 h-auto">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </Button>
-                ) : (
-                  <Icon className="h-5 w-5 text-primary ml-1 mr-1" />
-                )}
+              <div className="flex items-center gap-2 flex-grow min-w-0">
+                 <div {...provided.dragHandleProps}>
+                   <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                 </div>
+                <Button variant="ghost" size="sm" onClick={handleToggleOpen} className="p-1 h-auto" disabled={!item.children || item.children.length === 0}>
+                  {item.children && item.children.length > 0 ? (
+                    isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+                  ) : (
+                    <span className="w-4" /> // placeholder for alignment
+                  )}
+                </Button>
+                <Icon className="h-5 w-5 text-primary ml-1 mr-1" />
                 <div className="truncate">
                   <h3 className="font-semibold truncate">{item.name}</h3>
                   <p className="text-sm text-muted-foreground">
@@ -164,18 +171,18 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
               </div>
             </div>
             {item.tags && item.tags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1 pl-8">
+              <div className="mt-2 flex flex-wrap gap-1" style={{ paddingLeft: `${5 + level * 1.5}rem` }}>
                 {item.tags.map(tag => (
                   <Badge key={tag} variant={getTagVariant(tag as DocumentItem['tags'][number])} className="text-xs">{tag}</Badge>
                 ))}
               </div>
             )}
-          </li>
-          {isOpen && item.children && (
+          </div>
+          {isOpen && canAcceptDrop(item.type) && (
             <Droppable droppableId={item.id} type="DOCUMENT">
               {(provided, snapshot) => (
-                <ul ref={provided.innerRef} {...provided.droppableProps} className={cn(snapshot.isDraggingOver && 'bg-accent/50')}>
-                  {item.children.map((child, childIndex) => (
+                <div ref={provided.innerRef} {...provided.droppableProps} className={cn('min-h-[10px] transition-colors', snapshot.isDraggingOver && 'bg-accent/50 rounded-b-md')}>
+                  {item.children?.map((child, childIndex) => (
                     <DocumentListItem
                       key={child.id}
                       item={child}
@@ -187,7 +194,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
                     />
                   ))}
                   {provided.placeholder}
-                </ul>
+                </div>
               )}
             </Droppable>
           )}
@@ -223,11 +230,55 @@ const deleteItemRecursive = (nodes: DocumentItem[], itemId: string): DocumentIte
   });
 };
 
-const reorder = (list: any[], startIndex: number, endIndex: number) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-  return result;
+const findAndRemoveItem = (items: DocumentItem[], itemId: string): { items: DocumentItem[], removed: DocumentItem | null } => {
+    let removedItem: DocumentItem | null = null;
+    const newItems = items.filter(item => {
+        if (item.id === itemId) {
+            removedItem = item;
+            return false;
+        }
+        return true;
+    }).map(item => {
+        if (item.children) {
+            const result = findAndRemoveItem(item.children, itemId);
+            if (result.removed) {
+                removedItem = result.removed;
+                return { ...item, children: result.items };
+            }
+        }
+        return item;
+    });
+    return { items: newItems, removed: removedItem };
+};
+
+const findAndInsertItem = (items: DocumentItem[], parentId: string, itemToInsert: DocumentItem, index: number): DocumentItem[] => {
+    if (parentId === 'documents-droppable') {
+        const newItems = [...items];
+        newItems.splice(index, 0, itemToInsert);
+        return newItems;
+    }
+    return items.map(item => {
+        if (item.id === parentId) {
+            const newChildren = item.children ? [...item.children] : [];
+            newChildren.splice(index, 0, itemToInsert);
+            return { ...item, children: newChildren };
+        }
+        if (item.children) {
+            return { ...item, children: findAndInsertItem(item.children, parentId, itemToInsert, index) };
+        }
+        return item;
+    });
+};
+
+const findItem = (items: DocumentItem[], itemId: string): DocumentItem | null => {
+    for (const item of items) {
+        if (item.id === itemId) return item;
+        if (item.children) {
+            const found = findItem(item.children, itemId);
+            if (found) return found;
+        }
+    }
+    return null;
 };
 
 
@@ -294,7 +345,7 @@ export default function DocumentsPage() {
       words: 0,
       tags: ["Draft"],
       status: "Draft",
-      children: newItemType === 'folder' || newItemType === 'chapter' ? [] : undefined,
+      children: newItemType === 'folder' || newItemType === 'chapter' || newItemType === 'scene' ? [] : undefined,
     };
     
     // For file types, create an empty storage entry for the editor
@@ -456,16 +507,35 @@ export default function DocumentsPage() {
   };
 
   const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
+    const { source, destination, draggableId } = result;
     if (!destination) return;
 
-    // Reordering in the root list
-    if (source.droppableId === 'documents-droppable' && destination.droppableId === 'documents-droppable') {
-      const updatedDocuments = reorder(documents, source.index, destination.index);
-      setDocuments(updatedDocuments);
-      saveDocuments(updatedDocuments);
+    let currentDocs = [...documents];
+
+    const isNestingAllowed = (draggedType: DocumentItem['type'], destinationType: DocumentItem['type']) => {
+        if (destinationType === 'folder') return true;
+        if (destinationType === 'chapter') return ['scene', 'file'].includes(draggedType);
+        if (destinationType === 'scene') return ['scene', 'file'].includes(draggedType);
+        return false;
     }
-  };
+
+    const { items: newSourceList, removed: draggedItem } = findAndRemoveItem(currentDocs, draggableId);
+    
+    if (!draggedItem) return;
+    currentDocs = newSourceList;
+    
+    const destinationItem = findItem(documents, destination.droppableId);
+    if(destinationItem && !isNestingAllowed(draggedItem.type, destinationItem.type)) {
+        // Disallow drop and do nothing, effectively returning the item to its original spot (state doesn't change)
+        toast({ title: "Invalid Move", description: `A '${draggedItem.type}' cannot be placed inside a '${destinationItem.type}'.`, variant: "destructive" });
+        return;
+    }
+
+    const newDocs = findAndInsertItem(currentDocs, destination.droppableId, draggedItem, destination.index);
+
+    setDocuments(newDocs);
+    saveDocuments(newDocs);
+};
 
 
   if (!activeStoryId) {
@@ -519,8 +589,8 @@ export default function DocumentsPage() {
           {documents.length > 0 ? (
              <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="documents-droppable" type="DOCUMENT">
-                {(provided) => (
-                  <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-0 border-t">
+                {(provided, snapshot) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className={cn("border-t", snapshot.isDraggingOver && 'bg-accent/50')}>
                     {documents.map((doc, index) => (
                       <DocumentListItem
                         key={doc.id}
@@ -532,7 +602,7 @@ export default function DocumentsPage() {
                       />
                     ))}
                     {provided.placeholder}
-                  </ul>
+                  </div>
                 )}
               </Droppable>
             </DragDropContext>
