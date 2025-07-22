@@ -578,39 +578,13 @@
     }
   },
   "feedback": {
-    "title": "Feedback, Suggestions & Support",
+    "title": "Feedback & Suggestions",
     "description": "Your input is valuable in making OpenWritingKit better for everyone.",
-    "form": {
-      "title": "Submit Your Feedback",
-      "description": "Have a suggestion, found a bug, or want to give general feedback? Let us know!",
-      "type_label": "Type of Feedback",
-      "type_placeholder": "Select a type",
-      "types": {
-        "general": "General Feedback",
-        "bug": "Bug Report",
-        "suggestion": "Feature Suggestion"
-      },
-      "page_label": "Related Page (Optional)",
-      "page_placeholder": "Select a page",
-      "pages": {
-        "general": "General / Unrelated"
-      },
-      "message_label": "Your Message",
-      "message_placeholder": "Tell us what's on your mind...",
-      "submit_button": "Submit Feedback"
-    },
-    "toast": {
-      "empty_title": "Message is empty",
-      "empty_desc": "Please write something before submitting.",
-      "success_title": "Feedback Sent",
-      "success_desc": "Please send your feedback through your email application.",
-      "success_desc_direct": "Thank you! Your feedback has been sent.",
-      "error_desc": "Could not send feedback. Please try again or use the support email."
-    },
-    "contact": {
-        "title": "Contact Support",
-        "description": "Need help with your account or have a specific question? Don't hesitate to reach out.",
-        "button": "Contact Support"
+    "votehub": {
+      "title": "Feedback Hub",
+      "description": "To better organize suggestions and bug reports, we've moved to a dedicated feedback hub.",
+      "subdescription": "There you can submit new ideas, report bugs, and vote on existing submissions to help us prioritize what to build next.",
+      "button": "Go to Feedback Hub"
     },
     "support": {
       "title": "Support the Project",

@@ -578,39 +578,13 @@
     }
   },
   "feedback": {
-    "title": "Feedback, Suggestions & Support",
+    "title": "Feedback & Suggestions",
     "description": "Your input is valuable in making OpenWritingKit better for everyone.",
-    "form": {
-      "title": "Submit Your Feedback",
-      "description": "Have a suggestion, found a bug, or want to give general feedback? Let us know!",
-      "type_label": "Type of Feedback",
-      "type_placeholder": "Select a type",
-      "types": {
-        "general": "General Feedback",
-        "bug": "Bug Report",
-        "suggestion": "Feature Suggestion"
-      },
-      "page_label": "Related Page (Optional)",
-      "page_placeholder": "Select a page",
-      "pages": {
-        "general": "General / Unrelated"
-      },
-      "message_label": "Your Message",
-      "message_placeholder": "Tell us what's on your mind...",
-      "submit_button": "Submit Feedback"
-    },
-    "toast": {
-      "empty_title": "Message is empty",
-      "empty_desc": "Please write something before submitting.",
-      "success_title": "Feedback Sent",
-      "success_desc": "Please send your feedback through your email application.",
-      "success_desc_direct": "Thank you! Your feedback has been sent.",
-      "error_desc": "Could not send feedback. Please try again or use the support email."
-    },
-    "contact": {
-        "title": "Contact Support",
-        "description": "Need help with your account or have a specific question? Don't hesitate to reach out.",
-        "button": "Contact Support"
+    "votehub": {
+      "title": "Feedback Hub",
+      "description": "To better organise suggestions and bug reports, we've moved to a dedicated feedback hub.",
+      "subdescription": "There you can submit new ideas, report bugs, and vote on existing submissions to help us prioritise what to build next.",
+      "button": "Go to Feedback Hub"
     },
     "support": {
       "title": "Support the Project",
@@ -644,6 +618,7 @@
       "rocking_self_publishing": { "title": "Rocking Self Publishing", "description": "Insights and interviews for self-published authors looking to succeed." },
       "dead_robots_society": { "title": "Dead Robots' Society", "description": "A podcast by aspiring writers for aspiring writers, covering all things writing." },
       "grammar_girl": { "title": "Grammar Girl", "description": "Quick and dirty tips to improve your writing, focusing on grammar and style." },
+      
       "reedsy_blog": { "title": "Reedsy Blog", "description": "A wealth of articles on writing, editing, and publishing." },
       "creative_penn": { "title": "The Creative Penn", "description": "Articles, podcast, and resources for authors on writing and the business of writing." },
       "terrible_minds": { "title": "TerribleMinds", "description": "Chuck Wendig's blog on writing, storytelling, and the author life." },
@@ -652,6 +627,7 @@
       "litreactor": { "title": "LitReactor", "description": "An online writing community offering classes, workshops, and a magazine." },
       "rewrite_reword": { "title": "Rewrite, Reword, Rework", "description": "A blog focused on the practicalities of editing and revising your work." },
       "slushpile_hell": { "title": "Slush-Pile Hell", "description": "Humorous and cautionary tales from the slush pile of a literary agent." },
+
       "one_stop": { "title": "One Stop for Writers", "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders." },
       "scribophile": { "title": "Scribophile", "description": "One of the largest and most active online writing communities and critique groups." },
       "submittable": { "title": "Submittable", "description": "A platform for discovering and submitting to literary magazines and contests." },
@@ -659,11 +635,13 @@
       "reedsy_title_gen": { "title": "Book Title Generator", "description": "A tool by Reedsy to help you brainstorm titles for your book." },
       "behind_the_name": { "title": "Behind the Name", "description": "A comprehensive resource for finding the etymology and history of names." },
       "word_counters": { "title": "WordCounters", "description": "A tool to count words and analyze text for keyword density and other metrics." },
+
       "inspiration_youtube_1": { "title": "Kurt Vonnegut on the Shapes of Stories", "description": "A classic, humorous lecture on the basic shapes of story plots." },
       "emotion_thesaurus": { "title": "The Emotion Thesaurus", "description": "A popular book for writers to help show, not tell, character emotions." },
       "inspiration_youtube_3": { "title": "The Clues to a Great Story", "description": "Andrew Stanton's TED talk on the fundamentals of storytelling." },
       "bird_by_bird": { "title": "Bird by Bird by Anne Lamott", "description": "A beloved book offering advice on writing and life with humor and wisdom." },
       "inspiration_youtube_4": { "title": "Brandon Sanderson's Lecture Series", "description": "A full university course on writing science fiction and fantasy, available on YouTube." },
+      
       "article_character_setting": { "title": "Showing Character Through Setting", "description": "An article on how to use setting to reveal character traits." },
       "article_research_tips": { "title": "Top 7 Tips for Researching Your Novel", "description": "Practical advice on how to effectively research for your story." },
       "article_after_book": { "title": "What To Do After You Finish Your Book", "description": "A guide on the next steps after completing your manuscript." },
@@ -676,9 +654,12 @@
       "article_legal_tips": { "title": "7 Legal Tips for Writers", "description": "Essential legal advice every writer should know." },
       "article_copyright": { "title": "Understanding Copyright and Related Rights", "description": "A PDF guide from the World Intellectual Property Organization." },
       "article_100_websites": { "title": "The 100 Best Websites for Writers in 2018", "description": "A comprehensive list of valuable online resources for writers." },
+      
+      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
       "writing_bad": { "title": "Writing Bad", "description": "A guide on what not to do, offering lessons through bad examples." },
       "writers_digest": { "title": "Writer's Digest", "description": "A long-standing resource for writers with articles, competitions, and advice." },
       "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "A website and course dedicated to helping authors self-publish." },
+      
       "planning_worksheets": { "title": "Jami Gold's Worksheets", "description": "A collection of in-depth worksheets for plot, character, and scene planning." },
       "planning_take_off_pants": { "title": "Take Off Your Pants! by Libbie Hawker", "description": "A book focused on a simple, effective method for outlining your novel." }
     }
@@ -1052,8 +1033,9 @@
     "not_found_desc": "The locale you are looking for does not exist in the active story.",
     "back_to_locales": "Back to All Locales",
     "title": "World Sheet",
-    "autosave_notice": "All changes are saved automatically. Last saved:",
-    "autosave_na": "N/A",
+    "save_notice": "Remember to save your changes.",
+    "toast_save_success": "World sheet saved successfully.",
+    "toast_save_error": "Failed to save world sheet.",
     "export_button": "Export Sheet",
     "field_placeholder": "Details about {{label}}...",
     "template_citation": "This template is inspired by the detailed world-building plan from",

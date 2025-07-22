@@ -212,7 +212,7 @@
       "data_import_failed_desc": "O arquivo de backup está corrompido ou não é válido."
     }
   },
-    "stories": {
+  "stories": {
     "title": "Suas Histórias",
     "description": "Gerencie seus diferentes projetos de escrita e narrativas. Selecione uma história para torná-la ativa.",
     "create_button": "Criar Nova História",
@@ -242,7 +242,7 @@
       "description_placeholder": "Um breve resumo ou logline para sua história..."
     }
   },
-    "ai_tools": {
+  "ai_tools": {
     "title": "Assistente de Escrita com IA",
     "description": "Utilize a IA para aprimorar seu processo de escrita criativa.",
     "loading_preferences": "Carregando preferências de ferramentas de IA...",
@@ -578,39 +578,13 @@
     }
   },
   "feedback": {
-    "title": "Feedback, Sugestões e Suporte",
-    "description": "Sua contribuição é valiosa para tornar o OpenWritingKit melhor para todos.",
-    "form": {
-      "title": "Envie Seu Feedback",
-      "description": "Tem uma sugestão, encontrou um bug ou quer dar um feedback geral? Nos diga!",
-      "type_label": "Tipo de Feedback",
-      "type_placeholder": "Selecione um tipo",
-      "types": {
-        "general": "Feedback Geral",
-        "bug": "Relatório de Bug",
-        "suggestion": "Sugestão de Recurso"
-      },
-      "page_label": "Página Relacionada (Opcional)",
-      "page_placeholder": "Selecione uma página",
-      "pages": {
-        "general": "Geral / Não relacionado"
-      },
-      "message_label": "Sua Mensagem",
-      "message_placeholder": "Diga-nos o que está em sua mente...",
-      "submit_button": "Enviar Feedback"
-    },
-    "toast": {
-      "empty_title": "Mensagem está vazia",
-      "empty_desc": "Por favor, escreva algo antes de enviar.",
-      "success_title": "Feedback Enviado",
-      "success_desc": "Por favor, envie seu feedback através do seu aplicativo de email.",
-      "success_desc_direct": "Obrigado! Seu feedback foi enviado.",
-      "error_desc": "Não foi possível enviar o feedback. Por favor, tente novamente ou use o email de suporte."
-    },
-    "contact": {
-        "title": "Contatar Suporte",
-        "description": "Precisa de ajuda com sua conta ou tem uma pergunta específica? Não hesite em entrar em contato.",
-        "button": "Contatar Suporte"
+    "title": "Feedback e Sugestões",
+    "description": "Sua opinião é valiosa para tornar o OpenWritingKit melhor para todos.",
+    "votehub": {
+      "title": "Central de Feedback",
+      "description": "Para organizar melhor as sugestões e relatórios de bugs, mudamos para uma central de feedback dedicada.",
+      "subdescription": "Lá você pode enviar novas ideias, relatar bugs e votar nas submissões existentes para nos ajudar a priorizar o que construir a seguir.",
+      "button": "Ir para a Central de Feedback"
     },
     "support": {
       "title": "Apoie o Projeto",
@@ -1173,6 +1147,21 @@
       "title": "Internacional (Ko-fi)",
       "description": "Para doações internacionais, você pode usar o Ko-fi, uma plataforma semelhante ao 'Buy Me a Coffee'.",
       "button": "Apoiar no Ko-fi"
+    }
+  },
+  "feedback": {
+    "title": "Feedback e Sugestões",
+    "description": "Sua opinião é valiosa para tornar o OpenWritingKit melhor para todos.",
+    "votehub": {
+      "title": "Central de Feedback",
+      "description": "Para organizar melhor as sugestões e relatórios de bugs, mudamos para uma central de feedback dedicada.",
+      "subdescription": "Lá você pode enviar novas ideias, relatar bugs e votar nas submissões existentes para nos ajudar a priorizar o que construir a seguir.",
+      "button": "Ir para a Central de Feedback"
+    },
+    "support": {
+      "title": "Apoie o Projeto",
+      "description": "Se você acha esta ferramenta útil, considere apoiar seu desenvolvimento. Sua contribuição ajuda a cobrir custos e impulsiona melhorias futuras.",
+      "button": "Ajude a Financiar o Projeto"
     }
   }
 }
