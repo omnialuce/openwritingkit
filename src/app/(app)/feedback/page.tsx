@@ -11,8 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, Heart, Send, MessageCircleQuestion, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { sendFeedback } from '@/ai/flows/send-feedback-flow';
 import { DonationDialog } from '@/components/layout/DonationDialog';
+import { db } from '@/lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function FeedbackPage() {
   const { t } = useLanguage();
@@ -37,28 +38,38 @@ export default function FeedbackPage() {
 
     setIsSubmitting(true);
     try {
-      const result = await sendFeedback({
-        type: feedbackType,
-        page,
-        message,
-        from: user.email || 'anonymous',
+      // The document written to the 'mail' collection will trigger the "Trigger Email" extension.
+      // The `to` field specifies the recipient, and the `message` field contains the email body.
+      await addDoc(collection(db, 'mail'), {
+        to: ['owk@omnialuce.tech'],
+        from: user.email || 'anonymous@openwritingkit.com',
+        replyTo: user.email,
+        message: {
+          subject: `OpenWritingKit Feedback: [${feedbackType}] on [${page}]`,
+          html: `
+            <p><strong>From:</strong> ${user.email}</p>
+            <p><strong>Type:</strong> ${feedbackType}</p>
+            <p><strong>Page:</strong> ${page}</p>
+            <hr>
+            <p><strong>Message:</strong></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+          `,
+        },
       });
-      
-      if (result.success) {
-        toast({
-          title: t('feedback.toast.success_title'),
-          description: t('feedback.toast.success_desc_direct'),
-        });
-        setMessage('');
-        setFeedbackType('general');
-        setPage('general');
-      } else {
-        throw new Error(result.message || t('feedback.toast.error_desc'));
-      }
+
+      toast({
+        title: t('feedback.toast.success_title'),
+        description: t('feedback.toast.success_desc_direct'),
+      });
+      setMessage('');
+      setFeedbackType('general');
+      setPage('general');
+
     } catch (error) {
+       console.error("Error sending feedback:", error);
        toast({
         title: t('common.error'),
-        description: (error as Error).message || t('feedback.toast.error_desc'),
+        description: t('feedback.toast.error_desc'),
         variant: 'destructive',
       });
     } finally {
