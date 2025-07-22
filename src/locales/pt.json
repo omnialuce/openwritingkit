@@ -586,6 +586,15 @@
       "subdescription": "Lá você pode enviar novas ideias, relatar bugs e votar nas submissões existentes para nos ajudar a priorizar o que construir a seguir.",
       "button": "Ir para a Central de Feedback"
     },
+    "other_options": {
+      "title": "Outras Formas de Entrar em Contato",
+      "email_title": "Enviar um Email",
+      "email_desc": "Para assuntos privados ou contato direto, você pode nos enviar um email.",
+      "email_button": "owk@omnialuce.tech",
+      "twitter_title": "Contato no Twitter/X",
+      "twitter_desc": "Para perguntas rápidas ou para seguir as atualizações do projeto.",
+      "twitter_button": "@omnialucetech"
+    },
     "support": {
       "title": "Apoie o Projeto",
       "description": "Se você acha esta ferramenta útil, considere apoiar seu desenvolvimento. Sua contribuição ajuda a cobrir custos e impulsiona melhorias futuras.",
@@ -1157,6 +1166,15 @@
       "description": "Para organizar melhor as sugestões e relatórios de bugs, mudamos para uma central de feedback dedicada.",
       "subdescription": "Lá você pode enviar novas ideias, relatar bugs e votar nas submissões existentes para nos ajudar a priorizar o que construir a seguir.",
       "button": "Ir para a Central de Feedback"
+    },
+    "other_options": {
+      "title": "Outras Formas de Entrar em Contato",
+      "email_title": "Enviar um Email",
+      "email_desc": "Para assuntos privados ou contato direto, você pode nos enviar um email.",
+      "email_button": "owk@omnialuce.tech",
+      "twitter_title": "Contato no Twitter/X",
+      "twitter_desc": "Para perguntas rápidas ou para seguir as atualizações do projeto.",
+      "twitter_button": "@omnialucetech"
     },
     "support": {
       "title": "Apoie o Projeto",

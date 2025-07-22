@@ -586,6 +586,15 @@
       "subdescription": "There you can submit new ideas, report bugs, and vote on existing submissions to help us prioritise what to build next.",
       "button": "Go to Feedback Hub"
     },
+    "other_options": {
+      "title": "Other Ways to Get in Touch",
+      "email_title": "Send an Email",
+      "email_desc": "For private matters or direct contact, you can send us an email.",
+      "email_button": "owk@omnialuce.tech",
+      "twitter_title": "Contact on Twitter/X",
+      "twitter_desc": "For quick questions or to follow project updates.",
+      "twitter_button": "@omnialucetech"
+    },
     "support": {
       "title": "Support the Project",
       "description": "If you find this tool useful, consider supporting its development. Your contribution helps cover costs and fuels further improvements.",
