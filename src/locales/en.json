@@ -833,28 +833,129 @@
   "plot_tools": {
     "title": "Plot Development Tools",
     "description": "Structure your narrative, track key points, and build your timeline for the current story.",
-    "export_button": "Export All",
     "no_story": {
       "title": "No Active Story",
       "description_1": "Please select or create a story on the",
       "description_2": "Stories page",
       "description_3": "to use the plot tools."
     },
-    "plot_points": {
-      "title": "Plot Point Tracker",
-      "title_short": "Plot Points",
-      "description": "Outline your story's key moments using a common structure. Describe what happens at each point.",
-      "placeholder": "Describe your story's {{name}}...",
-      "loading": "Loading plot points or no points defined for this story yet.",
-      "template": {
-        "exposition": "Exposition / Setup",
-        "inciting_incident": "Inciting Incident",
-        "rising_action_1": "Rising Action 1 (Turning point 1)",
-        "rising_action_2": "Rising Action 2 (Midpoint)",
-        "rising_action_3": "Rising Action 3 (Turning point 2)",
-        "climax": "Climax",
-        "falling_action": "Falling Action",
-        "resolution": "Resolution / Denouement"
+    "settings": {
+      "button": "Plot Settings",
+      "title": "Plot Tool Settings",
+      "show_templates_label": "Show Plotting Templates",
+      "show_templates_desc": "Display the section with classic plot structures.",
+      "primary_template_label": "Primary Template",
+      "primary_template_desc": "Choose a default template to highlight.",
+      "primary_template_placeholder": "Select a primary template"
+    },
+    "templates": {
+      "title": "Plotting Templates",
+      "description": "Use classic storytelling structures to outline your plot.",
+      "use_button": "Use Template",
+      "back_button": "Back to Plot Tools",
+      "not_found_title": "Template not found",
+      "not_found_desc": "The requested plot template could not be found.",
+      "coming_soon_desc": "This template is not yet implemented. Check back later!",
+      "placeholder": "Describe what happens for {{title}}...",
+      "save_the_cat": {
+        "title": "Save the Cat! Beat Sheet",
+        "description": "A popular 15-beat structure for commercial storytelling.",
+        "act1": "Act I - The Thesis World",
+        "opening_image": "Opening Image",
+        "opening_image_desc": "A visual that represents the struggle & tone of the story.",
+        "theme_stated": "Theme Stated",
+        "theme_stated_desc": "A statement made by a character that hints at what the story is about.",
+        "setup": "Setup",
+        "setup_desc": "An exploration of the hero's world and what needs to change.",
+        "catalyst": "Catalyst",
+        "catalyst_desc": "An event that pushes the hero into a new world or situation.",
+        "debate": "Debate",
+        "debate_desc": "The hero's hesitation to take up the challenge.",
+        "act2": "Act II - The Antithesis World",
+        "break_into_two": "Break into Two",
+        "break_into_two_desc": "The hero decides to accept the challenge.",
+        "b_story": "B Story",
+        "b_story_desc": "A subplot that helps to explore the theme.",
+        "fun_and_games": "Fun and Games",
+        "fun_and_games_desc": "The hero explores the new world and its rules.",
+        "midpoint": "Midpoint",
+        "midpoint_desc": "A point where the stakes are raised, and the hero's goal becomes clear.",
+        "bad_guys_close_in": "Bad Guys Close In",
+        "bad_guys_close_in_desc": "The opposition gets stronger and applies pressure.",
+        "all_is_lost": "All Is Lost",
+        "all_is_lost_desc": "The hero loses everything they gained.",
+        "dark_night_of_the_soul": "Dark Night of the Soul",
+        "dark_night_of_the_soul_desc": "The hero's lowest point, where they realize the truth.",
+        "act3": "Act III - The Synthesis",
+        "break_into_three": "Break into Three",
+        "break_into_three_desc": "The hero understands what they must do.",
+        "finale": "Finale",
+        "finale_desc": "The hero confronts the opposition, applying the lessons learned.",
+        "final_image": "Final Image",
+        "final_image_desc": "The opposite of the Opening Image, showing the change."
+      },
+      "monomyth": {
+        "title": "The Monomyth (Hero's Journey)",
+        "description": "A classic 12-stage structure found in myths and legends worldwide.",
+        "act1": "Departure",
+        "ordinary_world": "The Ordinary World",
+        "ordinary_world_desc": "The hero's normal life before the story begins.",
+        "call_to_adventure": "The Call to Adventure",
+        "call_to_adventure_desc": "The hero is faced with a challenge or quest.",
+        "refusal_of_the_call": "Refusal of the Call",
+        "refusal_of_the_call_desc": "The hero is reluctant to accept the call.",
+        "meeting_the_mentor": "Meeting the Mentor",
+        "meeting_the_mentor_desc": "The hero encounters a mentor to gain advice or training.",
+        "crossing_the_threshold": "Crossing the Threshold",
+        "crossing_the_threshold_desc": "The hero commits to the journey and enters a new world.",
+        "act2": "Initiation",
+        "tests_allies_enemies": "Tests, Allies, and Enemies",
+        "tests_allies_enemies_desc": "The hero faces challenges and meets new people.",
+        "approach_to_inmost_cave": "Approach to the Inmost Cave",
+        "approach_to_inmost_cave_desc": "The hero prepares for the major challenge.",
+        "ordeal": "The Ordeal",
+        "ordeal_desc": "The hero faces their greatest fear or a death-and-rebirth moment.",
+        "reward": "Reward (Seizing the Sword)",
+        "reward_desc": "The hero takes possession of the treasure they've won.",
+        "act3": "Return",
+        "the_road_back": "The Road Back",
+        "the_road_back_desc": "The hero begins their journey back to their ordinary world.",
+        "resurrection": "The Resurrection",
+        "resurrection_desc": "The hero is tested one last time and purified by a last sacrifice.",
+        "return_with_elixir": "Return with the Elixir",
+        "return_with_elixir_desc": "The hero returns with something to benefit the ordinary world."
+      },
+      "writers_journey": {
+        "title": "The Writer's Journey",
+        "description": "A modern interpretation of the Monomyth by Christopher Vogler."
+      },
+      "story_circle": {
+        "title": "Story Circle",
+        "description": "Dan Harmon's 8-step structure for compelling storytelling."
+      },
+      "fools_journey": {
+        "title": "The Fool's Journey",
+        "description": "A plot structure inspired by the Major Arcana of the Tarot."
+      },
+      "novel_in_30_days": {
+        "title": "Novel in 30 Days",
+        "description": "A structure focused on fast drafting and getting the story down."
+      },
+      "truby_22_steps": {
+        "title": "Truby's 22 Steps",
+        "description": "A detailed, character-focused structure for complex narratives."
+      },
+      "24_chapters": {
+        "title": "24 Chapter Outline",
+        "description": "A balanced structure for pacing a novel over 24 chapters."
+      },
+      "27_chapters": {
+        "title": "27 Chapter Outline",
+        "description": "A detailed 3-act, 9-block, 27-chapter novel structure."
+      },
+      "snowflake": {
+        "title": "The Snowflake Method",
+        "description": "A method for designing a story from a simple sentence up."
       }
     },
     "timeline": {
@@ -887,28 +988,19 @@
         "description_placeholder": "Describe the event..."
       }
     },
-    "scenes": {
-      "title": "Scene Summaries",
-      "description": "Review individual scene summaries from your Outline Builder.",
-      "empty_1": "No scenes found in the Outline Builder for this story. Go to the",
-      "empty_2": "Outline Builder",
-      "empty_3": "to add some."
-    },
     "export": {
-      "plot_points_header": "PLOT POINTS",
-      "no_description": "No description.",
-      "timeline_header": "TIMELINE EVENTS",
+      "as_txt": "Export as TXT",
+      "as_pdf": "Export as PDF",
+      "as_docx": "Export as DOCX",
       "event_title": "Event",
       "event_datetime": "Date/Time",
       "event_description": "Description",
-      "scenes_header": "SCENE SUMMARIES",
-      "scene_title": "Scene",
-      "scene_notes": "Notes",
-      "no_notes": "No notes."
+      "no_description": "No description.",
+      "no_content": "No content entered."
     },
     "toast": {
-      "plot_points_saved": "Plot points saved.",
-      "plot_points_error": "Failed to save plot points.",
+      "template_saved": "Template data saved.",
+      "template_error": "Failed to save template data.",
       "timeline_saved": "Timeline saved.",
       "timeline_error": "Failed to save timeline."
     }

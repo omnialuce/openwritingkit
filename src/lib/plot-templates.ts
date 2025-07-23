@@ -4,19 +4,19 @@ import type { TranslationKey } from './i18n-keys';
 
 export interface PlotTemplateStep {
   id: string;
-  titleKey: TranslationKey;
-  descriptionKey: TranslationKey;
+  titleKey: string;
+  descriptionKey: string;
 }
 
 export interface PlotTemplateSection {
-  titleKey: TranslationKey;
+  titleKey: string;
   steps: PlotTemplateStep[];
 }
 
 export interface PlotTemplate {
   id: string;
-  titleKey: TranslationKey;
-  descriptionKey: TranslationKey;
+  titleKey: string;
+  descriptionKey: string;
   structure: PlotTemplateSection[];
 }
 

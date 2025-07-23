@@ -24,6 +24,7 @@ import { plotTemplates, type PlotTemplate } from '@/lib/plot-templates';
 import { ExportButton } from '@/components/plot-tools/ExportButton';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TranslationKey } from '@/lib/i18n-keys';
 
 // --- Timeline Creator ---
 interface TimelineEvent {
@@ -207,10 +208,10 @@ export default function PlotToolsPage() {
                     <Card key={template.id} className={cn("flex flex-col", plotSettings.primaryTemplate === template.id && "border-primary")}>
                         <CardHeader>
                             <BookCopy className="h-8 w-8 text-primary mb-2"/>
-                            <CardTitle>{t(template.titleKey)}</CardTitle>
+                            <CardTitle>{t(template.titleKey as TranslationKey)}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-grow">
-                             <p className="text-sm text-muted-foreground">{t(template.descriptionKey)}</p>
+                             <p className="text-sm text-muted-foreground">{t(template.descriptionKey as TranslationKey)}</p>
                         </CardContent>
                         <CardFooter>
                             <Button asChild className="w-full">
@@ -389,7 +390,7 @@ export default function PlotToolsPage() {
                     </SelectTrigger>
                     <SelectContent>
                         {plotTemplates.map(template => (
-                             <SelectItem key={template.id} value={template.id}>{t(template.titleKey)}</SelectItem>
+                             <SelectItem key={template.id} value={template.id}>{t(template.titleKey as TranslationKey)}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
