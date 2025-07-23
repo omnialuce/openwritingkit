@@ -90,7 +90,7 @@ export default function PlotTemplatePage() {
      return (
         <Card>
             <CardHeader>
-                <CardTitle>{t(templateInfo.titleKey as any)}</CardTitle>
+                <CardTitle>{t(templateInfo.titleKey)}</CardTitle>
             </CardHeader>
             <CardContent>
                 <p>{t('plot_tools.templates.coming_soon_desc')}</p>
@@ -110,10 +110,10 @@ export default function PlotTemplatePage() {
              <Link href="/plot-tools"><ArrowLeft className="mr-2 h-4 w-4" />{t('plot_tools.templates.back_button')}</Link>
            </Button>
           <h1 className="text-4xl font-bold mb-1 flex items-center">
-            <BookCopy className="mr-3 h-10 w-10 text-primary" /> {t(templateInfo.titleKey as any)}
+            <BookCopy className="mr-3 h-10 w-10 text-primary" /> {t(templateInfo.titleKey)}
           </h1>
           <p className="text-muted-foreground max-w-2xl">
-            {t(templateInfo.descriptionKey as any)}
+            {t(templateInfo.descriptionKey)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -129,19 +129,19 @@ export default function PlotTemplatePage() {
         {templateInfo.structure.map((section, sectionIndex) => (
           <Card key={sectionIndex}>
             <CardHeader>
-              <CardTitle>{t(section.titleKey as any)}</CardTitle>
+              <CardTitle>{t(section.titleKey)}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {section.steps.map(step => (
                 <div key={step.id} className="space-y-2">
-                  <Label htmlFor={step.id} className="text-lg font-semibold">{t(step.titleKey as any)}</Label>
-                  <p className="text-sm text-muted-foreground">{t(step.descriptionKey as any)}</p>
+                  <Label htmlFor={step.id} className="text-lg font-semibold">{t(step.titleKey)}</Label>
+                  <p className="text-sm text-muted-foreground">{t(step.descriptionKey)}</p>
                   <Textarea
                     id={step.id}
                     value={templateData[step.id] || ''}
                     onChange={(e) => handleDataChange(step.id, e.target.value)}
                     rows={5}
-                    placeholder={t('plot_tools.templates.placeholder', { title: t(step.titleKey as any).toLowerCase() })}
+                    placeholder={t('plot_tools.templates.placeholder', { title: t(step.titleKey).toLowerCase() })}
                   />
                 </div>
               ))}

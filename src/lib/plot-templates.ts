@@ -1,20 +1,22 @@
+
 // src/lib/plot-templates.ts
+import type { TranslationKey } from './i18n-keys';
 
 export interface PlotTemplateStep {
   id: string;
-  titleKey: string;
-  descriptionKey: string;
+  titleKey: TranslationKey;
+  descriptionKey: TranslationKey;
 }
 
 export interface PlotTemplateSection {
-  titleKey: string;
+  titleKey: TranslationKey;
   steps: PlotTemplateStep[];
 }
 
 export interface PlotTemplate {
   id: string;
-  titleKey: string;
-  descriptionKey: string;
+  titleKey: TranslationKey;
+  descriptionKey: TranslationKey;
   structure: PlotTemplateSection[];
 }
 

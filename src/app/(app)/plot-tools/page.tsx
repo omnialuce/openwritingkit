@@ -5,7 +5,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -207,10 +207,10 @@ export default function PlotToolsPage() {
                     <Card key={template.id} className={cn("flex flex-col", plotSettings.primaryTemplate === template.id && "border-primary")}>
                         <CardHeader>
                             <BookCopy className="h-8 w-8 text-primary mb-2"/>
-                            <CardTitle>{t(template.titleKey as any)}</CardTitle>
+                            <CardTitle>{t(template.titleKey)}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-grow">
-                             <p className="text-sm text-muted-foreground">{t(template.descriptionKey as any)}</p>
+                             <p className="text-sm text-muted-foreground">{t(template.descriptionKey)}</p>
                         </CardContent>
                         <CardFooter>
                             <Button asChild className="w-full">
@@ -389,7 +389,7 @@ export default function PlotToolsPage() {
                     </SelectTrigger>
                     <SelectContent>
                         {plotTemplates.map(template => (
-                             <SelectItem key={template.id} value={template.id}>{t(template.titleKey as any)}</SelectItem>
+                             <SelectItem key={template.id} value={template.id}>{t(template.titleKey)}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
