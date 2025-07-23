@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon, Separator } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon } from 'lucide-react';
 import useAutosave, { type VersionHistoryEntry } from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -53,6 +53,7 @@ import { saveAs } from 'file-saver';
 import { toPng } from 'html-to-image';
 import { generateDocxFromHtml } from '@/lib/docx-generator';
 import { useTheme } from 'next-themes';
+import { Separator } from '@/components/ui/separator';
 
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -835,6 +836,7 @@ export function WritingArea() {
                             </div>
                         </DropdownMenuRadioGroup>
                        </div>
+                       <Separator />
                       <div className='px-2 space-y-2'>
                         <Label>{t('editor.customize_view.font_size')} ({editorSettings.fontSize}px)</Label>
                         <Slider value={[editorSettings.fontSize]} onValueChange={([val]) => updateEditorSettings({ fontSize: val })} min={12} max={24} step={1} />
