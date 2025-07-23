@@ -1,4 +1,3 @@
-
 {
   "common": {
     "error": "Erro",
@@ -694,9 +693,6 @@
     "customize_view": {
       "view_options": "Opções de Visualização",
       "focus_mode": "Modo Foco",
-      "editor_theme": "Tema do Editor",
-      "theme_light": "Claro",
-      "theme_dark": "Escuro",
       "font_family": "Família da Fonte",
       "font_sans": "Sem Serifa",
       "font_serif": "Com Serifa",
@@ -705,7 +701,8 @@
       "line_height_tight": "Apertado",
       "line_height_normal": "Normal",
       "line_height_loose": "Solto",
-      "paragraph_spacing": "Espaçamento do Parágrafo"
+      "paragraph_spacing": "Espaçamento do Parágrafo",
+      "text_area_width": "Largura da Área de Texto"
     },
     "editor_theme": "Tema do Editor",
     "theme_light": "Claro",

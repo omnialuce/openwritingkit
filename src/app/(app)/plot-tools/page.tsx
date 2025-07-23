@@ -1,19 +1,17 @@
-
 // src/app/(app)/plot-tools/page.tsx
 'use client';
 
-import React, { useState, useEffect, FormEvent, useCallback } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download, Save, GripVertical, Loader2 } from 'lucide-react';
+import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download, Save, GripVertical, Loader2, BookCopy, Settings, Eye, EyeOff } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useStoryContext, getPlotPointsStorageKey, getTimelineEventsStorageKey, getOutlineStorageKey } from '@/contexts/StoryContext';
+import { useStoryContext, getTimelineEventsStorageKey, getPlotSettingsKey, type PlotSettings } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,13 +19,10 @@ import { useToast } from '@/hooks/use-toast';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { cn } from '@/lib/utils';
 import { storage } from '@/lib/storage';
-
-// --- Plot Point Tracker ---
-interface PlotPoint {
-  id: string;
-  name: string; 
-  description: string;
-}
+import { plotTemplates, type PlotTemplate } from '@/lib/plot-templates';
+import { ExportButton } from '@/components/plot-tools/ExportButton';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // --- Timeline Creator ---
 interface TimelineEvent {
@@ -37,26 +32,11 @@ interface TimelineEvent {
   description: string;
 }
 
-// --- Outline Integration ---
-type OutlineItemType = 'Chapter' | 'Scene' | 'Plot Point/Notes';
-interface OutlineItem {
-  id: string;
-  title: string;
-  notes?: string;
-  type: OutlineItemType;
-  children: OutlineItem[];
-}
-
-
 export default function PlotToolsPage() {
   const { user } = useAuth();
   const { activeStoryId } = useStoryContext();
   const { t } = useLanguage();
   const { toast } = useToast();
-
-  // Plot Point State
-  const [plotPoints, setPlotPoints] = useState<PlotPoint[]>([]);
-  const [isLoadingPlotPoints, setIsLoadingPlotPoints] = useState(false);
 
   // Timeline Event State
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
@@ -66,109 +46,38 @@ export default function PlotToolsPage() {
   const [eventDateTime, setEventDateTime] = useState('');
   const [eventDescription, setEventDescription] = useState('');
   const [isLoadingTimeline, setIsLoadingTimeline] = useState(false);
-  
-  // Scene Summaries State
-  const [sceneSummaries, setSceneSummaries] = useState<OutlineItem[]>([]);
-  
-  const getPlotPointTemplate = useCallback((): PlotPoint[] => [
-    { id: 'pp1', name: t('plot_tools.plot_points.template.exposition'), description: '' },
-    { id: 'pp2', name: t('plot_tools.plot_points.template.inciting_incident'), description: '' },
-    { id: 'pp3', name: t('plot_tools.plot_points.template.rising_action_1'), description: '' },
-    { id: 'pp4', name: t('plot_tools.plot_points.template.rising_action_2'), description: '' },
-    { id: 'pp5', name: t('plot_tools.plot_points.template.rising_action_3'), description: '' },
-    { id: 'pp6', name: t('plot_tools.plot_points.template.climax'), description: '' },
-    { id: 'pp7', name: t('plot_tools.plot_points.template.falling_action'), description: '' },
-    { id: 'pp8', name: t('plot_tools.plot_points.template.resolution'), description: '' },
-  ], [t]);
 
-
-  // Load Plot Points
-  useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId && user) {
-      const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user.uid);
-      storage.getItem<PlotPoint[]>(plotPointsStorageKey).then(storedPlotPoints => {
-        if (storedPlotPoints) {
-            setPlotPoints(storedPlotPoints);
-        } else {
-            const initialTemplate = getPlotPointTemplate();
-            setPlotPoints(initialTemplate);
-            storage.setItem(plotPointsStorageKey, initialTemplate);
-        }
-      });
-    } else if (!activeStoryId) {
-      setPlotPoints([]); 
-    }
-  }, [activeStoryId, user, getPlotPointTemplate]);
+  // Plot Settings State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [plotSettings, setPlotSettings] = useState<PlotSettings>({ showTemplates: true, primaryTemplate: 'save-the-cat' });
 
   // Load Timeline Events
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId && user) {
+    if (activeStoryId && user) {
       const timelineEventsStorageKey = getTimelineEventsStorageKey(activeStoryId, user.uid);
       storage.getItem<TimelineEvent[]>(timelineEventsStorageKey).then(storedEvents => {
         setTimelineEvents(storedEvents || []);
       });
-    } else if (!activeStoryId) {
-      setTimelineEvents([]); 
+      
+      const plotSettingsKey = getPlotSettingsKey(activeStoryId, user.uid);
+      storage.getItem<PlotSettings>(plotSettingsKey).then(storedSettings => {
+        if(storedSettings) {
+          setPlotSettings(storedSettings);
+        } else {
+          // Default settings
+          const defaultSettings: PlotSettings = { showTemplates: true, primaryTemplate: 'save-the-cat' };
+          setPlotSettings(defaultSettings);
+          storage.setItem(plotSettingsKey, defaultSettings);
+        }
+      })
+    } else {
+      setTimelineEvents([]);
+      setPlotSettings({ showTemplates: true, primaryTemplate: 'save-the-cat' });
     }
   }, [activeStoryId, user]);
-  
-  // Load Outline Items for Scene Summaries
-  useEffect(() => {
-      if (typeof window !== 'undefined' && activeStoryId && user) {
-          const outlineStorageKey = getOutlineStorageKey(activeStoryId, user.uid);
-          storage.getItem<OutlineItem[]>(outlineStorageKey).then(storedOutline => {
-            if (storedOutline) {
-                try {
-                    const allItems: OutlineItem[] = storedOutline;
-                    const scenes = extractScenesRecursive(allItems);
-                    setSceneSummaries(scenes);
-                } catch (e) {
-                    console.error("Failed to parse outline for scenes", e);
-                    setSceneSummaries([]);
-                }
-            } else {
-                setSceneSummaries([]);
-            }
-          });
-      } else if (!activeStoryId) {
-          setSceneSummaries([]);
-      }
-  }, [activeStoryId, user]);
-
-  const extractScenesRecursive = (items: OutlineItem[]): OutlineItem[] => {
-    let scenes: OutlineItem[] = [];
-    for (const item of items) {
-      if (item.type === 'Scene') {
-        scenes.push(item);
-      }
-      if (item.children && item.children.length > 0) {
-        scenes = scenes.concat(extractScenesRecursive(item.children));
-      }
-    }
-    return scenes;
-  };
-
-  const handlePlotPointChange = (id: string, newDescription: string) => {
-    if (!activeStoryId || !user) return;
-    setPlotPoints(prev => prev.map(pp => pp.id === id ? { ...pp, description: newDescription } : pp));
-  };
-  
-  const handleSavePlotPoints = async () => {
-    if (!activeStoryId || !user) return;
-    setIsLoadingPlotPoints(true);
-    const plotPointsStorageKey = getPlotPointsStorageKey(activeStoryId, user.uid);
-    try {
-        await storage.setItem(plotPointsStorageKey, plotPoints);
-        toast({ title: t('common.save'), description: t('plot_tools.toast.plot_points_saved') });
-    } catch (e) {
-        toast({ title: t('common.error'), description: t('plot_tools.toast.plot_points_error'), variant: 'destructive'});
-    } finally {
-        setIsLoadingPlotPoints(false);
-    }
-  };
 
   const saveTimelineEvents = (updatedEvents: TimelineEvent[]) => {
-     setTimelineEvents(updatedEvents);
+    setTimelineEvents(updatedEvents);
   };
   
   const handleSaveTimeline = async () => {
@@ -247,39 +156,17 @@ export default function PlotToolsPage() {
 
     setTimelineEvents(newItems);
   };
-  
-  const handleExport = () => {
-    if (!activeStoryId) return;
-    let textContent = `--- ${t('plot_tools.export.plot_points_header')} ---\n\n`;
-    plotPoints.forEach(pp => {
-      textContent += `[${pp.name}]\n`;
-      textContent += `${pp.description || t('plot_tools.export.no_description')}\n\n`;
-    });
 
-    textContent += `\n--- ${t('plot_tools.export.timeline_header')} ---\n\n`;
-    timelineEvents.forEach(event => {
-      textContent += `${t('plot_tools.export.event_title')}: ${event.title}\n`;
-      textContent += `${t('plot_tools.export.event_datetime')}: ${event.dateTime || 'N/A'}\n`;
-      textContent += `${t('plot_tools.export.event_description')}: ${event.description || t('plot_tools.export.no_description')}\n\n`;
+  const handleSettingsChange = (key: keyof PlotSettings, value: any) => {
+    setPlotSettings(prev => {
+        const newSettings = {...prev, [key]: value};
+        if(activeStoryId && user) {
+            const plotSettingsKey = getPlotSettingsKey(activeStoryId, user.uid);
+            storage.setItem(plotSettingsKey, newSettings);
+        }
+        return newSettings;
     });
-    
-    textContent += `\n--- ${t('plot_tools.export.scenes_header')} ---\n\n`;
-    sceneSummaries.forEach(scene => {
-        textContent += `${t('plot_tools.export.scene_title')}: ${scene.title}\n`;
-        textContent += `${t('plot_tools.export.scene_notes')}: ${scene.notes || t('plot_tools.export.no_notes')}\n\n`;
-    });
-
-    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'plot_tools_export.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
+  }
 
   if (!activeStoryId) {
     return (
@@ -303,45 +190,37 @@ export default function PlotToolsPage() {
           </h1>
           <p className="text-muted-foreground">{t('plot_tools.description')}</p>
         </div>
-        <Button variant="outline" onClick={handleExport} disabled={!activeStoryId}>
-          <Download className="mr-2 h-5 w-5" /> {t('plot_tools.export_button')}
+         <Button variant="outline" onClick={() => setIsSettingsOpen(true)}>
+          <Settings className="mr-2 h-5 w-5" /> {t('plot_tools.settings.button')}
         </Button>
       </div>
 
-      {/* Plot Point Tracker Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div>
-              <CardTitle>{t('plot_tools.plot_points.title')}</CardTitle>
-              <CardDescription>{t('plot_tools.plot_points.description')}</CardDescription>
-            </div>
-            <Button onClick={handleSavePlotPoints} disabled={isLoadingPlotPoints}>
-              {isLoadingPlotPoints ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {t('common.save')} {t('plot_tools.plot_points.title_short')}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {plotPoints.map(pp => (
-            <div key={pp.id} className="space-y-2">
-              <Label htmlFor={`plotpoint-${pp.id}`} className="text-base font-semibold">{pp.name}</Label>
-              <Textarea
-                id={`plotpoint-${pp.id}`}
-                value={pp.description}
-                onChange={(e) => handlePlotPointChange(pp.id, e.target.value)}
-                placeholder={t('plot_tools.plot_points.placeholder', { name: pp.name.toLowerCase() })}
-                rows={4}
-                className="text-sm"
-                disabled={!activeStoryId}
-              />
-            </div>
-          ))}
-           {plotPoints.length === 0 && activeStoryId && (
-             <p className="text-muted-foreground">{t('plot_tools.plot_points.loading')}</p>
-           )}
-        </CardContent>
-      </Card>
+       {plotSettings.showTemplates && (
+        <Card>
+            <CardHeader>
+                <CardTitle>{t('plot_tools.templates.title')}</CardTitle>
+                <CardDescription>{t('plot_tools.templates.description')}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {plotTemplates.map(template => (
+                    <Card key={template.id} className={cn("flex flex-col", plotSettings.primaryTemplate === template.id && "border-primary")}>
+                        <CardHeader>
+                            <BookCopy className="h-8 w-8 text-primary mb-2"/>
+                            <CardTitle>{t(template.titleKey as any)}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-grow">
+                             <p className="text-sm text-muted-foreground">{t(template.descriptionKey as any)}</p>
+                        </CardContent>
+                        <CardFooter>
+                            <Button asChild className="w-full">
+                                <Link href={`/plot-tools/${template.id}`}>{t('plot_tools.templates.use_button')}</Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ))}
+            </CardContent>
+        </Card>
+       )}
 
       {/* Timeline Creator Section */}
       <Card>
@@ -352,6 +231,7 @@ export default function PlotToolsPage() {
                 <CardDescription>{t('plot_tools.timeline.description')}</CardDescription>
             </div>
             <div className="flex gap-2">
+                <ExportButton contentId="timeline-export" type="timeline" data={timelineEvents} />
                 <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0" disabled={!activeStoryId}>
                   <PlusCircle className="mr-2 h-5 w-5" /> {t('plot_tools.timeline.add_button')}
                 </Button>
@@ -371,7 +251,7 @@ export default function PlotToolsPage() {
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef}>
                     <ScrollArea className="h-auto max-h-[60vh]">
-                      <div className="space-y-4 pr-3">
+                      <div className="space-y-4 pr-3" id="timeline-export">
                         {timelineEvents.map((event, index) => (
                           <Draggable key={event.id} draggableId={event.id} index={index}>
                             {(provided, snapshot) => (
@@ -437,41 +317,6 @@ export default function PlotToolsPage() {
         </CardContent>
       </Card>
 
-      {/* Scene Summaries Section (Integrated) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('plot_tools.scenes.title')}</CardTitle>
-          <CardDescription>{t('plot_tools.scenes.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-           {sceneSummaries.length === 0 ? (
-                <div className="text-center py-8">
-                  <AlignLeft className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    {t('plot_tools.scenes.empty_1')} <Link href="/outline" className="text-primary hover:underline">{t('plot_tools.scenes.empty_2')}</Link> {t('plot_tools.scenes.empty_3')}
-                  </p>
-                </div>
-            ) : (
-                <ScrollArea className="h-auto max-h-[60vh]">
-                    <div className="space-y-4 pr-3">
-                        {sceneSummaries.map(scene => (
-                            <Card key={scene.id} className="bg-muted/30">
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-lg">{scene.title}</CardTitle>
-                                </CardHeader>
-                                {scene.notes && (
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{scene.notes}</p>
-                                    </CardContent>
-                                )}
-                            </Card>
-                        ))}
-                    </div>
-                </ScrollArea>
-            )}
-        </CardContent>
-      </Card>
-
       {/* Event Dialog */}
       <Dialog open={isEventDialogOpen} onOpenChange={(isOpen) => {
           setIsEventDialogOpen(isOpen);
@@ -516,7 +361,45 @@ export default function PlotToolsPage() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-
+      
+       {/* Settings Dialog */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('plot_tools.settings.title')}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-6">
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                    <Label htmlFor="show-templates">{t('plot_tools.settings.show_templates_label')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('plot_tools.settings.show_templates_desc')}</p>
+                </div>
+                <Switch 
+                    id="show-templates"
+                    checked={plotSettings.showTemplates}
+                    onCheckedChange={(checked) => handleSettingsChange('showTemplates', checked)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="primary-template">{t('plot_tools.settings.primary_template_label')}</Label>
+                <Select value={plotSettings.primaryTemplate} onValueChange={(value) => handleSettingsChange('primaryTemplate', value)}>
+                    <SelectTrigger id="primary-template">
+                        <SelectValue placeholder={t('plot_tools.settings.primary_template_placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {plotTemplates.map(template => (
+                             <SelectItem key={template.id} value={template.id}>{t(template.titleKey as any)}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <p className="text-xs text-muted-foreground">{t('plot_tools.settings.primary_template_desc')}</p>
+              </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button>{t('common.close')}</Button></DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -38,6 +38,11 @@ interface Story {
   lastModified: string;
 }
 
+export interface PlotSettings {
+  showTemplates: boolean;
+  primaryTemplate: string;
+}
+
 interface StoryContextType {
   stories: Story[];
   activeStoryId: string | null;
@@ -229,7 +234,6 @@ export function StoryProvider({ children }: { children: ReactNode }) {
         charactersKey,
         localesKey,
         getOutlineStorageKey(storyId, uid),
-        getPlotPointsStorageKey(storyId, uid),
         getTimelineEventsStorageKey(storyId, uid),
         getEditorContentKey(storyId, null, uid), // scratchpad
         getWordGoalKey(storyId, uid),
@@ -237,6 +241,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
         getResearchStorageKey(storyId, uid),
         getResearchTodosStorageKey(storyId, uid),
         getDeadlineKey(storyId, uid),
+        getPlotSettingsKey(storyId, uid),
     ];
 
     keysToRemove.forEach(key => key && localStorage.removeItem(key));
@@ -294,10 +299,6 @@ export const getOutlineStorageKey = (storyId: string | null, userId: string | un
     return storyId && userId ? `openwritingkit-story-${storyId}-outline-items-v3-user-${userId}` : 'openwritingkit-outline-items-v3-noactive';
 }
 
-export const getPlotPointsStorageKey = (storyId: string | null, userId: string | undefined | null): string => {
-    return storyId && userId ? `openwritingkit-story-${storyId}-plotpoints-user-${userId}` : 'openwritingkit-plotpoints-noactive';
-}
-
 export const getTimelineEventsStorageKey = (storyId: string | null, userId: string | undefined | null): string => {
     return storyId && userId ? `openwritingkit-story-${storyId}-timeline-events-user-${userId}` : 'openwritingkit-timeline-events-noactive';
 }
@@ -335,6 +336,14 @@ export const getResearchTodosStorageKey = (storyId: string | null, userId: strin
 
 export const getDeadlineKey = (storyId: string | null, userId: string | undefined | null): string | null => {
     return storyId && userId ? `openwritingkit-story-${storyId}-deadline-user-${userId}` : null;
+}
+
+export const getPlotSettingsKey = (storyId: string | null, userId: string | undefined | null): string | null => {
+    return storyId && userId ? `openwritingkit-story-${storyId}-plot-settings-user-${userId}` : null;
+};
+
+export const getPlotTemplateDataKey = (storyId: string | null, templateId: string, userId: string | undefined | null): string | null => {
+  return storyId && userId ? `openwritingkit-story-${storyId}-plottemplate-${templateId}-user-${userId}` : null;
 }
 
 export type { CharacterProfile, Locale, Story };

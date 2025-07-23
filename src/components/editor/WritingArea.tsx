@@ -1,18 +1,20 @@
-
 // src/components/editor/WritingArea.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Focus from '@tiptap/extension-focus';
+import Link from '@tiptap/extension-link';
+import TextAlign from '@tiptap/extension-text-align';
+import TextStyle from '@tiptap/extension-text-style';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon } from 'lucide-react';
 import useAutosave, { type VersionHistoryEntry } from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -38,25 +40,26 @@ import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/ge
 import { useSidebar } from '@/components/ui/sidebar';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useStoryContext, getEditorContentKey, getDocumentsStorageKey, type DocumentItem } from '@/contexts/StoryContext';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/lib/storage';
+import { Toggle } from '@/components/ui/toggle';
+import { Slider } from '@/components/ui/slider';
 
 
-type EditorTheme = 'light' | 'dark';
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 interface EditorSettings {
-  fontFamily: 'sans' | 'serif';
-  fontSize: 'sm' | 'base' | 'lg';
-  lineHeight: 'tight' | 'normal' | 'loose';
-  paragraphSpacing: 'base';
+  fontSize: number;
+  lineHeight: number;
+  paragraphSpacing: number;
   focusMode: boolean;
+  editorWidth: number;
 }
 
-const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings';
+const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings-v2';
 
 export function WritingArea() {
   const { t, language } = useLanguage();
@@ -75,7 +78,6 @@ export function WritingArea() {
   
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
-  const [editorTheme, setEditorTheme] = useState<EditorTheme>('light');
   const [isFullScreen, setIsFullScreen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -100,11 +102,11 @@ export function WritingArea() {
   const [isMounted, setIsMounted] = useState(false);
   
   const [editorSettings, setEditorSettings] = useState<EditorSettings>({
-    fontFamily: 'sans',
-    fontSize: 'base',
-    lineHeight: 'normal',
-    paragraphSpacing: 'base',
+    fontSize: 16,
+    lineHeight: 1.7,
+    paragraphSpacing: 1,
     focusMode: false,
+    editorWidth: 800,
   });
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
@@ -127,6 +129,14 @@ export function WritingArea() {
         className: 'has-focus',
         mode: 'all',
       }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      TextStyle,
     ],
     content: savedContent,
     immediatelyRender: false,
@@ -261,13 +271,17 @@ export function WritingArea() {
   const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
     setEditorSettings(prev => {
         const updated = { ...prev, ...newSettings };
+        if (newSettings.fontSize && editor) {
+            editor.chain().focus().setFontSize(`${newSettings.fontSize}px`).run();
+        }
         localStorage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updated));
         return updated;
     });
   };
   
   useEffect(() => {
-    const editorElement = editor?.view.dom;
+    if (!editor) return;
+    const editorElement = editor.view.dom;
     if (!editorElement) return;
 
     const root = editorElement.closest('.ProseMirror') as HTMLElement | null;
@@ -284,18 +298,11 @@ export function WritingArea() {
         }
     })
 
-    const fontMap = {
-        sans: "'PT Sans', sans-serif",
-        serif: "Georgia, 'Times New Roman', Times, serif",
-    };
-    const sizeMap = { sm: '0.9rem', base: '1rem', lg: '1.1rem' };
-    const lineHeightMap = { tight: '1.5', normal: '1.7', loose: '1.9' };
-    const paraSpacingMap = { base: '1rem' };
-
-    root.style.setProperty('--editor-font-family', fontMap[editorSettings.fontFamily]);
-    root.style.setProperty('--editor-font-size', sizeMap[editorSettings.fontSize]);
-    root.style.setProperty('--editor-line-height', lineHeightMap[editorSettings.lineHeight]);
-    root.style.setProperty('--editor-paragraph-spacing', paraSpacingMap[editorSettings.paragraphSpacing]);
+    root.style.setProperty('--editor-font-size', `${editorSettings.fontSize}px`);
+    root.style.setProperty('--editor-line-height', String(editorSettings.lineHeight));
+    root.style.setProperty('--editor-paragraph-spacing', `${editorSettings.paragraphSpacing}rem`);
+    root.style.maxWidth = `${editorSettings.editorWidth}px`;
+    root.style.margin = '0 auto';
 
   }, [editorSettings, editor]);
 
@@ -403,20 +410,6 @@ export function WritingArea() {
     }
   };
   
-  const themeClasses = {
-    light: 'bg-background text-foreground',
-    dark: 'bg-neutral-900 text-neutral-100',
-  };
-  
-  const editorContainerClasses = {
-    light: 'bg-background',
-    dark: 'dark bg-neutral-900',
-  }
-
-  const applyEditorTheme = (selectedTheme: EditorTheme) => {
-    setEditorTheme(selectedTheme);
-  };
-
   const toggleFullScreen = () => setIsFullScreen(!isFullScreen);
 
   const handleGetFeedback = async () => {
@@ -557,9 +550,9 @@ export function WritingArea() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">{t('editor.no_story_description')}</p>
-          <Link href="/stories" passHref>
+          <NextLink href="/stories" passHref>
             <Button variant="default">{t('editor.go_to_stories')}</Button>
-          </Link>
+          </NextLink>
         </CardContent>
       </Card>
     );
@@ -574,7 +567,6 @@ export function WritingArea() {
     );
   }
   
-  const currentOverallTheme = editorTheme === 'dark' ? 'dark' : '';
   const isSidePanelOpen = (isFeedbackPanelOpen || isHistoryPanelOpen) && !isMobile;
 
   const renderFeedbackContent = () => feedbackResult && (
@@ -672,7 +664,7 @@ export function WritingArea() {
 
   if (isFullScreen) {
     return (
-      <div className={cn("fixed inset-0 z-50 flex flex-col p-2 md:p-4", currentOverallTheme, themeClasses[editorTheme])} ref={editorRef}>
+      <div className="fixed inset-0 z-50 flex flex-col p-2 md:p-4 bg-background" ref={editorRef}>
         <Button
           variant="ghost"
           size="icon"
@@ -682,15 +674,21 @@ export function WritingArea() {
         >
           <Minimize className="h-5 w-5" />
         </Button>
-        <EditorContent editor={editor} className={cn("flex-grow overflow-y-auto", editorContainerClasses[editorTheme])} />
+        <EditorContent editor={editor} className="flex-grow overflow-y-auto" />
       </div>
     );
   }
 
   return (
     <TooltipProvider>
-      <div className={cn("flex h-full", currentOverallTheme, themeClasses[editorTheme])}>
-        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none transition-all duration-300", isSidePanelOpen ? "md:w-2/3 lg:w-3/4" : "w-full", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+      <div className="flex h-full bg-background">
+        <Card className={cn("flex flex-col flex-grow shadow-none border-0 rounded-none transition-all duration-300", isSidePanelOpen ? "md:w-2/3 lg:w-3/4" : "w-full")}>
+          <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }} className="flex gap-1 bg-background border rounded-md p-1 shadow-md">
+            <Toggle size="sm" pressed={editor.isActive('bold')} onPressedChange={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4" /></Toggle>
+            <Toggle size="sm" pressed={editor.isActive('italic')} onPressedChange={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4" /></Toggle>
+            <Toggle size="sm" pressed={editor.isActive('strike')} onPressedChange={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-4 w-4" /></Toggle>
+            <Toggle size="sm" pressed={editor.isActive('link')} onPressedChange={() => { const url = window.prompt('URL'); if(url) {editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()}}}><LinkIcon className="h-4 w-4" /></Toggle>
+          </BubbleMenu>
           {!isFullScreen && (
             <>
               <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
@@ -761,47 +759,28 @@ export function WritingArea() {
                         <Palette className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80 rounded-none p-2">
+                    <DropdownMenuContent align="end" className="w-80 rounded-none p-2 space-y-4">
                       <DropdownMenuLabel>{t('editor.customize_view.view_options')}</DropdownMenuLabel>
-                      <DropdownMenuCheckboxItem
-                        checked={editorSettings.focusMode}
-                        onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked })}
-                      >
+                      <DropdownMenuCheckboxItem checked={editorSettings.focusMode} onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked })}>
                         {t('editor.customize_view.focus_mode')}
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuSeparator />
-                       <div className="grid grid-cols-2 gap-2 p-2">
-                          <div>
-                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.editor_theme')}</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup value={editorTheme} onValueChange={(v) => applyEditorTheme(v as EditorTheme)}>
-                              <DropdownMenuRadioItem value="light"><Sun className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_light')}</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="dark"><Moon className="mr-2 h-4 w-4" />{t('editor.customize_view.theme_dark')}</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </div>
-                          <div>
-                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.font_family')}</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup value={editorSettings.fontFamily} onValueChange={(v) => updateEditorSettings({ fontFamily: v as EditorSettings['fontFamily'] })}>
-                              <DropdownMenuRadioItem value="sans"><Type className="mr-2 h-4 w-4" />{t('editor.customize_view.font_sans')}</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="serif"><CaseSensitive className="mr-2 h-4 w-4" />{t('editor.customize_view.font_serif')}</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </div>
-                          <div>
-                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.font_size')}</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup value={editorSettings.fontSize} onValueChange={(v) => updateEditorSettings({ fontSize: v as EditorSettings['fontSize'] })}>
-                              <DropdownMenuRadioItem value="sm">{t('settings.editor.font_size_small')}</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="base">{t('settings.editor.font_size_medium')}</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="lg">{t('settings.editor.font_size_large')}</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </div>
-                           <div>
-                            <DropdownMenuLabel className="px-0">{t('editor.customize_view.line_height')}</DropdownMenuLabel>
-                            <DropdownMenuRadioGroup value={editorSettings.lineHeight} onValueChange={(v) => updateEditorSettings({ lineHeight: v as EditorSettings['lineHeight'] })}>
-                              <DropdownMenuRadioItem value="tight">{t('editor.customize_view.line_height_tight')}</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="normal">{t('editor.customize_view.line_height_normal')}</DropdownMenuRadioItem>
-                              <DropdownMenuRadioItem value="loose">{t('editor.customize_view.line_height_loose')}</DropdownMenuRadioItem>
-                            </DropdownMenuRadioGroup>
-                          </div>
-                       </div>
+                      <div className='px-2 space-y-2'>
+                        <Label>{t('editor.customize_view.font_size')} ({editorSettings.fontSize}px)</Label>
+                        <Slider value={[editorSettings.fontSize]} onValueChange={([val]) => updateEditorSettings({ fontSize: val })} min={12} max={24} step={1} />
+                      </div>
+                      <div className='px-2 space-y-2'>
+                        <Label>{t('editor.customize_view.line_height')} ({editorSettings.lineHeight})</Label>
+                        <Slider value={[editorSettings.lineHeight]} onValueChange={([val]) => updateEditorSettings({ lineHeight: val })} min={1.2} max={2.2} step={0.1} />
+                      </div>
+                       <div className='px-2 space-y-2'>
+                        <Label>{t('editor.customize_view.paragraph_spacing')} ({editorSettings.paragraphSpacing}rem)</Label>
+                        <Slider value={[editorSettings.paragraphSpacing]} onValueChange={([val]) => updateEditorSettings({ paragraphSpacing: val })} min={0.5} max={2} step={0.1} />
+                      </div>
+                      <div className='px-2 space-y-2'>
+                        <Label>{t('editor.customize_view.text_area_width')} ({editorSettings.editorWidth}px)</Label>
+                        <Slider value={[editorSettings.editorWidth]} onValueChange={([val]) => updateEditorSettings({ editorWidth: val })} min={500} max={1200} step={50} />
+                      </div>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
@@ -826,10 +805,10 @@ export function WritingArea() {
                 {activeDocumentId ? `${t('editor.editing', { name: activeDocumentName || '' })}` : t('editor.editing_scratchpad')}
             </h2>
           </CardHeader>
-          <CardContent className={cn("flex-grow p-0 overflow-hidden", editorContainerClasses[editorTheme])}>
+          <CardContent className="flex-grow p-0 overflow-hidden bg-background">
             <ScrollArea className="h-full w-full" ref={editorContentRef}>
                <div ref={editorRef} className="min-h-full">
-                    <EditorContent editor={editor} className={cn("min-h-full", themeClasses[editorTheme])}/>
+                    <EditorContent editor={editor} className="min-h-full"/>
                 </div>
             </ScrollArea>
           </CardContent>
@@ -848,7 +827,7 @@ export function WritingArea() {
         </Card>
 
         {isSidePanelOpen && (
-          <Card className={cn("hidden md:flex md:flex-col md:w-1/3 lg:w-1/4 h-full border-l rounded-none shadow-lg", themeClasses[editorTheme], editorContainerClasses[editorTheme])}>
+          <Card className="hidden md:flex md:flex-col md:w-1/3 lg:w-1/4 h-full border-l rounded-none shadow-lg">
             {isFeedbackPanelOpen && feedbackResult && (
               <>
                 <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">

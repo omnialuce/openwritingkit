@@ -1,4 +1,3 @@
-
 {
   "common": {
     "error": "Error",
@@ -700,9 +699,6 @@
     "customize_view": {
       "view_options": "View Options",
       "focus_mode": "Focus Mode",
-      "editor_theme": "Editor Theme",
-      "theme_light": "Light",
-      "theme_dark": "Dark",
       "font_family": "Font Family",
       "font_sans": "Sans-Serif",
       "font_serif": "Serif",
@@ -711,7 +707,8 @@
       "line_height_tight": "Tight",
       "line_height_normal": "Normal",
       "line_height_loose": "Loose",
-      "paragraph_spacing": "Paragraph Spacing"
+      "paragraph_spacing": "Paragraph Spacing",
+      "text_area_width": "Text Area Width"
     },
     "editor_theme": "Editor Theme",
     "theme_light": "Light",

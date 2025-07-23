@@ -1,4 +1,3 @@
-
 // src/components/editor/EditorToolbar.tsx
 'use client';
 
@@ -18,11 +17,14 @@ import {
   Pilcrow,
   Undo,
   Redo,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Toggle } from '@/components/ui/toggle'; // Using Toggle for better active state
-import { cn } from '@/lib/utils';
+import { Toggle } from '@/components/ui/toggle';
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -32,9 +34,6 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
   if (!editor) {
     return null;
   }
-
-  const activeClass = "is-active bg-accent text-accent-foreground"; // From Toggle variant
-  const inactiveClass = "";
 
   return (
     <div className="p-2 border-b border-border flex flex-wrap items-center gap-1">
@@ -102,6 +101,42 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
+
+       <Toggle
+        size="sm"
+        pressed={editor.isActive({ textAlign: 'left' })}
+        onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}
+        title="Align Left"
+      >
+        <AlignLeft className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive({ textAlign: 'center' })}
+        onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}
+        title="Align Center"
+      >
+        <AlignCenter className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive({ textAlign: 'right' })}
+        onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}
+        title="Align Right"
+      >
+        <AlignRight className="h-4 w-4" />
+      </Toggle>
+      <Toggle
+        size="sm"
+        pressed={editor.isActive({ textAlign: 'justify' })}
+        onPressedChange={() => editor.chain().focus().setTextAlign('justify').run()}
+        title="Align Justify"
+      >
+        <AlignJustify className="h-4 w-4" />
+      </Toggle>
+
+      <Separator orientation="vertical" className="h-6 mx-1" />
+
 
       <Toggle
         size="sm"
