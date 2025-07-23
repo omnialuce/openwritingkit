@@ -92,12 +92,46 @@ export const plotTemplates: PlotTemplate[] = [
       },
     ],
   },
-  { id: 'writers-journey', titleKey: 'plot_tools.templates.writers_journey.title', descriptionKey: 'plot_tools.templates.writers_journey.description', structure: [] },
-  { id: 'story-circle', titleKey: 'plot_tools.templates.story_circle.title', descriptionKey: 'plot_tools.templates.story_circle.description', structure: [] },
-  { id: 'fools-journey', titleKey: 'plot_tools.templates.fools_journey.title', descriptionKey: 'plot_tools.templates.fools_journey.description', structure: [] },
-  { id: 'novel-in-30-days', titleKey: 'plot_tools.templates.novel_in_30_days.title', descriptionKey: 'plot_tools.templates.novel_in_30_days.description', structure: [] },
-  { id: 'truby-22-steps', titleKey: 'plot_tools.templates.truby_22_steps.title', descriptionKey: 'plot_tools.templates.truby_22_steps.description', structure: [] },
-  { id: '24-chapters', titleKey: 'plot_tools.templates.24_chapters.title', descriptionKey: 'plot_tools.templates.24_chapters.description', structure: [] },
-  { id: '27-chapters', titleKey: 'plot_tools.templates.27_chapters.title', descriptionKey: 'plot_tools.templates.27_chapters.description', structure: [] },
-  { id: 'snowflake', titleKey: 'plot_tools.templates.snowflake.title', descriptionKey: 'plot_tools.templates.snowflake.description', structure: [] },
+  {
+    id: 'story-circle',
+    titleKey: 'plot_tools.templates.story_circle.title',
+    descriptionKey: 'plot_tools.templates.story_circle.description',
+    structure: [
+      {
+        titleKey: 'plot_tools.templates.story_circle.steps_title',
+        steps: [
+          { id: 'sc_you', titleKey: 'plot_tools.templates.story_circle.you', descriptionKey: 'plot_tools.templates.story_circle.you_desc' },
+          { id: 'sc_need', titleKey: 'plot_tools.templates.story_circle.need', descriptionKey: 'plot_tools.templates.story_circle.need_desc' },
+          { id: 'sc_go', titleKey: 'plot_tools.templates.story_circle.go', descriptionKey: 'plot_tools.templates.story_circle.go_desc' },
+          { id: 'sc_search', titleKey: 'plot_tools.templates.story_circle.search', descriptionKey: 'plot_tools.templates.story_circle.search_desc' },
+          { id: 'sc_find', titleKey: 'plot_tools.templates.story_circle.find', descriptionKey: 'plot_tools.templates.story_circle.find_desc' },
+          { id: 'sc_take', titleKey: 'plot_tools.templates.story_circle.take', descriptionKey: 'plot_tools.templates.story_circle.take_desc' },
+          { id: 'sc_return', titleKey: 'plot_tools.templates.story_circle.return', descriptionKey: 'plot_tools.templates.story_circle.return_desc' },
+          { id: 'sc_change', titleKey: 'plot_tools.templates.story_circle.change', descriptionKey: 'plot_tools.templates.story_circle.change_desc' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'snowflake',
+    titleKey: 'plot_tools.templates.snowflake.title',
+    descriptionKey: 'plot_tools.templates.snowflake.description',
+    structure: [
+      {
+        titleKey: 'plot_tools.templates.snowflake.steps_title',
+        steps: [
+          { id: 'sf_one_sentence', titleKey: 'plot_tools.templates.snowflake.one_sentence', descriptionKey: 'plot_tools.templates.snowflake.one_sentence_desc' },
+          { id: 'sf_one_paragraph', titleKey: 'plot_tools.templates.snowflake.one_paragraph', descriptionKey: 'plot_tools.templates.snowflake.one_paragraph_desc' },
+          { id: 'sf_character_synopses', titleKey: 'plot_tools.templates.snowflake.character_synopses', descriptionKey: 'plot_tools.templates.snowflake.character_synopses_desc' },
+          { id: 'sf_expand_to_paragraphs', titleKey: 'plot_tools.templates.snowflake.expand_to_paragraphs', descriptionKey: 'plot_tools.templates.snowflake.expand_to_paragraphs_desc' },
+          { id: 'sf_character_one_pagers', titleKey: 'plot_tools.templates.snowflake.character_one_pagers', descriptionKey: 'plot_tools.templates.snowflake.character_one_pagers_desc' },
+          { id: 'sf_four_page_synopsis', titleKey: 'plot_tools.templates.snowflake.four_page_synopsis', descriptionKey: 'plot_tools.templates.snowflake.four_page_synopsis_desc' },
+          { id: 'sf_character_charts', titleKey: 'plot_tools.templates.snowflake.character_charts', descriptionKey: 'plot_tools.templates.snowflake.character_charts_desc' },
+          { id: 'sf_scene_list', titleKey: 'plot_tools.templates.snowflake.scene_list', descriptionKey: 'plot_tools.templates.snowflake.scene_list_desc' },
+          { id: 'sf_narrative_prose', titleKey: 'plot_tools.templates.snowflake.narrative_prose', descriptionKey: 'plot_tools.templates.snowflake.narrative_prose_desc' },
+          { id: 'sf_first_draft', titleKey: 'plot_tools.templates.snowflake.first_draft', descriptionKey: 'plot_tools.templates.snowflake.first_draft_desc' },
+        ]
+      }
+    ]
+  }
 ];

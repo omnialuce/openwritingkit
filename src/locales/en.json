@@ -925,37 +925,51 @@
         "return_with_elixir": "Return with the Elixir",
         "return_with_elixir_desc": "The hero returns with something to benefit the ordinary world."
       },
-      "writers_journey": {
-        "title": "The Writer's Journey",
-        "description": "A modern interpretation of the Monomyth by Christopher Vogler."
-      },
       "story_circle": {
         "title": "Story Circle",
-        "description": "Dan Harmon's 8-step structure for compelling storytelling."
-      },
-      "fools_journey": {
-        "title": "The Fool's Journey",
-        "description": "A plot structure inspired by the Major Arcana of the Tarot."
-      },
-      "novel_in_30_days": {
-        "title": "Novel in 30 Days",
-        "description": "A structure focused on fast drafting and getting the story down."
-      },
-      "truby_22_steps": {
-        "title": "Truby's 22 Steps",
-        "description": "A detailed, character-focused structure for complex narratives."
-      },
-      "24_chapters": {
-        "title": "24 Chapter Outline",
-        "description": "A balanced structure for pacing a novel over 24 chapters."
-      },
-      "27_chapters": {
-        "title": "27 Chapter Outline",
-        "description": "A detailed 3-act, 9-block, 27-chapter novel structure."
+        "description": "Dan Harmon's 8-step structure for compelling storytelling.",
+        "steps_title": "The 8 Steps",
+        "you": "1. You (A character is in a zone of comfort)",
+        "you_desc": "Establish the protagonist in their ordinary world.",
+        "need": "2. Need (But they want something)",
+        "need_desc": "The character has a desire or goal.",
+        "go": "3. Go (They enter an unfamiliar situation)",
+        "go_desc": "They cross a threshold into a new world.",
+        "search": "4. Search (Adapt to it)",
+        "search_desc": "The character faces trials and learns the rules.",
+        "find": "5. Find (Get what they wanted)",
+        "find_desc": "They achieve their initial goal.",
+        "take": "6. Take (Pay a heavy price for it)",
+        "take_desc": "Achieving the goal comes at a great cost.",
+        "return": "7. Return (They go back to their familiar situation)",
+        "return_desc": "They bring their newfound knowledge/item back home.",
+        "change": "8. Change (Having changed)",
+        "change_desc": "The character is transformed by the journey."
       },
       "snowflake": {
         "title": "The Snowflake Method",
-        "description": "A method for designing a story from a simple sentence up."
+        "description": "A method for designing a story from a simple sentence up.",
+        "steps_title": "The 10 Steps",
+        "one_sentence": "1. One-Sentence Summary",
+        "one_sentence_desc": "Write a one-sentence summary of your story. This is your high-concept pitch.",
+        "one_paragraph": "2. One-Paragraph Summary",
+        "one_paragraph_desc": "Expand the sentence to a full paragraph describing the story setup, major disasters, and ending.",
+        "character_synopses": "3. Character Synopses",
+        "character_synopses_desc": "Write a one-page summary sheet for each major character, detailing their goals, conflicts, and epiphanies.",
+        "expand_to_paragraphs": "4. Expand to Paragraphs",
+        "expand_to_paragraphs_desc": "Expand each sentence of your one-paragraph summary into a full paragraph. Each paragraph should end in a disaster.",
+        "character_one_pagers": "5. Character One-Pagers",
+        "character_one_pagers_desc": "Write a one-page description of the story from the perspective of each major character.",
+        "four_page_synopsis": "6. Four-Page Synopsis",
+        "four_page_synopsis_desc": "Expand each paragraph from Step 4 into a full page.",
+        "character_charts": "7. Character Charts",
+        "character_charts_desc": "Create detailed character charts for every character, turning your summaries into full-fledged profiles.",
+        "scene_list": "8. Scene List",
+        "scene_list_desc": "Make a spreadsheet of all the scenes needed to turn your four-page synopsis into a novel.",
+        "narrative_prose": "9. Narrative Prose",
+        "narrative_prose_desc": "Write a narrative description of the story, expanding on your scene list. This is an optional step before drafting.",
+        "first_draft": "10. First Draft",
+        "first_draft_desc": "Sit down and write the first draft of your novel using all your previous work as a guide."
       }
     },
     "timeline": {
