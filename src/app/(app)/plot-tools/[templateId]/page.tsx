@@ -70,7 +70,7 @@ export default function PlotTemplatePage() {
     return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   }
 
-  if (!templateInfo || templateInfo.structure.length === 0) {
+  if (!templateInfo) {
     return (
       <Card>
         <CardHeader>
@@ -84,6 +84,22 @@ export default function PlotTemplatePage() {
         </CardContent>
       </Card>
     );
+  }
+
+  if (templateInfo.structure.length === 0) {
+     return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{t(templateInfo.titleKey as any)}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>{t('plot_tools.templates.coming_soon_desc')}</p>
+                 <Button asChild variant="link" className="p-0 mt-2">
+                    <Link href="/plot-tools">{t('plot_tools.templates.back_button')}</Link>
+                </Button>
+            </CardContent>
+        </Card>
+     )
   }
 
   return (
