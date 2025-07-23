@@ -13,7 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, BookCopy, Loader2, Save } from 'lucide-react';
 import { storage } from '@/lib/storage';
-import { fullPlotTemplates, type PlotTemplate } from '@/lib/plot-templates';
+import { plotTemplates, type PlotTemplate } from '@/lib/plot-templates';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +28,7 @@ export default function PlotTemplatePage() {
   const { toast } = useToast();
 
   const templateId = params.templateId as string;
-  const templateInfo = fullPlotTemplates[templateId];
+  const templateInfo = plotTemplates.find(p => p.id === templateId);
 
   const [templateData, setTemplateData] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
