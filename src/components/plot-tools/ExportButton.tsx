@@ -1,3 +1,4 @@
+
 // src/components/plot-tools/ExportButton.tsx
 'use client';
 
@@ -16,13 +17,15 @@ import { saveAs } from 'file-saver';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateTimelineDocx, generateTemplateDocx } from '@/lib/docx-generator';
 import { toPng } from 'html-to-image';
+import type { PlotTemplate } from '@/lib/plot-templates';
+import type { TimelineEvent } from '@/app/(app)/plot-tools/page';
 
 
 interface ExportButtonProps {
   contentId: string;
   type: 'template' | 'timeline';
   data: any;
-  templateInfo?: any;
+  templateInfo?: PlotTemplate;
 }
 
 export function ExportButton({ contentId, type, data, templateInfo }: ExportButtonProps) {
@@ -31,18 +34,18 @@ export function ExportButton({ contentId, type, data, templateInfo }: ExportButt
   const handleExportTxt = () => {
     let textContent = '';
     if (type === 'timeline') {
-      textContent = data.map((event: any) => 
+      textContent = (data as TimelineEvent[]).map((event: TimelineEvent) => 
         `${t('plot_tools.export.event_title')}: ${event.title}\n` +
         `${t('plot_tools.export.event_datetime')}: ${event.dateTime || 'N/A'}\n` +
         `${t('plot_tools.export.event_description')}: ${event.description || t('plot_tools.export.no_description')}\n`
       ).join('\n---\n');
     } else if (type === 'template' && templateInfo) {
-      textContent = `${t(templateInfo.titleKey)}\n${'='.repeat(20)}\n\n`;
-      templateInfo.structure.forEach((section: any) => {
-        textContent += `${t(section.titleKey)}\n`;
+      textContent = `${t(templateInfo.titleKey as any)}\n${'='.repeat(20)}\n\n`;
+      templateInfo.structure.forEach((section) => {
+        textContent += `${t(section.titleKey as any)}\n`;
         textContent += `${'-'.repeat(20)}\n`;
-        section.steps.forEach((step: any) => {
-          textContent += `${t(step.titleKey)}:\n`;
+        section.steps.forEach((step) => {
+          textContent += `${t(step.titleKey as any)}:\n`;
           textContent += `${data[step.id] || t('plot_tools.export.no_content')}\n\n`;
         });
         textContent += '\n';
