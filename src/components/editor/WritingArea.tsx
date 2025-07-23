@@ -47,6 +47,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/lib/storage';
 import { Toggle } from '@/components/ui/toggle';
 import { Slider } from '@/components/ui/slider';
+import { Separator } from '@/components/ui/separator';
 
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -764,7 +765,7 @@ export function WritingArea() {
                       <DropdownMenuCheckboxItem checked={editorSettings.focusMode} onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked })}>
                         {t('editor.customize_view.focus_mode')}
                       </DropdownMenuCheckboxItem>
-                      <DropdownMenuSeparator />
+                      <Separator />
                       <div className='px-2 space-y-2'>
                         <Label>{t('editor.customize_view.font_size')} ({editorSettings.fontSize}px)</Label>
                         <Slider value={[editorSettings.fontSize]} onValueChange={([val]) => updateEditorSettings({ fontSize: val })} min={12} max={24} step={1} />
