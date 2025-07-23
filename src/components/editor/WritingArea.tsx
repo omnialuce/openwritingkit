@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon, Separator } from 'lucide-react';
 import useAutosave, { type VersionHistoryEntry } from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -47,12 +47,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/lib/storage';
 import { Toggle } from '@/components/ui/toggle';
 import { Slider } from '@/components/ui/slider';
-import { Separator } from '@/components/ui/separator';
 import { jsPDF } from 'jspdf';
 import { Packer } from 'docx';
 import { saveAs } from 'file-saver';
 import { toPng } from 'html-to-image';
 import { generateDocxFromHtml } from '@/lib/docx-generator';
+import { useTheme } from 'next-themes';
 
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
