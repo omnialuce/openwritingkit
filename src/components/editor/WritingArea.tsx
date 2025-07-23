@@ -6,7 +6,7 @@ import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Focus from '@tiptap/extension-focus';
-import Link from '@tiptap/extension-link';
+import TiptapLink from '@tiptap/extension-link';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import { Button } from '@/components/ui/button';
@@ -48,6 +48,11 @@ import { storage } from '@/lib/storage';
 import { Toggle } from '@/components/ui/toggle';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
+import { jsPDF } from 'jspdf';
+import { Packer } from 'docx';
+import { saveAs } from 'file-saver';
+import { toPng } from 'html-to-image';
+import { generateDocxFromHtml } from '@/lib/docx-generator';
 
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
@@ -58,9 +63,10 @@ interface EditorSettings {
   paragraphSpacing: number;
   focusMode: boolean;
   editorWidth: number;
+  fontFamily: 'sans' | 'serif';
 }
 
-const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings-v2';
+const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings-v3';
 
 export function WritingArea() {
   const { t, language } = useLanguage();
@@ -84,7 +90,6 @@ export function WritingArea() {
   const { toast } = useToast();
   const sidebarContext = useSidebar();
   const editorRef = useRef<HTMLDivElement>(null);
-  const editorContentRef = useRef<HTMLDivElement>(null);
 
 
   const [sessionTime, setSessionTime] = useState(0);
@@ -108,6 +113,7 @@ export function WritingArea() {
     paragraphSpacing: 1,
     focusMode: false,
     editorWidth: 800,
+    fontFamily: 'sans',
   });
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
@@ -130,7 +136,7 @@ export function WritingArea() {
         className: 'has-focus',
         mode: 'all',
       }),
-      Link.configure({
+      TiptapLink.configure({
         openOnClick: false,
         autolink: true,
       }),
@@ -292,7 +298,7 @@ export function WritingArea() {
     editor?.setOptions({
         editorProps: {
             attributes: {
-                class: cn('prose dark:prose-invert focus:outline-none w-full h-full p-6', 
+                class: cn('prose dark:prose-invert focus:outline-none w-full p-6', 
                    editorSettings.focusMode && 'focus-mode'
                 )
             }
@@ -302,6 +308,7 @@ export function WritingArea() {
     root.style.setProperty('--editor-font-size', `${editorSettings.fontSize}px`);
     root.style.setProperty('--editor-line-height', String(editorSettings.lineHeight));
     root.style.setProperty('--editor-paragraph-spacing', `${editorSettings.paragraphSpacing}rem`);
+    root.style.setProperty('--editor-font-family', `var(--editor-font-family-${editorSettings.fontFamily})`);
     root.style.maxWidth = `${editorSettings.editorWidth}px`;
     root.style.margin = '0 auto';
 
@@ -364,7 +371,7 @@ export function WritingArea() {
     const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'document.txt';
+    link.download = `${activeDocumentName || 'document'}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -376,11 +383,60 @@ export function WritingArea() {
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'document.html';
+    link.download = `${activeDocumentName || 'document'}.html`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }
+  };
+  
+  const handleExportPDF = async () => {
+    const editorNode = editorRef.current;
+    if (!editorNode || !activeStoryId) return;
+
+    toast({ title: t('editor.toast.pdf_generating_title'), description: t('editor.toast.pdf_generating_desc') });
+
+    try {
+      const dataUrl = await toPng(editorNode, {
+        quality: 0.95,
+        backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
+      });
+      
+      const pdf = new jsPDF('p', 'px', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const ratio = imgWidth / imgHeight;
+
+        let canvasWidth = pdfWidth;
+        let canvasHeight = pdfWidth / ratio;
+        
+        pdf.addImage(dataUrl, 'PNG', 0, 0, canvasWidth, canvasHeight);
+        pdf.save(`${activeDocumentName || 'document'}.pdf`);
+      };
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({ title: t('common.error'), description: t('editor.toast.pdf_error'), variant: "destructive" });
+    }
+  };
+
+  const handleExportDOCX = async () => {
+    if (!editor || !activeStoryId) return;
+    const htmlContent = editor.getHTML();
+    try {
+      const doc = generateDocxFromHtml(htmlContent);
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `${activeDocumentName || 'document'}.docx`);
+    } catch (error) {
+       console.error("DOCX generation error:", error);
+       toast({ title: t('common.error'), description: t('editor.toast.docx_error'), variant: "destructive" });
+    }
+  };
+
 
   const handleImportClick = () => {
      if (!activeStoryId) {
@@ -569,6 +625,7 @@ export function WritingArea() {
   }
   
   const isSidePanelOpen = (isFeedbackPanelOpen || isHistoryPanelOpen) && !isMobile;
+  const { theme } = useTheme();
 
   const renderFeedbackContent = () => feedbackResult && (
     <div className="space-y-4 p-4">
@@ -665,17 +722,20 @@ export function WritingArea() {
 
   if (isFullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col p-2 md:p-4 bg-background" ref={editorRef}>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleFullScreen}
-          className="absolute top-4 right-4 z-10"
-          title={t('editor.exit_focus_mode')}
-        >
-          <Minimize className="h-5 w-5" />
-        </Button>
-        <EditorContent editor={editor} className="flex-grow overflow-y-auto" />
+      <div className="fixed inset-0 z-50 flex flex-col p-2 md:p-4 bg-background">
+         <div className="absolute top-4 right-4 z-10 flex gap-2">
+            <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleFullScreen}
+            title={t('editor.exit_focus_mode')}
+            >
+            <Minimize className="h-5 w-5" />
+            </Button>
+        </div>
+        <div className="flex-grow overflow-y-auto" ref={editorRef}>
+            <EditorContent editor={editor} className="min-h-full"/>
+        </div>
       </div>
     );
   }
@@ -690,9 +750,8 @@ export function WritingArea() {
             <Toggle size="sm" pressed={editor.isActive('strike')} onPressedChange={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-4 w-4" /></Toggle>
             <Toggle size="sm" pressed={editor.isActive('link')} onPressedChange={() => { const url = window.prompt('URL'); if(url) {editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()}}}><LinkIcon className="h-4 w-4" /></Toggle>
           </BubbleMenu>
-          {!isFullScreen && (
-            <>
-              <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
+          
+            <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
                   
                    <DropdownMenu>
@@ -733,7 +792,8 @@ export function WritingArea() {
                     <DropdownMenuContent align="start" className="rounded-none">
                       <DropdownMenuItem onClick={handleExportTXT} disabled={!activeStoryId}>{t('editor.export_txt')}</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportHTML} disabled={!activeStoryId}>{t('editor.export_html')}</DropdownMenuItem>
-                      <DropdownMenuItem disabled>{t('editor.export_pdf')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportDOCX} disabled={!activeStoryId}>{t('editor.export_docx')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportPDF} disabled={!activeStoryId}>{t('editor.export_pdf')}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm(t('editor.clear_content_confirm'))) { editor?.commands.clearContent(true); if(!activeDocumentId) clearSavedContent();} }} title={t('editor.clear_content_button_title')} disabled={!activeStoryId}>
@@ -762,10 +822,19 @@ export function WritingArea() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-80 rounded-none p-2 space-y-4">
                       <DropdownMenuLabel>{t('editor.customize_view.view_options')}</DropdownMenuLabel>
-                      <DropdownMenuCheckboxItem checked={editorSettings.focusMode} onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked })}>
+                      <DropdownMenuCheckboxItem checked={editorSettings.focusMode} onCheckedChange={(checked) => updateEditorSettings({ focusMode: checked as boolean })}>
                         {t('editor.customize_view.focus_mode')}
                       </DropdownMenuCheckboxItem>
                       <Separator />
+                       <div className="px-2 space-y-2">
+                        <Label>{t('editor.customize_view.font_family')}</Label>
+                        <DropdownMenuRadioGroup value={editorSettings.fontFamily} onValueChange={(value) => updateEditorSettings({ fontFamily: value as 'sans' | 'serif' })}>
+                            <div className="flex justify-around">
+                            <DropdownMenuRadioItem value="sans" className="w-full justify-center">{t('editor.customize_view.font_sans')}</DropdownMenuRadioItem>
+                            <DropdownMenuRadioItem value="serif" className="w-full justify-center">{t('editor.customize_view.font_serif')}</DropdownMenuRadioItem>
+                            </div>
+                        </DropdownMenuRadioGroup>
+                       </div>
                       <div className='px-2 space-y-2'>
                         <Label>{t('editor.customize_view.font_size')} ({editorSettings.fontSize}px)</Label>
                         <Slider value={[editorSettings.fontSize]} onValueChange={([val]) => updateEditorSettings({ fontSize: val })} min={12} max={24} step={1} />
@@ -799,21 +868,18 @@ export function WritingArea() {
                 </div>
               </div>
               <EditorToolbar editor={editor} />
-            </>
-          )}
+            
           <CardHeader className="p-2 border-b">
              <h2 className="text-lg font-semibold text-center text-muted-foreground">
                 {activeDocumentId ? `${t('editor.editing', { name: activeDocumentName || '' })}` : t('editor.editing_scratchpad')}
             </h2>
           </CardHeader>
-          <CardContent className="flex-grow p-0 overflow-hidden bg-background">
-            <ScrollArea className="h-full w-full" ref={editorContentRef}>
-               <div ref={editorRef} className="min-h-full">
-                    <EditorContent editor={editor} className="min-h-full"/>
-                </div>
-            </ScrollArea>
+          <CardContent className="flex-grow p-0 overflow-y-auto bg-background">
+             <div ref={editorRef} className="min-h-full">
+                <EditorContent editor={editor} />
+             </div>
           </CardContent>
-          {!isFullScreen && (
+          
             <CardFooter className="p-2 md:p-3 border-t border-border text-xs md:text-sm text-muted-foreground flex justify-between items-center">
               <div className="flex-1 truncate">
                 <span>{activeStoryId ? (isSaving ? t('common.saving') : lastSavedTime ? `${t('common.saved')} ${formatDistanceToNow(lastSavedTime, { addSuffix: true })}` : t('editor.not_yet_saved')) : t('editor.no_active_story_footer')}</span>
@@ -824,7 +890,7 @@ export function WritingArea() {
               <div className="flex-1 text-right">
               </div>
             </CardFooter>
-          )}
+          
         </Card>
 
         {isSidePanelOpen && (

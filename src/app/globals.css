@@ -52,7 +52,9 @@
     --sidebar-ring: 0 0% 50%;
 
     /* Editor Typography Variables */
-    --editor-font-family: 'PT Sans', sans-serif;
+    --editor-font-family-sans: 'PT Sans', sans-serif;
+    --editor-font-family-serif: 'Georgia', serif;
+    --editor-font-family: var(--editor-font-family-sans);
     --editor-font-size: 1rem;
     --editor-line-height: 1.7;
     --editor-paragraph-spacing: 1rem;
@@ -122,7 +124,6 @@
 
   /* TipTap basic content styling */
   .ProseMirror {
-    @apply min-h-full;
     font-family: var(--editor-font-family);
     font-size: var(--editor-font-size);
     line-height: var(--editor-line-height);

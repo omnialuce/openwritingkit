@@ -682,7 +682,8 @@
     "export_button_title": "Exportar",
     "export_txt": "Exportar como TXT",
     "export_html": "Exportar como HTML",
-    "export_pdf": "Exportar como PDF (em breve)",
+    "export_docx": "Exportar como DOCX",
+    "export_pdf": "Exportar como PDF",
     "clear_content_button_title": "Limpar Conteúdo",
     "clear_content_confirm": "Tem certeza de que deseja limpar todo o conteúdo? Esta ação não pode ser desfeita.",
     "focus_mode": "Modo Foco",
@@ -698,9 +699,6 @@
       "font_serif": "Com Serifa",
       "font_size": "Tamanho da Fonte",
       "line_height": "Altura da Linha",
-      "line_height_tight": "Apertado",
-      "line_height_normal": "Normal",
-      "line_height_loose": "Solto",
       "paragraph_spacing": "Espaçamento do Parágrafo",
       "text_area_width": "Largura da Área de Texto"
     },
@@ -733,7 +731,11 @@
       "feedback_error_desc": "Não foi possível recuperar o feedback.",
       "doc_saved_title": "Documento Salvo",
       "doc_saved_desc": "\"{{name}}\" foi salvo em seus documentos.",
-      "doc_save_error": "Não foi possível salvar o arquivo nos documentos."
+      "doc_save_error": "Não foi possível salvar o arquivo nos documentos.",
+      "pdf_generating_title": "Gerando PDF",
+      "pdf_generating_desc": "Seu PDF está sendo criado, por favor aguarde...",
+      "pdf_error": "Não foi possível gerar o PDF.",
+      "docx_error": "Não foi possível gerar o arquivo DOCX."
     },
     "tooltip_no_story": "Selecione uma história primeiro",
     "tooltip_get_feedback": "Obter Feedback de Escrita",

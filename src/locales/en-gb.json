@@ -688,7 +688,8 @@
     "export_button_title": "Export",
     "export_txt": "Export as TXT",
     "export_html": "Export as HTML",
-    "export_pdf": "Export as PDF (coming soon)",
+    "export_docx": "Export as DOCX",
+    "export_pdf": "Export as PDF",
     "clear_content_button_title": "Clear Content",
     "clear_content_confirm": "Are you sure you want to clear all content? This action cannot be undone.",
     "focus_mode": "Focus Mode",
@@ -704,9 +705,6 @@
       "font_serif": "Serif",
       "font_size": "Font Size",
       "line_height": "Line Height",
-      "line_height_tight": "Tight",
-      "line_height_normal": "Normal",
-      "line_height_loose": "Loose",
       "paragraph_spacing": "Paragraph Spacing",
       "text_area_width": "Text Area Width"
     },
@@ -739,7 +737,11 @@
       "feedback_error_desc": "Could not retrieve feedback.",
       "doc_saved_title": "Document Saved",
       "doc_saved_desc": "\"{{name}}\" has been saved to your documents.",
-      "doc_save_error": "Could not save the file to documents."
+      "doc_save_error": "Could not save the file to documents.",
+      "pdf_generating_title": "Generating PDF",
+      "pdf_generating_desc": "Your PDF is being created, please wait...",
+      "pdf_error": "Could not generate PDF.",
+      "docx_error": "Could not generate DOCX file."
     },
     "tooltip_no_story": "Select a story first",
     "tooltip_get_feedback": "Get Writing Feedback",
