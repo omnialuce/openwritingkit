@@ -1,3 +1,4 @@
+
 // src/app/(app)/plot-tools/page.tsx
 'use client';
 
