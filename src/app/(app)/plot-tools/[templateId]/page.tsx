@@ -142,7 +142,7 @@ export default function PlotTemplatePage() {
                     value={templateData[step.id] || ''}
                     onChange={(e) => handleDataChange(step.id, e.target.value)}
                     rows={5}
-                    placeholder={t('plot_tools.templates.placeholder', { title: t(step.titleKey as TranslationKey).toLowerCase() })}
+                    placeholder={t('plot_tools.templates.placeholder')}
                   />
                 </div>
               ))}

@@ -1,4 +1,3 @@
-
 // src/components/plot-tools/ExportButton.tsx
 'use client';
 
@@ -19,6 +18,7 @@ import { generateTimelineDocx, generateTemplateDocx } from '@/lib/docx-generator
 import { toPng } from 'html-to-image';
 import type { PlotTemplate } from '@/lib/plot-templates';
 import type { TimelineEvent } from '@/app/(app)/plot-tools/page';
+import { TranslationKey } from '@/lib/i18n-keys';
 
 
 interface ExportButtonProps {
@@ -40,12 +40,12 @@ export function ExportButton({ contentId, type, data, templateInfo }: ExportButt
         `${t('plot_tools.export.event_description')}: ${event.description || t('plot_tools.export.no_description')}\n`
       ).join('\n---\n');
     } else if (type === 'template' && templateInfo) {
-      textContent = `${t(templateInfo.titleKey as any)}\n${'='.repeat(20)}\n\n`;
+      textContent = `${t(templateInfo.titleKey as TranslationKey)}\n${'='.repeat(20)}\n\n`;
       templateInfo.structure.forEach((section) => {
-        textContent += `${t(section.titleKey as any)}\n`;
+        textContent += `${t(section.titleKey as TranslationKey)}\n`;
         textContent += `${'-'.repeat(20)}\n`;
         section.steps.forEach((step) => {
-          textContent += `${t(step.titleKey as any)}:\n`;
+          textContent += `${t(step.titleKey as TranslationKey)}:\n`;
           textContent += `${data[step.id] || t('plot_tools.export.no_content')}\n\n`;
         });
         textContent += '\n';
@@ -110,7 +110,7 @@ export function ExportButton({ contentId, type, data, templateInfo }: ExportButt
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline"><Download className="mr-2 h-5 w-5" /> {t('plot_tools.export_button')}</Button>
+        <Button variant="outline"><Download className="mr-2 h-5 w-5" /> {t('plot_tools.export.button_text')}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleExportTxt}>{t('plot_tools.export.as_txt')}</DropdownMenuItem>
