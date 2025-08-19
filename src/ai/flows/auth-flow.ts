@@ -9,8 +9,9 @@
 import { getAuth } from 'firebase-admin/auth';
 import { adminApp } from '@/lib/firebase-admin';
 import type { ChangeEmailInput, ChangeEmailOutput, ChangePasswordInput, ChangePasswordOutput } from '@/ai/schemas/auth-schemas';
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ChangeEmailInputSchema, ChangeEmailOutputSchema, ChangePasswordInputSchema, ChangePasswordOutputSchema } from '@/ai/schemas/auth-schemas';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
 
 
 const changeEmailTool = ai.defineTool(

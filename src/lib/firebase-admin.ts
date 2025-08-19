@@ -1,21 +1,22 @@
 import { initializeApp, getApps, getApp, cert, App } from 'firebase-admin/app';
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-  : undefined;
+const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
 let adminApp: App;
 
-if (!getApps().length) {
-  if (serviceAccount) {
-    adminApp = initializeApp({
-      credential: cert(serviceAccount),
-    });
+if (getApps().length === 0) {
+  if (serviceAccountKey) {
+    try {
+      const serviceAccount = JSON.parse(serviceAccountKey);
+      adminApp = initializeApp({
+        credential: cert(serviceAccount),
+      });
+    } catch (e) {
+      console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY. Initializing with default credentials.", e);
+      adminApp = initializeApp();
+    }
   } else {
-    // Fallback for environments where the service account isn't set,
-    // like client-side rendering or local dev without the env var.
-    // Firebase Admin SDK will try to use Application Default Credentials.
-    console.warn("Firebase Admin SDK Service Account not found in environment variables. Attempting to use Application Default Credentials.");
+    console.warn("FIREBASE_SERVICE_ACCOUNT_KEY not found. Initializing with default credentials.");
     adminApp = initializeApp();
   }
 } else {
