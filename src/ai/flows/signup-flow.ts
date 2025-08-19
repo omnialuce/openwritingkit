@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Sign-up flow for creating new users with invite code validation.
@@ -11,6 +12,11 @@ export async function signupUser(input: SignupInput): Promise<SignupOutput> {
   const { email, password, inviteCode, ipAddress } = input;
   const auth = getAuth(adminApp);
   const db = getFirestore(adminApp);
+
+  // Explicitly check for an empty invite code first
+  if (!inviteCode || inviteCode.trim() === '') {
+      return { success: false, message: 'An invite code is required to sign up.' };
+  }
 
   try {
     // 1. Validate Invite Code
