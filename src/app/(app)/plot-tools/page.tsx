@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download, Save, GripVertical, Loader2, BookCopy, Settings, Eye, EyeOff } from 'lucide-react';
+import { Network, PlusCircle, Edit, Trash2, AlignLeft, AlertTriangle, Download, Save, GripVertical, Loader2, BookCopy, Settings, Eye, EyeOff, MoreVertical } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getTimelineEventsStorageKey, getPlotSettingsKey, type PlotSettings } from '@/contexts/StoryContext';
 import Link from 'next/link';
@@ -232,14 +232,14 @@ export default function PlotToolsPage() {
                 <CardTitle>{t('plot_tools.timeline.title')}</CardTitle>
                 <CardDescription>{t('plot_tools.timeline.description')}</CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <ExportButton contentId="timeline-export" type="timeline" data={timelineEvents} />
-                <Button onClick={handleOpenCreateEventDialog} className="mt-2 sm:mt-0" disabled={!activeStoryId}>
+                <Button onClick={handleOpenCreateEventDialog} className="w-full sm:w-auto" disabled={!activeStoryId}>
                   <PlusCircle className="mr-2 h-5 w-5" /> {t('plot_tools.timeline.add_button')}
                 </Button>
-                <Button onClick={handleSaveTimeline} disabled={isLoadingTimeline}>
+                <Button onClick={handleSaveTimeline} disabled={isLoadingTimeline} className="w-full sm:w-auto">
                     {isLoadingTimeline ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {t('common.save')} {t('plot_tools.timeline.title_short')}
+                    {t('common.save')}
                 </Button>
             </div>
           </div>

@@ -139,7 +139,7 @@
     "select_story_for_goal": "Select a story first.",
      "new_features": {
       "banner_title": "New Features & Fixes!",
-      "banner_desc": "We've rolled out some updates, including DOCX support and localisation fixes.",
+      "banner_desc": "Check out the latest updates.",
       "banner_button": "See what's new",
       "dialog_title": "What's New in OpenWritingKit?",
       "dialog_desc": "Check out latest updates",
@@ -655,7 +655,7 @@
       "scribophile": { "title": "Scribophile", "description": "One of the largest and most active online writing communities and critique groups." },
       "submittable": { "title": "Submittable", "description": "A platform for discovering and submitting to literary magazines and contests." },
       "the_grinder": { "title": "The Grinder", "description": "A free tool for writers to find markets for their fiction and track submissions." },
-      "reedsy_title_gen": { "title": "Book Title Generator", "description": "A tool by Reedsy to help you brainstorm titles for your book." },
+      "reedsy_title_gen": { "title": "Reedsy Book Title Generator", "description": "A tool by Reedsy to help you brainstorm titles for your book." },
       "behind_the_name": { "title": "Behind the Name", "description": "A comprehensive resource for finding the etymology and history of names." },
       "word_counters": { "title": "WordCounters", "description": "A tool to count words and analyze text for keyword density and other metrics." },
 
@@ -678,6 +678,7 @@
       "article_copyright": { "title": "Understanding Copyright and Related Rights", "description": "A PDF guide from the World Intellectual Property Organization." },
       "article_100_websites": { "title": "The 100 Best Websites for Writers in 2018", "description": "A comprehensive list of valuable online resources for writers." },
       
+      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
       "writing_bad": { "title": "Writing Bad", "description": "A guide on what not to do, offering lessons through bad examples." },
       "writers_digest": { "title": "Writer's Digest", "description": "A long-standing resource for writers with articles, competitions, and advice." },
       "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "A website and course dedicated to helping authors self-publish." },

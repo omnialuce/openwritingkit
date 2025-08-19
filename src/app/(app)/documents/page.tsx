@@ -4,7 +4,7 @@
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History, GripVertical, ChevronDown, ChevronRight } from "lucide-react";
+import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History, GripVertical, ChevronDown, ChevronRight, MoreVertical } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,12 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
@@ -46,6 +52,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-p
 import { cn } from '@/lib/utils';
 import { generateDocxFromHtml } from '@/lib/docx-generator';
 import { Packer } from 'docx';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 interface DocumentListItemProps {
@@ -64,6 +71,7 @@ const canAcceptDrop = (itemType: DocumentItem['type']) => {
 function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEditor, index }: DocumentListItemProps) {
   const [isOpen, setIsOpen] = useState(level < 1);
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   const Icon = item.type === "folder" ? FolderIcon :
                item.type === "chapter" ? BookCopy :
@@ -107,6 +115,66 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
 
   const isEditable = item.type === 'file' || item.type === 'scene';
 
+  const ActionButtons = () => (
+    <>
+      {isEditable && (
+          <Button variant="default" size="sm" onClick={() => onEditInEditor(item.id)}>
+              <Edit className="h-4 w-4 mr-1" />
+              {t('common.edit')}
+          </Button>
+      )}
+      <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>{t('documents.details_button')}</Button>
+       <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('documents.delete_dialog.title', { name: item.name })}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('documents.delete_dialog.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => onDelete(item.id)}>{t('common.delete')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+
+  const ActionMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {isEditable && <DropdownMenuItem onClick={() => onEditInEditor(item.id)}><Edit className="mr-2 h-4 w-4" />{t('common.edit')}</DropdownMenuItem>}
+        <DropdownMenuItem onClick={() => onOpenDetails(item)}>{t('documents.details_button')}</DropdownMenuItem>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />{t('common.delete')}</DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('documents.delete_dialog.title', { name: item.name })}</AlertDialogTitle>
+              <AlertDialogDescription>{t('documents.delete_dialog.description')}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => onDelete(item.id)}>{t('common.delete')}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <Draggable draggableId={item.id} index={index}>
       {(provided, snapshot) => (
@@ -142,34 +210,9 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
               </div>
               <div className="flex items-center gap-2 ml-2 shrink-0">
                 {(item.type === "scene" || item.type === 'file') && item.status && (
-                  <Badge variant={getStatusVariant(item.status)} className="text-xs">{getTranslatedStatus(item.status)}</Badge>
+                  <Badge variant={getStatusVariant(item.status)} className="text-xs hidden sm:inline-flex">{getTranslatedStatus(item.status)}</Badge>
                 )}
-                {isEditable && (
-                    <Button variant="default" size="sm" onClick={() => onEditInEditor(item.id)}>
-                        <Edit className="h-4 w-4 mr-1" />
-                        {t('common.edit')}
-                    </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={() => onOpenDetails(item)}>{t('documents.details_button')}</Button>
-                 <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{t('documents.delete_dialog.title', { name: item.name })}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t('documents.delete_dialog.description')}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => onDelete(item.id)}>{t('common.delete')}</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {isMobile ? <ActionMenu /> : <ActionButtons />}
               </div>
             </div>
             {item.tags && item.tags.length > 0 && (
