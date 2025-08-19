@@ -136,7 +136,22 @@
     "word_goal_title": "Word Count Goal",
     "word_goal_desc": "Set and track your daily/weekly targets. (View in Analytics)",
     "word_goal_cta": "Set & View Goal in Analytics",
-    "select_story_for_goal": "Select a story first."
+    "select_story_for_goal": "Select a story first.",
+     "new_features": {
+      "banner_title": "New Features & Fixes!",
+      "banner_desc": "We've rolled out some updates, including DOCX support and localisation fixes.",
+      "banner_button": "See what's new",
+      "dialog_title": "What's New in OpenWritingKit?",
+      "dialog_desc": "Check out latest updates",
+      "docx_support_title": "Full DOCX Support",
+      "docx_support_desc": "You can now import `.docx` files into the editor or documents, and export your work as `.docx` files within a ZIP archive.",
+      "plotting_templates_title": "New Plotting Templates",
+      "plotting_templates_desc": "Explore classic storytelling structures like 'The Hero's Journey' and 'Save the Cat!' in the Plot Tools section to help outline your narrative.",
+      "character_images_title": "Flexible Character Images",
+      "character_images_desc": "You can now use image URLs from any source for your character profiles without restriction.",
+      "bug_fixes_title": "Bug Fixes & Improvements",
+      "bug_fixes_desc": "We've squashed numerous bugs, including fixing widespread localisation issues where text tags were appearing. The unreliable PDF export has also been removed in favour of robust DOCX support."
+    }
   },
   "settings": {
     "title": "Settings",
@@ -663,7 +678,6 @@
       "article_copyright": { "title": "Understanding Copyright and Related Rights", "description": "A PDF guide from the World Intellectual Property Organization." },
       "article_100_websites": { "title": "The 100 Best Websites for Writers in 2018", "description": "A comprehensive list of valuable online resources for writers." },
       
-      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
       "writing_bad": { "title": "Writing Bad", "description": "A guide on what not to do, offering lessons through bad examples." },
       "writers_digest": { "title": "Writer's Digest", "description": "A long-standing resource for writers with articles, competitions, and advice." },
       "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "A website and course dedicated to helping authors self-publish." },

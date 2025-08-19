@@ -4,7 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info, X, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -212,13 +212,13 @@ export default function DashboardPage() {
           <PartyPopper className="h-4 w-4 text-primary" />
           <div className="flex justify-between items-center w-full">
             <div>
-              <AlertTitle className="text-primary">New Features & Fixes!</AlertTitle>
+              <AlertTitle className="text-primary">{t('dashboard.new_features.banner_title')}</AlertTitle>
               <AlertDescription>
-                We've rolled out some updates, including DOCX support and localization fixes.
+                {t('dashboard.new_features.banner_desc')}
               </AlertDescription>
             </div>
             <div className="flex items-center gap-2">
-                <Button variant="link" size="sm" className="p-0 text-primary" onClick={() => setIsFeaturesDialogOpen(true)}>See what's new</Button>
+                <Button variant="link" size="sm" className="p-0 text-primary" onClick={() => setIsFeaturesDialogOpen(true)}>{t('dashboard.new_features.banner_button')}</Button>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={dismissNewFeaturesBanner}>
                 <X className="h-4 w-4" />
                 <span className="sr-only">Dismiss</span>
@@ -334,34 +334,34 @@ export default function DashboardPage() {
        <Dialog open={isFeaturesDialogOpen} onOpenChange={setIsFeaturesDialogOpen}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl">What's New in OpenWritingKit?</DialogTitle>
+                    <DialogTitle className="text-2xl">{t('dashboard.new_features.dialog_title')}</DialogTitle>
                     <DialogDescription>
-                        Check out latest updates
+                        {t('dashboard.new_features.dialog_desc')}
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[60vh] pr-4">
                     <div className="space-y-4 py-2">
                         <div>
-                            <h3 className="font-semibold">Full DOCX Support</h3>
-                            <p className="text-sm text-muted-foreground">You can now import `.docx` files into the editor or documents, and export your work as `.docx` files within a ZIP archive.</p>
+                            <h3 className="font-semibold">{t('dashboard.new_features.docx_support_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.docx_support_desc')}</p>
                         </div>
                          <div>
-                            <h3 className="font-semibold">New Plotting Templates</h3>
-                            <p className="text-sm text-muted-foreground">Explore classic storytelling structures like 'The Hero's Journey' and 'Save the Cat!' in the Plot Tools section to help outline your narrative.</p>
+                            <h3 className="font-semibold">{t('dashboard.new_features.plotting_templates_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.plotting_templates_desc')}</p>
                         </div>
                          <div>
-                            <h3 className="font-semibold">Flexible Character Images</h3>
-                            <p className="text-sm text-muted-foreground">You can now use image URLs from any source for your character profiles without restriction.</p>
+                            <h3 className="font-semibold">{t('dashboard.new_features.character_images_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.character_images_desc')}</p>
                         </div>
                         <div>
-                            <h3 className="font-semibold">Bug Fixes & Improvements</h3>
-                            <p className="text-sm text-muted-foreground">We've squashed numerous bugs, including fixing widespread localization issues where text tags were appearing. The unreliable PDF export has also been removed in favor of robust DOCX support.</p>
+                            <h3 className="font-semibold">{t('dashboard.new_features.bug_fixes_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.bug_fixes_desc')}</p>
                         </div>
                     </div>
                 </ScrollArea>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button type="button">Close</Button>
+                        <Button type="button">{t('common.close')}</Button>
                     </DialogClose>
                 </DialogFooter>
             </DialogContent>

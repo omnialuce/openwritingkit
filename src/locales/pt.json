@@ -136,7 +136,22 @@
     "word_goal_title": "Meta de Palavras",
     "word_goal_desc": "Defina e acompanhe suas metas diárias/semanais. (Ver em Análises)",
     "word_goal_cta": "Definir e Ver Meta nas Análises",
-    "select_story_for_goal": "Selecione uma história primeiro."
+    "select_story_for_goal": "Selecione uma história primeiro.",
+    "new_features": {
+      "banner_title": "Novos Recursos & Correções!",
+      "banner_desc": "Lançamos algumas atualizações, incluindo suporte a DOCX e correções de localização.",
+      "banner_button": "Veja as novidades",
+      "dialog_title": "O que há de novo no OpenWritingKit?",
+      "dialog_desc": "Confira as últimas atualizações",
+      "docx_support_title": "Suporte Completo a DOCX",
+      "docx_support_desc": "Agora você pode importar arquivos `.docx` para o editor ou documentos, e exportar seu trabalho como arquivos `.docx` dentro de um arquivo ZIP.",
+      "plotting_templates_title": "Novos Modelos de Enredo",
+      "plotting_templates_desc": "Explore estruturas clássicas de narração como 'A Jornada do Herói' e 'Save the Cat!' na seção de Ferramentas de Enredo para ajudar a delinear sua narrativa.",
+      "character_images_title": "Imagens de Personagens Flexíveis",
+      "character_images_desc": "Agora você pode usar URLs de imagem de qualquer fonte para os perfis dos seus personagens, sem restrições.",
+      "bug_fixes_title": "Correções de Bugs e Melhorias",
+      "bug_fixes_desc": "Corrigimos vários bugs, incluindo a resolução de problemas de localização generalizados onde as tags de texto apareciam. A exportação instável para PDF também foi removida em favor de um suporte robusto a DOCX."
+    }
   },
   "settings": {
     "title": "Configurações",

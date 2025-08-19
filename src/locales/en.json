@@ -136,7 +136,22 @@
     "word_goal_title": "Word Count Goal",
     "word_goal_desc": "Set and track your daily/weekly targets. (View in Analytics)",
     "word_goal_cta": "Set & View Goal in Analytics",
-    "select_story_for_goal": "Select a story first."
+    "select_story_for_goal": "Select a story first.",
+    "new_features": {
+      "banner_title": "New Features & Fixes!",
+      "banner_desc": "We've rolled out some updates, including DOCX support and localization fixes.",
+      "banner_button": "See what's new",
+      "dialog_title": "What's New in OpenWritingKit?",
+      "dialog_desc": "Check out latest updates",
+      "docx_support_title": "Full DOCX Support",
+      "docx_support_desc": "You can now import `.docx` files into the editor or documents, and export your work as `.docx` files within a ZIP archive.",
+      "plotting_templates_title": "New Plotting Templates",
+      "plotting_templates_desc": "Explore classic storytelling structures like 'The Hero's Journey' and 'Save the Cat!' in the Plot Tools section to help outline your narrative.",
+      "character_images_title": "Flexible Character Images",
+      "character_images_desc": "You can now use image URLs from any source for your character profiles without restriction.",
+      "bug_fixes_title": "Bug Fixes & Improvements",
+      "bug_fixes_desc": "We've squashed numerous bugs, including fixing widespread localization issues where text tags were appearing. The unreliable PDF export has also been removed in favor of robust DOCX support."
+    }
   },
   "settings": {
     "title": "Settings",
