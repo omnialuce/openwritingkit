@@ -10,12 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Download } from 'lucide-react';
-import { jsPDF } from "jspdf";
 import { Packer } from 'docx';
 import { saveAs } from 'file-saver';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateTimelineDocx, generateTemplateDocx } from '@/lib/docx-generator';
-import { toPng } from 'html-to-image';
 import type { PlotTemplate } from '@/lib/plot-templates';
 import type { TimelineEvent } from '@/app/(app)/plot-tools/page';
 import { TranslationKey } from '@/lib/i18n-keys';
@@ -56,43 +54,6 @@ export function ExportButton({ contentId, type, data, templateInfo }: ExportButt
     saveAs(blob, `${type}_export.txt`);
   };
 
-  const handleExportPdf = async () => {
-    const element = document.getElementById(contentId);
-    if (!element) return;
-    
-    // Use html-to-image to capture the element as a PNG
-    const dataUrl = await toPng(element, { 
-      backgroundColor: 'white', 
-      pixelRatio: 2,
-      style: {
-        fontSize: '14px',
-      }
-    });
-
-    const pdf = new jsPDF('p', 'px', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    
-    const img = new Image();
-    img.src = dataUrl;
-    img.onload = () => {
-      const imgWidth = img.width;
-      const imgHeight = img.height;
-      
-      const ratio = imgWidth / imgHeight;
-      let finalImgWidth = pdfWidth;
-      let finalImgHeight = pdfWidth / ratio;
-      
-      if(finalImgHeight > pdfHeight) {
-          finalImgHeight = pdfHeight;
-          finalImgWidth = pdfHeight * ratio;
-      }
-
-      pdf.addImage(dataUrl, 'PNG', 0, 0, finalImgWidth, finalImgHeight);
-      pdf.save(`${type}_export.pdf`);
-    };
-  };
-
   const handleExportDocx = async () => {
     let doc;
     if (type === 'timeline') {
@@ -114,7 +75,6 @@ export function ExportButton({ contentId, type, data, templateInfo }: ExportButt
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={handleExportTxt}>{t('plot_tools.export.as_txt')}</DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExportPdf}>{t('plot_tools.export.as_pdf')}</DropdownMenuItem>
         <DropdownMenuItem onClick={handleExportDocx}>{t('plot_tools.export.as_docx')}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

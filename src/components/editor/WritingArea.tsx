@@ -47,12 +47,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/lib/storage';
 import { Toggle } from '@/components/ui/toggle';
 import { Slider } from '@/components/ui/slider';
-import { jsPDF } from 'jspdf';
 import { Packer } from 'docx';
 import { saveAs } from 'file-saver';
-import { toPng } from 'html-to-image';
 import { generateDocxFromHtml } from '@/lib/docx-generator';
-import { useTheme } from 'next-themes';
+import mammoth from 'mammoth';
 import { Separator } from '@/components/ui/separator';
 
 
@@ -76,8 +74,7 @@ export function WritingArea() {
   const { toast } = useToast();
   const sidebarContext = useSidebar();
   const isMobile = useIsMobile();
-  const { theme } = useTheme();
-
+  
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
   
@@ -391,41 +388,6 @@ export function WritingArea() {
     document.body.removeChild(link);
   };
   
-  const handleExportPDF = async () => {
-    const editorNode = editorRef.current;
-    if (!editorNode || !activeStoryId) return;
-
-    toast({ title: t('editor.toast.pdf_generating_title'), description: t('editor.toast.pdf_generating_desc') });
-
-    try {
-      const dataUrl = await toPng(editorNode, {
-        quality: 0.95,
-        backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
-      });
-      
-      const pdf = new jsPDF('p', 'px', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const img = new Image();
-      img.src = dataUrl;
-      img.onload = () => {
-        const imgWidth = img.width;
-        const imgHeight = img.height;
-        const ratio = imgWidth / imgHeight;
-
-        let canvasWidth = pdfWidth;
-        let canvasHeight = pdfWidth / ratio;
-        
-        pdf.addImage(dataUrl, 'PNG', 0, 0, canvasWidth, canvasHeight);
-        pdf.save(`${activeDocumentName || 'document'}.pdf`);
-      };
-    } catch (error) {
-      console.error("PDF generation error:", error);
-      toast({ title: t('common.error'), description: t('editor.toast.pdf_error'), variant: "destructive" });
-    }
-  };
-
   const handleExportDOCX = async () => {
     if (!editor || !activeStoryId) return;
     const htmlContent = editor.getHTML();
@@ -448,25 +410,43 @@ export function WritingArea() {
     fileInputRef.current?.click();
   }
 
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && editor && activeStoryId) {
-      if (file.type === "text/plain" || file.type === "text/html" || file.type === "text/markdown") {
+    if (!file || !editor || !activeStoryId) return;
+
+    if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const arrayBuffer = e.target?.result as ArrayBuffer;
+            if (!arrayBuffer) {
+                toast({ title: t('documents.toast.error_reading_file'), variant: "destructive" });
+                return;
+            }
+            try {
+                const result = await mammoth.convertToHtml({ arrayBuffer });
+                editor.commands.setContent(result.value, true);
+                toast({ title: t('documents.toast.import_success_title'), description: t('documents.toast.import_success_desc', { name: file.name }) });
+            } catch (error) {
+                console.error("Mammoth conversion error:", error);
+                toast({ title: t('documents.toast.import_failed_title'), description: t('documents.toast.import_failed_desc'), variant: "destructive" });
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } else if (file.type === "text/plain" || file.type === "text/html" || file.type === "text/markdown") {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const fileContent = e.target?.result as string;
-          editor.commands.setContent(fileContent); 
-          toast({ title: t('editor.toast.import_success_title'), description: t('editor.toast.import_success_desc') });
+            const fileContent = e.target?.result as string;
+            editor.commands.setContent(fileContent, true); 
+            toast({ title: t('editor.toast.import_success_title'), description: t('editor.toast.import_success_desc') });
         };
         reader.onerror = () => {
-          toast({ title: t('common.error'), description: t('editor.toast.import_error_read'), variant: "destructive" });
+            toast({ title: t('common.error'), description: t('editor.toast.import_error_read'), variant: "destructive" });
         }
         reader.readAsText(file);
-      } else {
+    } else {
         toast({ title: t('common.error'), description: t('editor.toast.import_error_type'), variant: "destructive" });
-      }
-      event.target.value = ''; 
     }
+    event.target.value = ''; 
   };
   
   const toggleFullScreen = () => setIsFullScreen(!isFullScreen);
@@ -780,7 +760,7 @@ export function WritingArea() {
                   <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title={t('editor.save_as_new_button_title')} disabled={!activeStoryId || activeDocumentId !== null}>
                     <FileUp className="h-5 w-5 text-muted-foreground" />
                   </Button>
-                  <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md" style={{ display: 'none' }} />
+                  <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md,.docx" style={{ display: 'none' }} />
                   <Button variant="ghost" size="icon" onClick={handleImportClick} title={t('editor.import_button_title')} disabled={!activeStoryId}>
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </Button>
@@ -794,7 +774,6 @@ export function WritingArea() {
                       <DropdownMenuItem onClick={handleExportTXT} disabled={!activeStoryId}>{t('editor.export_txt')}</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportHTML} disabled={!activeStoryId}>{t('editor.export_html')}</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportDOCX} disabled={!activeStoryId}>{t('editor.export_docx')}</DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleExportPDF} disabled={!activeStoryId}>{t('editor.export_pdf')}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm(t('editor.clear_content_confirm'))) { editor?.commands.clearContent(true); if(!activeDocumentId) clearSavedContent();} }} title={t('editor.clear_content_button_title')} disabled={!activeStoryId}>

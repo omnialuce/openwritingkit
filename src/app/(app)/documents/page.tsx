@@ -44,6 +44,8 @@ import { storage } from '@/lib/storage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { cn } from '@/lib/utils';
+import { generateDocxFromHtml } from '@/lib/docx-generator';
+import { Packer } from 'docx';
 
 
 interface DocumentListItemProps {
@@ -469,6 +471,7 @@ export default function DocumentsPage() {
 
   const handleExportZip = async () => {
     if (!activeStoryId || documents.length === 0 || !user) return;
+    toast({ title: t('documents.toast.export_started_title'), description: t('documents.toast.export_started_desc') });
     const zip = new JSZip();
 
     const addDocsToZip = async (docs: DocumentItem[], currentPath: string) => {
@@ -478,11 +481,15 @@ export default function DocumentsPage() {
                 const editorKey = getEditorContentKey(activeStoryId, doc.id, user.uid);
                 const editorData = await storage.getItem<{current: string}>(editorKey);
                 if (editorData?.current) {
-                    zip.file(`${newPath}.html`, editorData.current);
+                    const docx = generateDocxFromHtml(editorData.current);
+                    const blob = await Packer.toBlob(docx);
+                    zip.file(`${newPath}.docx`, blob);
                 }
             } else if ((doc.type === 'folder' || doc.type === 'chapter') && doc.children) {
-                zip.folder(newPath);
-                await addDocsToZip(doc.children, newPath);
+                const folder = zip.folder(newPath);
+                if (folder) {
+                  await addDocsToZip(doc.children, newPath);
+                }
             }
         }
     };
@@ -499,7 +506,6 @@ export default function DocumentsPage() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        toast({ title: t('documents.toast.export_started_title'), description: t('documents.toast.export_started_desc') });
     } catch (error) {
         console.error("ZIP generation error:", error);
         toast({ title: t('documents.toast.export_failed_title'), description: t('documents.toast.export_failed_desc'), variant: "destructive" });
