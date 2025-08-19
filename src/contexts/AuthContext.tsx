@@ -8,12 +8,14 @@ import { app as firebaseApp } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './LanguageContext';
+import { signupUser } from '@/ai/flows/signup-flow';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   logout: () => Promise<void>;
   login: (email: string, pass: string) => Promise<void | AuthError>;
+  signup: (email: string, pass: string, inviteCode: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const isPublicPage = ['/login'].includes(pathname);
+    const isPublicPage = ['/login', '/signup'].includes(pathname);
 
     if (!user && !isPublicPage) {
       router.push('/login');
@@ -94,6 +96,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signup = async (email: string, pass: string, inviteCode: string) => {
+    const result = await signupUser({ email: email, password: pass, inviteCode: inviteCode });
+    if (result.success) {
+      toast({ title: "Sign Up Successful", description: "Please log in with your new account." });
+      router.push('/login');
+    } else {
+      toast({ title: "Sign Up Failed", description: result.message, variant: 'destructive' });
+    }
+  };
+
+
   const logout = async () => {
     const auth = getAuth(firebaseApp);
     await signOut(auth);
@@ -107,7 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const value = { user, loading, logout, login };
+  const value = { user, loading, logout, login, signup };
   
   if (loading) {
     return (
