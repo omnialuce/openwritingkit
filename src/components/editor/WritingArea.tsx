@@ -72,7 +72,12 @@ const EDITOR_SETTINGS_KEY = 'openwritingkit-editor-settings-v3';
 export function WritingArea() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId } = useStoryContext();
+  const { activeStoryId, documentToOpen, consumeDocumentToOpen, historyDocumentId, consumeHistoryDocumentId, updateDocumentMetadata } = useStoryContext();
+  const { toast } = useToast();
+  const sidebarContext = useSidebar();
+  const isMobile = useIsMobile();
+  const { theme } = useTheme();
+
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(null);
   const [activeDocumentName, setActiveDocumentName] = useState<string | null>(null);
   
@@ -88,8 +93,6 @@ export function WritingArea() {
   const [charCount, setCharCount] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-  const sidebarContext = useSidebar();
   const editorRef = useRef<HTMLDivElement>(null);
 
 
@@ -123,8 +126,6 @@ export function WritingArea() {
   const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([]);
   
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId, user?.uid);
-  
-  const isMobile = useIsMobile();
 
   const editor = useEditor({
     extensions: [
@@ -626,7 +627,6 @@ export function WritingArea() {
   }
   
   const isSidePanelOpen = (isFeedbackPanelOpen || isHistoryPanelOpen) && !isMobile;
-  const { theme } = useTheme();
 
   const renderFeedbackContent = () => feedbackResult && (
     <div className="space-y-4 p-4">
