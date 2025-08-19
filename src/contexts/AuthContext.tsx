@@ -3,12 +3,24 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getAuth, onAuthStateChanged, User, signOut, signInWithEmailAndPassword, AuthError } from 'firebase/auth';
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  User, 
+  signOut, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  updateEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  type AuthError 
+} from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
 import { app as firebaseApp } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './LanguageContext';
-import { signupUser } from '@/ai/flows/signup-flow';
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +28,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   login: (email: string, pass: string) => Promise<void | AuthError>;
   signup: (email: string, pass: string, inviteCode: string) => Promise<void>;
+  changeUserEmail: (currentPass: string, newEmail: string) => Promise<{success: boolean, message: string}>;
+  changeUserPassword: (currentPass: string, newPass: string) => Promise<{success: boolean, message: string}>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -97,12 +111,114 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (email: string, pass: string, inviteCode: string) => {
-    const result = await signupUser({ email: email, password: pass, inviteCode: inviteCode });
-    if (result.success) {
-      toast({ title: "Sign Up Successful", description: "Please log in with your new account." });
-      router.push('/login');
-    } else {
-      toast({ title: "Sign Up Failed", description: result.message, variant: 'destructive' });
+      const auth = getAuth(firebaseApp);
+      const db = getFirestore(firebaseApp);
+
+      if (!inviteCode || inviteCode.trim() === '') {
+        toast({ title: "Sign Up Failed", description: "An invite code is required to sign up.", variant: 'destructive' });
+        return;
+      }
+      
+      try {
+        // 1. Validate Invite Code
+        const inviteRef = doc(db, 'inviteCodes', inviteCode);
+        const inviteDoc = await getDoc(inviteRef);
+
+        if (!inviteDoc.exists()) {
+            toast({ title: "Sign Up Failed", description: "Invalid invite code.", variant: 'destructive' });
+            return;
+        }
+
+        const inviteData = inviteDoc.data();
+        if (inviteData?.used) {
+            toast({ title: "Sign Up Failed", description: "This invite code has already been used.", variant: 'destructive' });
+            return;
+        }
+        
+        // 2. Create User in Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        const newUser = userCredential.user;
+
+        // 3. Mark invite code as used
+        await updateDoc(inviteRef, {
+            used: true,
+            usedBy: newUser.uid,
+            usedAt: serverTimestamp(),
+        });
+        
+        // 4. Log activity
+        await addDoc(collection(db, "activityLog"), {
+            action: 'signup',
+            userId: newUser.uid,
+            email: email,
+            timestamp: serverTimestamp(),
+            details: 'User signed up successfully.'
+        });
+
+        toast({ title: t('signup.toast.signup_successful_title'), description: t('signup.toast.signup_successful_desc') });
+        router.push('/login');
+      } catch (error: any) {
+         let message = 'An unexpected error occurred during sign up.';
+         if (error.code === 'auth/email-already-exists') {
+            message = 'This email address is already in use by another account.';
+        } else if (error.code === 'auth/invalid-email') {
+            message = 'The email address is not valid.';
+        } else if (error.code === 'auth/weak-password') {
+            message = 'The password is too weak. It must be at least 6 characters.';
+        }
+        console.error("Signup error:", error);
+        toast({ title: t('signup.toast.signup_failed_title'), description: message, variant: 'destructive' });
+
+        await addDoc(collection(db, "activityLog"), {
+            action: 'signup_failed',
+            email: email,
+            timestamp: serverTimestamp(),
+            details: message,
+            error: error.message,
+        });
+      }
+  };
+
+  const changeUserEmail = async (currentPass: string, newEmailAddress: string) => {
+    if (!user || !user.email) return { success: false, message: 'User not logged in.' };
+    const auth = getAuth(firebaseApp);
+
+    try {
+        const credential = EmailAuthProvider.credential(user.email, currentPass);
+        await reauthenticateWithCredential(user, credential);
+        await updateEmail(user, newEmailAddress);
+        return { success: true, message: 'Email updated successfully. Please log in again.' };
+    } catch (error: any) {
+        let message = 'An unexpected error occurred.';
+        if (error.code === 'auth/invalid-credential') {
+            message = 'Incorrect password. Please try again.';
+        } else if (error.code === 'auth/email-already-in-use') {
+            message = 'This email address is already in use by another account.';
+        } else if (error.code === 'auth/invalid-email') {
+            message = 'The new email address is not valid.';
+        }
+        console.error("Email change error", error);
+        return { success: false, message };
+    }
+  };
+
+  const changeUserPassword = async (currentPass: string, newPass: string) => {
+    if (!user || !user.email) return { success: false, message: 'User not logged in.' };
+
+    try {
+        const credential = EmailAuthProvider.credential(user.email, currentPass);
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPass);
+        return { success: true, message: 'Password updated successfully. Please log in again.' };
+    } catch (error: any) {
+        let message = 'An unexpected error occurred.';
+         if (error.code === 'auth/invalid-credential') {
+            message = 'Incorrect password. Please try again.';
+        } else if (error.code === 'auth/weak-password') {
+            message = 'The new password is too weak. It must be at least 6 characters.';
+        }
+        console.error("Password change error", error);
+        return { success: false, message };
     }
   };
 
@@ -120,7 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const value = { user, loading, logout, login, signup };
+  const value = { user, loading, logout, login, signup, changeUserEmail, changeUserPassword };
   
   if (loading) {
     return (

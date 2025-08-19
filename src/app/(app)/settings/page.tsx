@@ -1,4 +1,3 @@
-
 // src/app/(app)/settings/page.tsx
 'use client';
 
@@ -10,23 +9,18 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { Moon, Sun, Wand2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAuth, sendPasswordResetEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useStoryContext } from '@/contexts/StoryContext';
 import { Input } from '@/components/ui/input';
-import { changeEmail, changePassword } from '@/ai/flows/auth-flow';
-import type { ChangeEmailInput, ChangePasswordInput } from '@/ai/schemas/auth-schemas';
 import { cn } from '@/lib/utils';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, changeUserEmail, changeUserPassword } = useAuth();
   const { toast } = useToast();
   const { language, setLanguage, t } = useLanguage();
   const importFormRef = useRef<HTMLFormElement>(null);
@@ -56,35 +50,15 @@ export default function SettingsPage() {
     setAiFeaturesEnabled(storedAIPref === 'true');
   }, []);
   
-  const reauthenticateUser = async (password: string) => {
-    if (!user || !user.email) return null;
-    const credential = EmailAuthProvider.credential(user.email, password);
-    try {
-      await reauthenticateWithCredential(user, credential);
-      return true;
-    } catch (error) {
-      console.error("Re-authentication failed", error);
-      toast({ title: t('common.error'), description: t('settings.toast.reauth_failed_desc'), variant: 'destructive' });
-      return false;
-    }
-  };
-  
   const handleChangeEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !newEmail || !currentPasswordForEmail) return;
     setIsChangingEmail(true);
 
-    const isReauthenticated = await reauthenticateUser(currentPasswordForEmail);
-    if (!isReauthenticated) {
-      setIsChangingEmail(false);
-      return;
-    }
-
-    const result = await changeEmail({ uid: user.uid, newEmail });
+    const result = await changeUserEmail(currentPasswordForEmail, newEmail);
 
     if (result.success) {
       toast({ title: t('settings.toast.email_change_success_title'), description: result.message });
-      // Force logout after email change for security
       await logout(); 
     } else {
       toast({ title: t('common.error'), description: result.message, variant: 'destructive' });
@@ -104,14 +78,8 @@ export default function SettingsPage() {
       return;
     }
     setIsChangingPassword(true);
-    
-    const isReauthenticated = await reauthenticateUser(currentPasswordForPassword);
-    if (!isReauthenticated) {
-        setIsChangingPassword(false);
-        return;
-    }
 
-    const result = await changePassword({ uid: user.uid, newPassword });
+    const result = await changeUserPassword(currentPasswordForPassword, newPassword);
 
     if (result.success) {
         toast({ title: t('settings.toast.password_change_success_title'), description: result.message });
@@ -300,7 +268,7 @@ export default function SettingsPage() {
                 />
                 <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowCurrentPasswordForEmail(!showCurrentPasswordForEmail)}><span className="sr-only">Toggle password visibility</span>{showCurrentPasswordForEmail ? <EyeOff /> : <Eye />}</Button>
               </div>
-              <Button type="submit" disabled={isChangingEmail} className="w-full">
+              <Button type="submit" disabled={isChangingEmail || !newEmail || !currentPasswordForEmail} className="w-full">
                 {isChangingEmail && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('settings.security.change_email_button')}
               </Button>
@@ -344,7 +312,7 @@ export default function SettingsPage() {
                 />
                 <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8" onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}><span className="sr-only">Toggle password visibility</span>{showConfirmNewPassword ? <EyeOff /> : <Eye />}</Button>
               </div>
-              <Button type="submit" disabled={isChangingPassword} className="w-full">
+              <Button type="submit" disabled={isChangingPassword || !currentPasswordForPassword || !newPassword || !confirmNewPassword} className="w-full">
                 {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('settings.security.change_password_button')}
               </Button>
