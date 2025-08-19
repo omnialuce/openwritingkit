@@ -343,19 +343,19 @@ export default function DashboardPage() {
                     <div className="space-y-4 py-2">
                         <div>
                             <h3 className="font-semibold">Full DOCX Support</h3>
-                            <p className="text-sm text-muted-foreground">You can now import `.docx` files directly into the editor or the document manager. You can also export all your documents as `.docx` files within a ZIP archive.</p>
-                        </div>
-                        <div>
-                            <h3 className="font-semibold">Localization Fixes</h3>
-                            <p className="text-sm text-muted-foreground">A major architectural overhaul has been completed to fix numerous bugs where translation tags were displayed instead of the correct text. The app should now correctly display in your selected language across all pages.</p>
+                            <p className="text-sm text-muted-foreground">You can now import `.docx` files into the editor or documents, and export your work as `.docx` files within a ZIP archive.</p>
                         </div>
                          <div>
-                            <h3 className="font-semibold">PDF Export Removed</h3>
-                            <p className="text-sm text-muted-foreground">The "Export as PDF" feature was not working reliably and has been removed to avoid confusion. We recommend exporting as DOCX and then converting to PDF using your preferred software.</p>
+                            <h3 className="font-semibold">New Plotting Templates</h3>
+                            <p className="text-sm text-muted-foreground">Explore classic storytelling structures like 'The Hero's Journey' and 'Save the Cat!' in the Plot Tools section to help outline your narrative.</p>
                         </div>
                          <div>
                             <h3 className="font-semibold">Flexible Character Images</h3>
                             <p className="text-sm text-muted-foreground">You can now use image URLs from any source for your character profiles without restriction.</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Bug Fixes & Improvements</h3>
+                            <p className="text-sm text-muted-foreground">We've squashed numerous bugs, including fixing widespread localization issues where text tags were appearing. The unreliable PDF export has also been removed in favor of robust DOCX support.</p>
                         </div>
                     </div>
                 </ScrollArea>
