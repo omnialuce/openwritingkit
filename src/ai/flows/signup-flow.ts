@@ -7,6 +7,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminApp } from '@/lib/firebase-admin';
 import type { SignupInput, SignupOutput } from '@/ai/schemas/signup-schemas';
+import { SignupInputSchema, SignupOutputSchema } from '@/ai/schemas/signup-schemas';
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
