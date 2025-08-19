@@ -17,7 +17,7 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
 
-  if (pathname === '/login') {
+  if (pathname === '/login' || pathname === '/signup') {
     return (
        <>
         {children}

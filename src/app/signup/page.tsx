@@ -1,3 +1,4 @@
+
 // src/app/signup/page.tsx
 'use client';
 
@@ -31,11 +32,11 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !inviteCode) {
-      toast({ title: "Missing Fields", description: "Please fill out all required fields.", variant: "destructive" });
+      toast({ title: t('signup.toast.missing_fields_title'), description: t('signup.toast.missing_fields_desc'), variant: "destructive" });
       return;
     }
     if (password !== confirmPassword) {
-      toast({ title: "Password Mismatch", description: "Your passwords do not match.", variant: "destructive" });
+      toast({ title: t('signup.toast.password_mismatch_title'), description: t('signup.toast.password_mismatch_desc'), variant: "destructive" });
       return;
     }
     setIsLoading(true);
@@ -48,17 +49,17 @@ export default function SignupPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <Image src="/logo.png" alt="OpenWritingKit Logo" width={64} height={64} className="mx-auto mb-4 rounded-lg" />
-            <CardTitle className="text-2xl">Create an Account</CardTitle>
-            <CardDescription>Enter your details to sign up.</CardDescription>
+            <CardTitle className="text-2xl">{t('signup.title')}</CardTitle>
+            <CardDescription>{t('signup.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('signup.email_label')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your.nicest@email.com"
+                placeholder={t('login.email_placeholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -66,7 +67,7 @@ export default function SignupPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('signup.password_label')}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -83,7 +84,7 @@ export default function SignupPage() {
               </div>
             </div>
              <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Label htmlFor="confirm-password">{t('signup.confirm_password_label')}</Label>
               <div className="relative">
                 <Input
                   id="confirm-password"
@@ -100,11 +101,11 @@ export default function SignupPage() {
               </div>
             </div>
              <div className="space-y-2">
-              <Label htmlFor="invite-code">Invite Code</Label>
+              <Label htmlFor="invite-code">{t('signup.invite_code_label')}</Label>
               <Input
                 id="invite-code"
                 type="text"
-                placeholder="Your invite code"
+                placeholder={t('signup.invite_code_placeholder')}
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
                 required
@@ -113,16 +114,16 @@ export default function SignupPage() {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign Up
+              {t('signup.sign_up_button')}
             </Button>
           </form>
         </CardContent>
          <CardFooter className="flex-col space-y-4">
             <Separator />
             <p className="text-sm text-muted-foreground">
-                Already have an account?{' '}
+                {t('signup.already_have_account')}{' '}
                 <Link href="/login" className="font-semibold text-primary hover:underline">
-                    Sign in
+                    {t('signup.sign_in_link')}
                 </Link>
             </p>
         </CardFooter>

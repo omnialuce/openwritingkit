@@ -1,3 +1,4 @@
+
 {
   "common": {
     "error": "Erro",
@@ -47,6 +48,27 @@
     "show_password": "Mostrar senha",
     "hide_password": "Ocultar senha",
     "sign_in_button": "Entrar"
+  },
+  "signup": {
+    "title": "Criar uma Conta",
+    "description": "Insira seus dados para se cadastrar.",
+    "email_label": "Email",
+    "password_label": "Senha",
+    "confirm_password_label": "Confirmar Senha",
+    "invite_code_label": "Código de Convite",
+    "invite_code_placeholder": "Seu código de convite",
+    "sign_up_button": "Cadastrar",
+    "already_have_account": "Já tem uma conta?",
+    "sign_in_link": "Faça login",
+    "toast": {
+      "missing_fields_title": "Campos Faltando",
+      "missing_fields_desc": "Por favor, preencha todos os campos obrigatórios.",
+      "password_mismatch_title": "Senhas não Coincidem",
+      "password_mismatch_desc": "Suas senhas não são iguais.",
+      "signup_successful_title": "Cadastro Realizado com Sucesso",
+      "signup_successful_desc": "Por favor, faça login com sua nova conta.",
+      "signup_failed_title": "Falha no Cadastro"
+    }
   },
   "auth": {
     "loading": "Carregando aplicação...",

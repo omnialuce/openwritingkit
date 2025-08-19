@@ -1,3 +1,4 @@
+
 {
   "common": {
     "error": "Error",
@@ -47,6 +48,27 @@
     "show_password": "Show password",
     "hide_password": "Hide password",
     "sign_in_button": "Sign In"
+  },
+  "signup": {
+    "title": "Create an Account",
+    "description": "Enter your details to sign up.",
+    "email_label": "Email",
+    "password_label": "Password",
+    "confirm_password_label": "Confirm Password",
+    "invite_code_label": "Invite Code",
+    "invite_code_placeholder": "Your invite code",
+    "sign_up_button": "Sign Up",
+    "already_have_account": "Already have an account?",
+    "sign_in_link": "Sign in",
+    "toast": {
+      "missing_fields_title": "Missing Fields",
+      "missing_fields_desc": "Please fill out all required fields.",
+      "password_mismatch_title": "Password Mismatch",
+      "password_mismatch_desc": "Your passwords do not match.",
+      "signup_successful_title": "Sign Up Successful",
+      "signup_successful_desc": "Please log in with your new account.",
+      "signup_failed_title": "Sign Up Failed"
+    }
   },
   "auth": {
     "loading": "Loading application...",
