@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info, X } from "lucide-react";
+import { ArrowRight, BookText, Cpu, BarChart3, FolderOpen, TrendingUp, CalendarDays, BookOpenCheck, AlertTriangle, Info, X, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useStoryContext } from "@/contexts/StoryContext";
@@ -18,6 +18,8 @@ import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 import { DeadlineCard } from "@/components/analytics/DeadlineCard";
 
 const HOW_TO_BANNER_DISMISSED_KEY = 'openwritingkit-how-to-banner-dismissed';
+const NEW_FEATURES_BANNER_DISMISSED_KEY = 'openwritingkit-new-features-banner-v2-dismissed';
+
 
 export default function DashboardPage() {
   const { t } = useLanguage();
@@ -26,6 +28,8 @@ export default function DashboardPage() {
   const [writingStreak, setWritingStreak] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const [showHowToBanner, setShowHowToBanner] = useState(false);
+  const [showNewFeaturesBanner, setShowNewFeaturesBanner] = useState(false);
+  const [isFeaturesDialogOpen, setIsFeaturesDialogOpen] = useState(false);
 
   const getStreakKeys = useCallback(() => {
     if (!activeStoryId || !user) return null;
@@ -86,9 +90,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    const bannerDismissed = localStorage.getItem(HOW_TO_BANNER_DISMISSED_KEY);
-    if (!bannerDismissed) {
+    const howToDismissed = localStorage.getItem(HOW_TO_BANNER_DISMISSED_KEY);
+    if (!howToDismissed) {
       setShowHowToBanner(true);
+    }
+    const newFeaturesDismissed = localStorage.getItem(NEW_FEATURES_BANNER_DISMISSED_KEY);
+    if (!newFeaturesDismissed) {
+        setShowNewFeaturesBanner(true);
     }
     
     if (activeStoryId) {
@@ -113,9 +121,14 @@ export default function DashboardPage() {
     };
   }, [activeStoryId, updateStreakDisplay, getStreakKeys]);
 
-  const dismissBanner = () => {
+  const dismissHowToBanner = () => {
     setShowHowToBanner(false);
     localStorage.setItem(HOW_TO_BANNER_DISMISSED_KEY, 'true');
+  }
+
+  const dismissNewFeaturesBanner = () => {
+    setShowNewFeaturesBanner(false);
+    localStorage.setItem(NEW_FEATURES_BANNER_DISMISSED_KEY, 'true');
   }
 
 
@@ -185,7 +198,28 @@ export default function DashboardPage() {
                   </ScrollArea>
                 </DialogContent>
               </Dialog>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={dismissBanner}>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={dismissHowToBanner}>
+                <X className="h-4 w-4" />
+                <span className="sr-only">Dismiss</span>
+              </Button>
+            </div>
+          </div>
+        </Alert>
+      )}
+
+      {showNewFeaturesBanner && (
+        <Alert className="bg-primary/5 border-primary/20">
+          <PartyPopper className="h-4 w-4 text-primary" />
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <AlertTitle className="text-primary">New Features & Fixes!</AlertTitle>
+              <AlertDescription>
+                We've rolled out some updates, including DOCX support and localization fixes.
+              </AlertDescription>
+            </div>
+            <div className="flex items-center gap-2">
+                <Button variant="link" size="sm" className="p-0 text-primary" onClick={() => setIsFeaturesDialogOpen(true)}>See what's new</Button>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={dismissNewFeaturesBanner}>
                 <X className="h-4 w-4" />
                 <span className="sr-only">Dismiss</span>
               </Button>
@@ -296,6 +330,42 @@ export default function DashboardPage() {
           </section>
         </>
       )}
+
+       <Dialog open={isFeaturesDialogOpen} onOpenChange={setIsFeaturesDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="text-2xl">What's New in OpenWritingKit?</DialogTitle>
+                    <DialogDescription>
+                        Here are some of the latest features and bug fixes.
+                    </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] pr-4">
+                    <div className="space-y-4 py-2">
+                        <div>
+                            <h3 className="font-semibold">Full DOCX Support</h3>
+                            <p className="text-sm text-muted-foreground">You can now import `.docx` files directly into the editor or the document manager. You can also export all your documents as `.docx` files within a ZIP archive.</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Localization Fixes</h3>
+                            <p className="text-sm text-muted-foreground">A major architectural overhaul has been completed to fix numerous bugs where translation tags were displayed instead of the correct text. The app should now correctly display in your selected language across all pages.</p>
+                        </div>
+                         <div>
+                            <h3 className="font-semibold">PDF Export Removed</h3>
+                            <p className="text-sm text-muted-foreground">The "Export as PDF" feature was not working reliably and has been removed to avoid confusion. We recommend exporting as DOCX and then converting to PDF using your preferred software.</p>
+                        </div>
+                         <div>
+                            <h3 className="font-semibold">Flexible Character Images</h3>
+                            <p className="text-sm text-muted-foreground">You can now use image URLs from any source for your character profiles without restriction.</p>
+                        </div>
+                    </div>
+                </ScrollArea>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button">Close</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
