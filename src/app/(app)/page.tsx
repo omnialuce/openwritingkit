@@ -336,7 +336,7 @@ export default function DashboardPage() {
                 <DialogHeader>
                     <DialogTitle className="text-2xl">What's New in OpenWritingKit?</DialogTitle>
                     <DialogDescription>
-                        Here are some of the latest features and bug fixes.
+                        Check out latest updates
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="max-h-[60vh] pr-4">
