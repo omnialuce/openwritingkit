@@ -115,8 +115,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const auth = getAuth(firebaseApp);
       const db = getFirestore(firebaseApp);
 
+      // Placeholder for invite code validation
       if (!inviteCode || inviteCode.trim() === '') {
-        toast({ title: "Sign Up Failed", description: "An invite code is required to sign up.", variant: 'destructive' });
+        toast({ title: t('signup.toast.missing_fields_title'), description: t('signup.toast.missing_fields_desc'), variant: 'destructive' });
         return;
       }
       
@@ -125,20 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         const newUser = userCredential.user;
         
-        // 2. Log activity
-        await addDoc(collection(db, "activityLog"), {
-            action: 'signup',
-            userId: newUser.uid,
-            email: email,
-            timestamp: serverTimestamp(),
-            details: 'User signed up successfully.'
-        });
-
         toast({ title: t('signup.toast.signup_successful_title'), description: t('signup.toast.signup_successful_desc') });
         router.push('/login');
 
       } catch (error: any) {
-         let message = 'An unexpected error occurred during sign up.';
+         let message = t('auth.login_error_default');
          if (error.code === 'auth/email-already-in-use') {
             message = 'This email address is already in use by another account.';
         } else if (error.code === 'auth/invalid-email') {
@@ -148,14 +140,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         console.error("Signup error:", error);
         toast({ title: t('signup.toast.signup_failed_title'), description: message, variant: 'destructive' });
-
-        await addDoc(collection(db, "activityLog"), {
-            action: 'signup_failed',
-            email: email,
-            timestamp: serverTimestamp(),
-            details: message,
-            error: error.message,
-        });
       }
   };
 
