@@ -82,6 +82,7 @@ export default function SignupPage() {
                   {showPassword ? <EyeOff /> : <Eye />}
                 </Button>
               </div>
+               <p className="text-xs text-muted-foreground">{t('signup.password_requirements')}</p>
             </div>
              <div className="space-y-2">
               <Label htmlFor="confirm-password">{t('signup.confirm_password_label')}</Label>

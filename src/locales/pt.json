@@ -54,6 +54,7 @@
     "description": "Insira seus dados para se cadastrar.",
     "email_label": "Email",
     "password_label": "Senha",
+    "password_requirements": "A senha deve conter uma letra maiúscula, um caractere não alfanumérico e ter pelo menos 6 caracteres.",
     "confirm_password_label": "Confirmar Senha",
     "invite_code_label": "Código de Convite",
     "invite_code_placeholder": "Seu código de convite",

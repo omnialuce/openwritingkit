@@ -1,3 +1,4 @@
+
 // src/contexts/AuthContext.tsx
 'use client';
 
@@ -120,33 +121,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       try {
-        // 1. Validate Invite Code
-        const inviteRef = doc(db, 'inviteCodes', inviteCode);
-        const inviteDoc = await getDoc(inviteRef);
-
-        if (!inviteDoc.exists()) {
-            toast({ title: "Sign Up Failed", description: "Invalid invite code.", variant: 'destructive' });
-            return;
-        }
-
-        const inviteData = inviteDoc.data();
-        if (inviteData?.used) {
-            toast({ title: "Sign Up Failed", description: "This invite code has already been used.", variant: 'destructive' });
-            return;
-        }
-        
-        // 2. Create User in Firebase Auth
+        // 1. Create User in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         const newUser = userCredential.user;
-
-        // 3. Mark invite code as used
-        await updateDoc(inviteRef, {
-            used: true,
-            usedBy: newUser.uid,
-            usedAt: serverTimestamp(),
-        });
         
-        // 4. Log activity
+        // 2. Log activity
         await addDoc(collection(db, "activityLog"), {
             action: 'signup',
             userId: newUser.uid,
@@ -157,14 +136,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         toast({ title: t('signup.toast.signup_successful_title'), description: t('signup.toast.signup_successful_desc') });
         router.push('/login');
+
       } catch (error: any) {
          let message = 'An unexpected error occurred during sign up.';
-         if (error.code === 'auth/email-already-exists') {
+         if (error.code === 'auth/email-already-in-use') {
             message = 'This email address is already in use by another account.';
         } else if (error.code === 'auth/invalid-email') {
             message = 'The email address is not valid.';
-        } else if (error.code === 'auth/weak-password') {
-            message = 'The password is too weak. It must be at least 6 characters.';
+        } else if (error.code === 'auth/weak-password' || error.code === 'auth/password-does-not-meet-requirements') {
+            message = 'Password does not meet requirements. It must be at least 6 characters and include an uppercase letter and a non-alphanumeric character.';
         }
         console.error("Signup error:", error);
         toast({ title: t('signup.toast.signup_failed_title'), description: message, variant: 'destructive' });
@@ -214,8 +194,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         let message = 'An unexpected error occurred.';
          if (error.code === 'auth/invalid-credential') {
             message = 'Incorrect password. Please try again.';
-        } else if (error.code === 'auth/weak-password') {
-            message = 'The new password is too weak. It must be at least 6 characters.';
+        } else if (error.code === 'auth/weak-password' || error.code === 'auth/password-does-not-meet-requirements') {
+            message = 'The new password is too weak or does not meet complexity requirements.';
         }
         console.error("Password change error", error);
         return { success: false, message };
