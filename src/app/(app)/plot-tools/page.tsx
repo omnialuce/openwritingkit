@@ -27,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TranslationKey } from '@/lib/i18n-keys';
 
 // --- Timeline Creator ---
-interface TimelineEvent {
+export interface TimelineEvent {
   id: string;
   title: string;
   dateTime: string;
@@ -61,12 +61,11 @@ export default function PlotToolsPage() {
         setTimelineEvents(storedEvents || []);
       });
       
-      const plotSettingsKey = getPlotSettingsKey(activeStoryId, user.uid);
+      const plotSettingsKey = getPlotSettingsKey(activeStoryId, user.uid)!;
       storage.getItem<PlotSettings>(plotSettingsKey).then(storedSettings => {
         if(storedSettings) {
           setPlotSettings(storedSettings);
         } else {
-          // Default settings
           const defaultSettings: PlotSettings = { showTemplates: true, primaryTemplate: 'save-the-cat' };
           setPlotSettings(defaultSettings);
           storage.setItem(plotSettingsKey, defaultSettings);
@@ -163,7 +162,7 @@ export default function PlotToolsPage() {
     setPlotSettings(prev => {
         const newSettings = {...prev, [key]: value};
         if(activeStoryId && user) {
-            const plotSettingsKey = getPlotSettingsKey(activeStoryId, user.uid);
+            const plotSettingsKey = getPlotSettingsKey(activeStoryId, user.uid)!;
             storage.setItem(plotSettingsKey, newSettings);
         }
         return newSettings;

@@ -55,11 +55,12 @@ export function ExportButton({ contentId, type, data, templateInfo }: ExportButt
   };
 
   const handleExportDocx = async () => {
+    const tStr = t as (key: string) => string;
     let doc;
     if (type === 'timeline') {
-      doc = generateTimelineDocx(data, t);
+      doc = generateTimelineDocx(data, tStr);
     } else if (type === 'template' && templateInfo) {
-      doc = generateTemplateDocx(data, templateInfo, t);
+      doc = generateTemplateDocx(data, templateInfo, tStr);
     } else {
       return;
     }

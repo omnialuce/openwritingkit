@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Wand2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Languages, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion } from 'lucide-react';
+import { Moon, Sun, SpellCheck2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { storage } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -46,8 +46,9 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setIsMounted(true);
-    const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
-    setAiFeaturesEnabled(storedAIPref === 'true');
+    storage.getItem<string>(AI_OPT_IN_KEY).then(val => {
+      setAiFeaturesEnabled(val === 'true');
+    });
   }, []);
   
   const handleChangeEmail = async (e: React.FormEvent) => {
@@ -97,7 +98,7 @@ export default function SettingsPage() {
 
   const handleAiOptInChange = (checked: boolean) => {
     setAiFeaturesEnabled(checked);
-    localStorage.setItem(AI_OPT_IN_KEY, String(checked));
+    storage.setItem(AI_OPT_IN_KEY, String(checked));
     window.dispatchEvent(new StorageEvent('storage', { key: AI_OPT_IN_KEY, newValue: String(checked) }));
     toast({
       title: t('settings.toast.ai_updated_title'),
@@ -376,50 +377,48 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
       
-      {/* AI Features Card */}
+      {/* Grammar Checking Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5"/> {t('settings.ai.title')}</CardTitle>
-          <CardDescription>{t('settings.ai.description')}</CardDescription>
+          <CardTitle className="flex items-center gap-2"><SpellCheck2 className="h-5 w-5"/> {t('settings.grammar.title')}</CardTitle>
+          <CardDescription>{t('settings.grammar.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-start gap-4 p-4 border bg-background rounded-lg">
             <Switch
-              id="ai-features"
+              id="grammar-features"
               checked={aiFeaturesEnabled}
               onCheckedChange={handleAiOptInChange}
-              aria-label={t('settings.ai.toggle_label')}
+              aria-label={t('settings.grammar.toggle_label')}
             />
             <div className="flex-1">
-              <Label htmlFor="ai-features" className="text-base font-medium">
-                {t('settings.ai.enable_label')}
+              <Label htmlFor="grammar-features" className="text-base font-medium">
+                {t('settings.grammar.enable_label')}
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                {t('settings.ai.enable_desc')}
+                {t('settings.grammar.enable_desc')}
               </p>
             </div>
           </div>
-          
-          <div className="mt-4 p-4 border-l-4 border-destructive bg-destructive/10 rounded-r-lg">
+
+          <div className="mt-4 p-4 border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/30 rounded-r-lg">
             <div className="flex items-center gap-2">
-               <AlertCircle className="h-5 w-5 text-destructive" />
-               <h4 className="font-semibold text-destructive">{t('settings.ai.privacy_title')}</h4>
+               <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+               <h4 className="font-semibold text-amber-700 dark:text-amber-300">{t('settings.grammar.privacy_title')}</h4>
             </div>
-            <p className="text-sm text-destructive/90 mt-2">
-              {t('settings.ai.privacy_desc')}
+            <p className="text-sm text-amber-700/90 dark:text-amber-300/90 mt-2">
+              {t('settings.grammar.privacy_desc')}
             </p>
           </div>
-           <div className="mt-4 p-4 border-l-4 border-primary bg-primary/10 rounded-r-lg">
+
+          <div className="mt-4 p-4 border-l-4 border-primary bg-primary/10 rounded-r-lg">
             <div className="flex items-center gap-2">
                <Info className="h-5 w-5 text-primary" />
-               <h4 className="font-semibold text-primary">{t('settings.ai.transparency_title')}</h4>
+               <h4 className="font-semibold text-primary">{t('settings.grammar.transparency_title')}</h4>
             </div>
             <p className="text-sm text-primary/90 mt-2">
-              {t('settings.ai.transparency_desc')}
+              {t('settings.grammar.transparency_desc')}
             </p>
-             <Link href="https://policies.google.com/privacy" passHref target="_blank" rel="noopener noreferrer">
-              <Button variant="link" className="p-0 h-auto mt-2 text-sm">{t('settings.ai.google_policy_link')}</Button>
-            </Link>
           </div>
         </CardContent>
       </Card>

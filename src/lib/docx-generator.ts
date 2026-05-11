@@ -16,70 +16,51 @@ function htmlToDocxChildren(htmlString: string): Paragraph[] {
     const nodes = Array.from(doc.body.childNodes);
     const paragraphs: Paragraph[] = [];
 
-    const processNode = (node: ChildNode): TextRun[] => {
-        const runs: TextRun[] = [];
-        if (node.nodeType === 3) { // Text node
-             runs.push(new TextRun(node.textContent || ''));
-        } else if (node.nodeType === 1) { // Element node
-            const element = node as HTMLElement;
-            const childrenRuns = Array.from(element.childNodes).flatMap(processNode);
-            
-            let isBold = false;
-            let isItalic = false;
-            let isUnderline = false;
-            let isStrikethrough = false;
+    interface RunFmt { bold?: boolean; italics?: boolean; underline?: {}; strike?: boolean; }
 
-            const tagName = element.tagName.toLowerCase();
-            if (tagName === 'strong' || tagName === 'b' || element.style.fontWeight === 'bold') {
-                isBold = true;
-            }
-            if (tagName === 'em' || tagName === 'i' || element.style.fontStyle === 'italic') {
-                isItalic = true;
-            }
-             if (tagName === 'u') {
-                isUnderline = true;
-            }
-             if (tagName === 's' || tagName === 'strike') {
-                isStrikethrough = true;
-            }
-
-            childrenRuns.forEach(run => {
-                if (isBold) run.options.bold = true;
-                if (isItalic) run.options.italics = true;
-                if (isUnderline) run.options.underline = {};
-                if (isStrikethrough) run.options.strike = true;
-                runs.push(run);
-            });
+    const processNode = (node: ChildNode, fmt: RunFmt = {}): TextRun[] => {
+        if (node.nodeType === 3) {
+            const text = node.textContent ?? '';
+            return text ? [new TextRun({ text, ...fmt })] : [];
         }
-        return runs;
+        if (node.nodeType !== 1) return [];
+        const el = node as HTMLElement;
+        const tag = el.tagName.toLowerCase();
+        const childFmt: RunFmt = { ...fmt };
+        if (tag === 'strong' || tag === 'b' || el.style.fontWeight === 'bold') childFmt.bold = true;
+        if (tag === 'em' || tag === 'i' || el.style.fontStyle === 'italic') childFmt.italics = true;
+        if (tag === 'u') childFmt.underline = {};
+        if (tag === 's' || tag === 'strike') childFmt.strike = true;
+        return Array.from(el.childNodes).flatMap(c => processNode(c, childFmt));
     };
-    
-    nodes.forEach(node => {
-        if (node.nodeType === 1) {
-            const element = node as HTMLElement;
-            const tagName = element.tagName.toLowerCase();
-            const children = Array.from(element.childNodes).flatMap(processNode);
-            
-            let headingLevel: HeadingLevel | undefined = undefined;
-            if (tagName === 'h1') headingLevel = HeadingLevel.HEADING_1;
-            if (tagName === 'h2') headingLevel = HeadingLevel.HEADING_2;
-            if (tagName === 'h3') headingLevel = HeadingLevel.HEADING_3;
-            
-            let alignment: AlignmentType | undefined = undefined;
-            if(element.style.textAlign === 'center') alignment = AlignmentType.CENTER;
-            if(element.style.textAlign === 'right') alignment = AlignmentType.RIGHT;
-            if(element.style.textAlign === 'justify') alignment = AlignmentType.JUSTIFIED;
 
-            if (children.length > 0) {
-                 paragraphs.push(new Paragraph({
-                    children,
-                    heading: headingLevel,
-                    alignment: alignment,
-                    spacing: { after: 100 }
-                }));
-            } else if (tagName === 'br') {
-                 paragraphs.push(new Paragraph({}));
-            }
+    nodes.forEach(node => {
+        if (node.nodeType !== 1) return;
+        const element = node as HTMLElement;
+        const tagName = element.tagName.toLowerCase();
+        const children = Array.from(element.childNodes).flatMap(c => processNode(c));
+
+        let headingLevel: string | undefined;
+        if (tagName === 'h1') headingLevel = HeadingLevel.HEADING_1;
+        else if (tagName === 'h2') headingLevel = HeadingLevel.HEADING_2;
+        else if (tagName === 'h3') headingLevel = HeadingLevel.HEADING_3;
+
+        let alignment: string | undefined;
+        if (element.style.textAlign === 'center') alignment = AlignmentType.CENTER;
+        else if (element.style.textAlign === 'right') alignment = AlignmentType.RIGHT;
+        else if (element.style.textAlign === 'justify') alignment = AlignmentType.JUSTIFIED;
+
+        if (children.length > 0) {
+            paragraphs.push(new Paragraph({
+                children,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                heading: headingLevel as any,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                alignment: alignment as any,
+                spacing: { after: 100 },
+            }));
+        } else if (tagName === 'br') {
+            paragraphs.push(new Paragraph({}));
         }
     });
 

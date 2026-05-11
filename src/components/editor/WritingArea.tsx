@@ -36,7 +36,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { getWritingFeedback, type GetWritingFeedbackOutput } from '@/ai/flows/get-writing-feedback';
+import { getWritingFeedback, type WritingFeedbackResult } from '@/lib/writing-feedback';
 import { useSidebar } from '@/components/ui/sidebar';
 import { format, formatDistanceToNow } from 'date-fns';
 import { useStoryContext, getEditorContentKey, getDocumentsStorageKey, type DocumentItem } from '@/contexts/StoryContext';
@@ -98,7 +98,7 @@ export function WritingArea() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isFeedbackPanelOpen, setIsFeedbackPanelOpen] = useState(false);
-  const [feedbackResult, setFeedbackResult] = useState<GetWritingFeedbackOutput | null>(null);
+  const [feedbackResult, setFeedbackResult] = useState<WritingFeedbackResult | null>(null);
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
   const [feedbackTimestamp, setFeedbackTimestamp] = useState<number | null>(null);
   
@@ -185,17 +185,16 @@ export function WritingArea() {
 
   useEffect(() => {
       loadAllDocuments();
-      const handleStorageChange = (event: StorageEvent | CustomEvent) => {
-        if ('detail' in event && event.detail.key === documentsStorageKey) {
-          loadAllDocuments();
-        } else if ('key' in event && event.key === documentsStorageKey) {
-          loadAllDocuments();
-        }
+      const handleCustomStorageChange = ((event: CustomEvent) => {
+        if (event.detail?.key === documentsStorageKey) loadAllDocuments();
+      }) as EventListener;
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === documentsStorageKey) loadAllDocuments();
       };
-      window.addEventListener('storage-change', handleStorageChange);
+      window.addEventListener('storage-change', handleCustomStorageChange);
       window.addEventListener('storage', handleStorageChange);
       return () => {
-        window.removeEventListener('storage-change', handleStorageChange);
+        window.removeEventListener('storage-change', handleCustomStorageChange);
         window.removeEventListener('storage', handleStorageChange);
       };
   }, [loadAllDocuments, documentsStorageKey]);
@@ -250,37 +249,30 @@ export function WritingArea() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== 'undefined') {
-      const storedAIPref = localStorage.getItem(AI_OPT_IN_KEY);
-      setAiFeaturesEnabled(storedAIPref === 'true');
-      
-      const storedSettings = localStorage.getItem(EDITOR_SETTINGS_KEY);
-      if (storedSettings) {
+    storage.getItem<string>(AI_OPT_IN_KEY).then(val => {
+      setAiFeaturesEnabled(val === 'true');
+    });
+    storage.getItem<string>(EDITOR_SETTINGS_KEY).then(val => {
+      if (val) {
         try {
-          setEditorSettings(prev => ({...prev, ...JSON.parse(storedSettings)}));
-        } catch(e) { /* use default */ }
+          setEditorSettings(prev => ({ ...prev, ...JSON.parse(val) }));
+        } catch { /* use default */ }
       }
+    });
 
-      const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === AI_OPT_IN_KEY) {
-          setAiFeaturesEnabled(event.newValue === 'true');
-        }
-      };
-      window.addEventListener('storage', handleStorageChange);
-      
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-      };
-    }
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === AI_OPT_IN_KEY) {
+        setAiFeaturesEnabled(event.newValue === 'true');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
     setEditorSettings(prev => {
         const updated = { ...prev, ...newSettings };
-        if (newSettings.fontSize && editor) {
-            editor.chain().focus().setFontSize(`${newSettings.fontSize}px`).run();
-        }
-        localStorage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updated));
+        storage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updated));
         return updated;
     });
   };
@@ -654,7 +646,7 @@ export function WritingArea() {
             <CardTitle className="text-base">{t('editor.feedback.grammar_title')}</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0">
-            <p className="text-sm">{t('editor.feedback.grammar_none_found')}</p>
+            <p className="text-sm text-muted-foreground">{t('editor.feedback.grammar_none_found')}</p>
           </CardContent>
         </Card>
       )}
