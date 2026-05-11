@@ -19,7 +19,7 @@ import { WordGoalCard } from "@/components/analytics/WordGoalCard";
 import { DeadlineCard } from "@/components/analytics/DeadlineCard";
 
 const HOW_TO_BANNER_DISMISSED_KEY = 'openwritingkit-how-to-banner-dismissed';
-const NEW_FEATURES_BANNER_DISMISSED_KEY = 'openwritingkit-new-features-banner-v2-dismissed';
+const NEW_FEATURES_BANNER_DISMISSED_KEY = 'openwritingkit-new-features-banner-v3-dismissed';
 
 
 export default function DashboardPage() {
@@ -343,16 +343,24 @@ export default function DashboardPage() {
                 <ScrollArea className="max-h-[60vh] pr-4">
                     <div className="space-y-4 py-2">
                         <div>
-                            <h3 className="font-semibold">{t('dashboard.new_features.docx_support_title')}</h3>
-                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.docx_support_desc')}</p>
+                            <h3 className="font-semibold">{t('dashboard.new_features.writing_tools_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.writing_tools_desc')}</p>
                         </div>
-                         <div>
-                            <h3 className="font-semibold">{t('dashboard.new_features.plotting_templates_title')}</h3>
-                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.plotting_templates_desc')}</p>
+                        <div>
+                            <h3 className="font-semibold">{t('dashboard.new_features.outline_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.outline_desc')}</p>
                         </div>
-                         <div>
-                            <h3 className="font-semibold">{t('dashboard.new_features.character_images_title')}</h3>
-                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.character_images_desc')}</p>
+                        <div>
+                            <h3 className="font-semibold">{t('dashboard.new_features.rel_map_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.rel_map_desc')}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">{t('dashboard.new_features.analytics_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.analytics_desc')}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">{t('dashboard.new_features.editor_title')}</h3>
+                            <p className="text-sm text-muted-foreground">{t('dashboard.new_features.editor_desc')}</p>
                         </div>
                         <div>
                             <h3 className="font-semibold">{t('dashboard.new_features.bug_fixes_title')}</h3>

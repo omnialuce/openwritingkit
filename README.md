@@ -1,119 +1,132 @@
-
 # OpenWritingKit
 
-This is a Next.js app designed to be an intelligent,comprehensive, open-source writing companion. It's built for writers who want a powerful, private, and customizable tool to bring their stories to life.
+An open-source, privacy-first writing companion built for fiction writers. All story data lives in your browser — no cloud sync, no data harvesting, no generative AI for your prose.
 
 ## Features
 
-- **Dashboard (`/`)**: Overview and quick actions to jump right into your work.
-- **Stories (`/stories`)**: Manage multiple projects. All your data is sandboxed per story.
-- **Editor (`/editor`)**: A clean, distraction-free writing space with auto-save, version history, focus and typewriter modes, and optional AI feedback.
-- **Documents (`/documents`)**: Organize your files, scenes, and chapters in a familiar folder structure. Import `.docx` files and export your work.
-- **Outline Builder (`/outline`)**: Visually structure your narrative with a drag-and-drop outliner.
-- **Character Development (`/characters`)**: Create detailed character profiles and use an in-depth character sheet template to flesh them out.
-- **Plot Tools (`/plot-tools`)**: Use a plot point tracker and a timeline creator to keep your narrative on track.
-- **World Building (`/world-building`)**: Build your story's universe with detailed locale sheets for cities, regions, and more.
-- **Research (`/research`)**: Keep your research notes, inspiration, and important links organized with tags.
-- **AI Tools (`/ai-tools`)**: Leverage AI for writing prompts, pacing analysis, and more (opt-in required).
-- **Analytics (`/analytics`)**: Track your writing habits and progress with word count goals and session stats.
-- **Settings (`/settings`)**: Manage your account, theme, language, and data.
+### Core Writing Tools
+- **Editor (`/editor`)** — Distraction-free writing with auto-save, version history (last 20 snapshots), focus mode, typewriter mode, word/character count, Find & Replace, and export to TXT, HTML, Markdown, DOCX, and PDF.
+- **Documents (`/documents`)** — Organise files, scenes, and chapters in a folder tree. Import `.docx` files, drag-and-drop reorder, and export individual documents.
+- **Outline Builder (`/outline`)** — Drag-and-drop outliner with per-item colour coding, POV, location, in-story date/time, status (Draft / In Progress / Complete), word count target, synopsis, and document linking. Compact/expanded toggle, collapse/expand per item, duplicate, progress bar, and CSV + TXT export.
 
-## Data Privacy & Storage
+### Story Organisation
+- **Stories (`/stories`)** — Manage multiple projects. All data is sandboxed per story and per user.
+- **Characters (`/characters`)** — Character profiles with image, role, description, and backstory. Detailed in-depth character sheets. SVG relationship map with colour-coded edges (family, friend, enemy, romantic, mentor, rival, colleague).
+- **World Building (`/world-building`)** — Locale sheets for settings, cities, regions, and any location type you need.
+- **Plot Tools (`/plot-tools`)** — Plot structure templates (Hero's Journey, Three-Act, Save the Cat, and more) with per-beat notes.
+- **Research (`/research`)** — Notes, links, and inspiration organised with tags and to-do tracking.
 
-**Local Storage First**: Your document content, writing history, and all other story data are stored locally in your web browser's `localStorage`, namespaced by your user ID. This means your data is private to you and your device.
+### Analysis & Feedback
+- **Writing Tools (`/ai-tools`)** — Local, offline analysis tools with no AI dependency:
+  - **Pacing Analyser** — Sentence-length distribution, dialogue ratio (supports PT-BR em-dash convention), section-by-section pacing heatmap.
+  - **Hemingway Checker** — Flags adverbs, passive voice, weak verbs, and complex sentences; gives an overall grade.
+  - **POV & Tense Report** — Detects dominant point of view and tense, shows pronoun breakdown, and flags paragraphs that break from the dominant tense.
+  - **Cliché Detector** — Scans the full manuscript against ~80 English and Portuguese clichés.
+  - **Name Generator** — Seeded names across five categories: fantasy, medieval, Norse, Portuguese, and sci-fi.
+  - **Prompt Generator** — Scene and story prompts to beat writer's block.
+  - **Writing Feedback** — Grammar and style suggestions via [LanguageTool](https://languagetool.org/) (see below). Readability score with plain-language assessment.
+- **Analytics (`/analytics`)** — Daily and hourly writing activity charts, chapter word-count breakdown, streak tracking, and a deep-scan story analysis (vocabulary richness, dialogue ratio, readability).
 
-**Backup & Restore**: Because data is stored locally, it is **critical** to use the **Backup & Restore** feature in **Settings -> Data Management**. This allows you to export all your data to a single file and import it on another device or browser, preventing data loss.
-
-**Optional AI Features**:
-- AI features are **opt-in by default**. You must explicitly enable them in the Settings page.
-- When an AI feature is used, the specific text you provide is sent to a third-party AI model (Google's Gemini) for processing.
-- OpenWritingKit does not store this submitted text on its own servers. Please review the full disclaimer in the Settings page before enabling AI features.
-
-## Tech Stack
-
-- Next.js (App Router)
-- React & TypeScript
-- Tailwind CSS & ShadCN UI Components
-- Firebase (for Authentication and Email Triggering)
-- Genkit (for AI features)
+### Other
+- **Dashboard (`/`)** — Overview, word-goal progress, recent activity, and quick links.
+- **Settings (`/settings`)** — Theme (light/dark/system), language (English, British English, Portuguese), word goal, data backup & restore, account management.
 
 ---
 
-## Local Installation and Setup
+## Privacy & Data Storage
 
-Follow these steps to run your own instance of OpenWritingKit locally.
+**Local-first:** All story content, outlines, characters, world building, and research are stored in your browser's `localStorage`, namespaced by user ID. Nothing is sent to any server unless you explicitly use the Writing Feedback feature.
 
-### 1. Prerequisites
+**Backup & Restore:** Because data lives in the browser, use **Settings → Data Management** to export a full backup file and import it on another device or after clearing browser storage.
 
-Before you begin, make sure you have the following installed:
-- **Node.js**: [Download and install Node.js](https://nodejs.org/) (version 18 or higher recommended).
-- **Git**: [Download and install Git](https://git-scm.com/downloads).
+**Writing Feedback (LanguageTool):** By default, the feedback feature calls the public LanguageTool API. For a fully private setup, [self-host LanguageTool](https://dev.languagetool.org/http-server) and point the app at your instance via `NEXT_PUBLIC_LANGUAGETOOL_URL`. No text is stored by the app itself.
 
-### 2. Get the Code
+**No generative AI for writing:** OpenWritingKit does not use any generative AI model (no Gemini, no GPT, no Claude) to write, suggest, or rewrite your prose. All analysis tools run locally in the browser using the [compromise](https://github.com/spencermountain/compromise) NLP library.
 
-You can either clone the repository using Git or download the source code as a ZIP file.
+---
 
-**Using Git (Recommended):**
-Open your terminal or command prompt and run:
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript (strict) |
+| UI | React 18, Tailwind CSS, shadcn/ui |
+| Rich text editor | TipTap v2 |
+| NLP (local) | compromise v14 |
+| Charts | recharts v2 |
+| Auth | Firebase (email/password + Google OAuth via NextAuth) |
+| Storage | Browser `localStorage` via async wrapper |
+| Drag & drop | @hello-pangea/dnd |
+| Grammar feedback | LanguageTool API (optional self-hosted) |
+
+---
+
+## Local Installation
+
+### Prerequisites
+
+- **Node.js** 18 or higher — [nodejs.org](https://nodejs.org/)
+- **Git** — [git-scm.com](https://git-scm.com/)
+- A **Firebase project** (free tier is sufficient)
+
+### 1. Clone the repository
+
 ```bash
-git clone https://github.com/luanaairs/OpenWritingKit.git
-cd OpenWritingKit
+git clone https://github.com/omnialuce/openwritingkit.git
+cd openwritingkit
 ```
 
-**Download ZIP:**
-- Go to the repository on GitHub.
-- Click the "Code" button and select "Download ZIP".
-- Unzip the file and open the `OpenWritingKit-master` folder in your terminal.
+### 2. Install dependencies
 
-### 3. Install Dependencies
-
-Once you are in the project's directory in your terminal, run the following command to install all the necessary packages:
 ```bash
 npm install
 ```
 
-### 4. Set Up Firebase
+### 3. Configure environment variables
 
-This application uses Firebase for user authentication and for sending feedback emails. You will need to create a free Firebase project to get the required credentials.
+Copy the example file and fill in your values:
 
-1.  **Create a Firebase Project**: Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
-2.  **Enable Email/Password Authentication**:
-    - In your Firebase project, go to the **Authentication** section.
-    - Click the **"Sign-in method"** tab.
-    - Enable the **Email/Password** provider.
-3.  **Enable Firestore**:
-    - In your Firebase project, go to the **Firestore Database** section.
-    - Create a new database in **Production mode**. You can choose any region.
-4.  **Install the "Trigger Email" Extension**:
-    - In the Firebase Console, navigate to **Build > Extensions**.
-    - Search for the **"Trigger Email"** extension and click **Install**.
-    - You will be asked to configure it. For the **"SMTP connection URI"**, you will need credentials from an email service like SendGrid, Mailgun, or your own SMTP server. A common choice is to use a new Gmail "App Password".
-    - Set the **"Mail documents collection"** to `mail`. This is the collection the app will write to.
-5.  **Create a Web App**:
-    - Go to your Project Settings (click the gear icon).
-    - Under "Your apps", click the web icon (`</>`) to create a new web app.
-    - Give it a nickname and register the app.
-6.  **Get Firebase Credentials**:
-    - After registering, Firebase will give you a `firebaseConfig` object. This contains your API keys. You will need these for the next step.
-7.  **Create an Environment File**:
-    - In the root of your project, create a new file named `.env`.
-    - Copy the contents of your `firebaseConfig` object into this file, adding the `NEXT_PUBLIC_` prefix to each key. It should look like this:
+```bash
+cp .env.example .env.local
+```
 
-    ```env
-    NEXT_PUBLIC_FIREBASE_API_KEY="YOUR_API_KEY"
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="YOUR_AUTH_DOMAIN"
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID="YOUR_PROJECT_ID"
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="YOUR_STORAGE_BUCKET"
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="YOUR_MESSAGING_SENDER_ID"
-    NEXT_PUBLIC_FIREBASE_APP_ID="YOUR_APP_ID"
-    ```
-    - **Note**: This app does not have a public sign-up page. You must manually add users in the Firebase Authentication console.
+Open `.env.local` and set:
 
-### 5. Run the Application
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Yes | Firebase web app config |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Yes | Firebase web app config |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Yes | Firebase web app config |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Yes | Firebase web app config |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Yes | Firebase web app config |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Yes | Firebase web app config |
+| `GOOGLE_CLIENT_ID` | Optional | Google OAuth sign-in |
+| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth sign-in |
+| `NEXTAUTH_SECRET` | Yes | Generate with `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | Yes | `http://localhost:3000` for local dev |
+| `INVITE_CODE` | Optional | If set, users must enter this code to register |
+| `NEXT_PUBLIC_LANGUAGETOOL_URL` | Optional | Self-hosted LanguageTool endpoint; omit to use the public API |
 
-Now you're ready to start the development server! Run the following command in your terminal:
+### 4. Set up Firebase
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a project.
+2. Under **Authentication → Sign-in method**, enable **Email/Password** and optionally **Google**.
+3. Under **Project Settings → Your apps**, create a **Web app** and copy the config values into `.env.local`.
+4. *(Optional)* If you want server-side Firestore operations, generate a service account key under **Project Settings → Service accounts** and paste the JSON as a single line into `FIREBASE_SERVICE_ACCOUNT_KEY`.
+
+> **Note:** There is no public sign-up by default. Either leave `INVITE_CODE` blank to allow open registration, or set it to restrict access to invited users. You can also add users manually in the Firebase Authentication console.
+
+### 5. Run the development server
+
 ```bash
 npm run dev
 ```
 
-Open your browser and navigate to [http://localhost:3000](http://localhost:3000) to see the application running. You can log in with the user accounts you created in the Firebase console.
+Navigate to [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. Please open an issue first for significant changes so we can discuss the approach.

@@ -110,31 +110,31 @@
     "no_story_selected_desc": "Please select an existing story or create a new one to begin working. Most features are disabled until a story is active.",
     "how_to_use_button": "How to Use This App",
     "how_to_use_title": "Welcome to OpenWritingKit!",
-    "how_to_use_desc": "Here's a quick guide to get you started.",
-    "how_to_use_features_title": "Main Features",
+    "how_to_use_desc": "Here's a quick overview of everything available to you.",
+    "how_to_use_features_title": "What you can do",
     "how_to_use_feature_1_title": "Distraction-Free Editor",
-    "how_to_use_feature_1_desc": "A clean space to write your masterpiece.",
+    "how_to_use_feature_1_desc": "A clean writing space with auto-save, version history (last 20 snapshots), focus mode, typewriter scroll, Find & Replace, and export to TXT, Markdown, HTML, and DOCX.",
     "how_to_use_feature_2_title": "Story Organisation",
-    "how_to_use_feature_2_desc": "Manage multiple stories, each with its own documents, characters, and outlines.",
+    "how_to_use_feature_2_desc": "Manage multiple projects. Each story has its own documents, characters, outline, world building, research, and analytics — all sandboxed from each other.",
     "how_to_use_feature_3_title": "Character Development",
-    "how_to_use_feature_3_desc": "Create detailed character profiles and sheets.",
+    "how_to_use_feature_3_desc": "Build detailed character profiles with images, roles, and backstories. Fill in in-depth character sheets, and visualise relationships with the interactive relationship map.",
     "how_to_use_feature_4_title": "Outline Builder",
-    "how_to_use_feature_4_desc": "Structure your narrative with a drag-and-drop outliner.",
-    "how_to_use_feature_5_title": "AI-Powered Tools",
-    "how_to_use_feature_5_desc": "Get writing prompts, feedback, and analysis (opt-in required in Settings).",
+    "how_to_use_feature_4_desc": "Plan your story with a drag-and-drop outliner. Assign colour codes, POV, location, story date, status, word targets, and synopses to each scene or chapter. Export as TXT or CSV.",
+    "how_to_use_feature_5_title": "Writing Tools",
+    "how_to_use_feature_5_desc": "Local, offline analysis tools — no internet or AI required. Includes a Hemingway-style checker, POV & tense detector, cliché scanner, name generator, pacing analyser, and grammar feedback via LanguageTool.",
     "how_to_use_feature_6_title": "Plot Tools",
-    "how_to_use_feature_6_desc": "Track key plot points and create a timeline for your narrative.",
+    "how_to_use_feature_6_desc": "Structure your story using classic templates: Hero's Journey, Three-Act, Save the Cat, Fichtean Curve, and more.",
     "how_to_use_feature_7_title": "World Building",
-    "how_to_use_feature_7_desc": "Create detailed locales with an in-depth template for your story's world.",
+    "how_to_use_feature_7_desc": "Create rich locale sheets for every setting in your story — cities, regions, buildings, fantastical places.",
     "how_to_use_feature_8_title": "Research",
-    "how_to_use_feature_8_desc": "Keep your research notes, inspiration, and important links organised.",
+    "how_to_use_feature_8_desc": "Keep notes, links, and inspiration organised with tags and to-do tracking, all within your active story.",
     "how_to_use_feature_9_title": "Writing Analytics",
-    "how_to_use_feature_9_desc": "Track your writing habits, set goals, and view your progress.",
-    "how_to_use_beta_title": "Beta Release",
-    "how_to_use_beta_desc": "This is a preliminary release. Features may change and unexpected issues may occur. Your feedback is greatly appreciated!",
-    "how_to_use_storage_title": "Important: How Your Data is Saved",
-    "how_to_use_storage_desc_1": "By default, all your writing data (stories, characters, etc.) is stored **locally in your web browser only**. This means if you clear your browser's data, use a different browser, or switch devices, your work will be lost.",
-    "how_to_use_storage_desc_2": "To prevent data loss, please use the **Backup & Restore** feature in Settings regularly, or **always save a backup copy** of your work elsewhere using the export features.",
+    "how_to_use_feature_9_desc": "Charts for daily and hourly writing activity, chapter word-count breakdown, vocabulary richness, dialogue ratio, and readability — all computed from your own text.",
+    "how_to_use_beta_title": "Early Release",
+    "how_to_use_beta_desc": "OpenWritingKit is under active development. Features may change and you may encounter occasional issues. Back up your data regularly using Settings → Data Management.",
+    "how_to_use_storage_title": "Important: Your data lives in your browser",
+    "how_to_use_storage_desc_1": "All stories, characters, and writing data are stored locally in your web browser. Clearing browser storage, switching browsers, or changing devices will remove your data.",
+    "how_to_use_storage_desc_2": "Use Settings → Data Management → Backup & Restore regularly to export a full backup file you can restore on any device.",
     "quick_actions_title": "Quick Actions",
     "quick_actions": {
       "editor_title": "New Document",
@@ -160,19 +160,23 @@
     "word_goal_cta": "Set & View Goal in Analytics",
     "select_story_for_goal": "Select a story first.",
     "new_features": {
-      "banner_title": "New Features & Fixes!",
-      "banner_desc": "Check out the latest updates.",
+      "banner_title": "What's new in OpenWritingKit",
+      "banner_desc": "Writing tools, outline improvements, relationship map, and more.",
       "banner_button": "See what's new",
-      "dialog_title": "What's New in OpenWritingKit?",
-      "dialog_desc": "Check out latest updates",
-      "docx_support_title": "Full DOCX Support",
-      "docx_support_desc": "You can now import `.docx` files into the editor or documents, and export your work as `.docx` files within a ZIP archive.",
-      "plotting_templates_title": "New Plotting Templates",
-      "plotting_templates_desc": "Explore classic storytelling structures like 'The Hero's Journey' and 'Save the Cat!' in the Plot Tools section to help outline your narrative.",
-      "character_images_title": "Flexible Character Images",
-      "character_images_desc": "You can now use image URLs from any source for your character profiles without restriction.",
-      "bug_fixes_title": "Bug Fixes & Improvements",
-      "bug_fixes_desc": "We've squashed numerous bugs, including fixing widespread localisation issues where text tags were appearing. The unreliable PDF export has also been removed in favour of robust DOCX support."
+      "dialog_title": "What's New",
+      "dialog_desc": "Latest features and improvements",
+      "writing_tools_title": "Writing Tools Suite",
+      "writing_tools_desc": "Five new offline analysis tools: Hemingway style checker (adverbs, passive voice, complex sentences), POV & Tense report, cliché detector, name generator across five categories, and improved pacing analysis with PT-BR dialogue support.",
+      "outline_title": "Improved Outline Builder",
+      "outline_desc": "Each outline item now supports colour coding, POV, location, in-story date/time, status (Draft / In Progress / Complete), word count target, synopsis, and a direct link to a document. Includes a progress bar, compact mode, collapse/expand, duplicate, and CSV export.",
+      "rel_map_title": "Character Relationship Map",
+      "rel_map_desc": "A visual SVG map in the Characters page shows relationships between your characters — family, friends, enemies, romantic, mentors, and more — with colour-coded edges.",
+      "analytics_title": "Analytics Charts & Deep Scan",
+      "analytics_desc": "Real writing activity charts (daily and hourly), chapter word-count breakdown, and a deep-scan analysis of vocabulary richness, dialogue ratio, and readability — computed entirely from your own text.",
+      "editor_title": "Editor Improvements",
+      "editor_desc": "Find & Replace inline bar, Markdown export, and improved word and character count via TipTap's character count extension.",
+      "bug_fixes_title": "Bug Fixes",
+      "bug_fixes_desc": "Fixed storage crashes caused by legacy plain-string localStorage values, and a double JSON encoding bug in editor settings. TipTap dependencies aligned to v2."
     }
   },
   "settings": {
@@ -389,7 +393,7 @@
       "most_active": "Most active: {{start_hour}}:00 - {{end_hour}}:00 ({{saves}} save(s))"
     },
     "advanced": {
-      "section_title": "Advanced Writing Insights (Coming Soon)",
+      "section_title": "Advanced Writing Insights",
       "writing_pattern_title": "Writing Pattern Analysis",
       "writing_pattern_desc": "Analyse sentence length, common phrases, and writing habits.",
       "vocabulary_richness_title": "Vocabulary Richness Analysis",
@@ -398,7 +402,7 @@
       "narrative_pacing_desc": "Get detailed insights into your story's structural flow and tension."
     },
     "general": {
-      "section_title": "General Writing Statistics (Coming Soon)",
+      "section_title": "General Writing Statistics",
       "analysis_pending": "analysis pending",
       "dialogue_ratio_title": "Dialogue Ratio",
       "dialogue_ratio_desc": "Analyse dialogue vs. narrative balance.",
@@ -411,6 +415,32 @@
       "title": "Overall Progress Overview",
       "description": "A visual summary of your writing journey for this story.",
       "footer": "Detailed charts and graphs are coming soon to help you visualise your progress."
+    },
+    "charts": {
+      "section_title": "Writing Activity",
+      "daily_title": "Activity — Last 30 Days",
+      "daily_desc": "Number of auto-saves per day",
+      "hourly_title": "Most Productive Hours",
+      "hourly_desc": "Auto-saves per hour of the day (all time)",
+      "saves_label": "Saves"
+    },
+    "chapters": {
+      "section_title": "Chapter / Scene Length",
+      "chart_title": "Word count per document",
+      "avg": "Avg",
+      "min": "Min",
+      "max": "Max",
+      "words_label": "words"
+    },
+    "deep": {
+      "section_title": "Deep Story Analysis",
+      "scan_button": "Scan Story",
+      "scanning": "Scanning…",
+      "description": "Loads all your story documents and runs a full text analysis locally — nothing is sent anywhere.",
+      "empty_state": "Click \"Scan Story\" to analyse vocabulary richness, dialogue ratio, and reading difficulty.",
+      "dialogue_style": "Dialogue style",
+      "unique_words": "unique words",
+      "grade": "grade"
     }
   },
   "word_goal": {
@@ -959,6 +989,16 @@
       "revert_confirm": "Are you sure you want to revert to this version? The current content will be overwritten, but will be saved in the history.",
       "revert_success_title": "Version Reverted",
       "revert_success_desc": "The document has been reverted to the selected version."
+    },
+    "export_md": "Export as Markdown",
+    "find_replace": {
+      "title": "Find & Replace",
+      "find_placeholder": "Find...",
+      "replace_placeholder": "Replace with...",
+      "count_button": "Count",
+      "replace_all": "Replace All",
+      "replaced_title": "Replacements made",
+      "replaced_desc": "{count} occurrence(s) replaced."
     }
   },
   "outline": {
@@ -1000,7 +1040,20 @@
       "title": "Title",
       "title_placeholder": "e.g., The Discovery",
       "notes": "Notes (Optional)",
-      "notes_placeholder": "Add brief notes or a summary..."
+      "notes_placeholder": "Add brief notes or a summary...",
+      "synopsis": "Synopsis",
+      "synopsis_placeholder": "Brief summary of this scene or chapter…",
+      "color": "Colour",
+      "pov": "POV",
+      "pov_placeholder": "e.g. Jane – close third person",
+      "location": "Location",
+      "location_placeholder": "e.g. The manor, London",
+      "story_date": "Story Date/Time",
+      "story_date_placeholder": "e.g. Day 3, dusk",
+      "status": "Status",
+      "word_count_target": "Word Target",
+      "linked_document": "Linked Doc",
+      "linked_document_none": "None"
     },
     "structure": {
       "title": "Your Story Outline",
@@ -1014,10 +1067,32 @@
       "description": "You can now drag items to re-order them or nest them under 'Chapter' type items."
     },
     "export": {
-      "notes": "Notes"
+      "notes": "Notes",
+      "synopsis": "Synopsis",
+      "pov": "POV",
+      "location": "Location",
+      "story_date": "Story Date",
+      "status": "Status",
+      "word_target": "Word Target",
+      "linked_doc": "Linked Document"
     },
     "toast_save_success": "Outline saved successfully.",
-    "toast_save_error": "Failed to save outline."
+    "toast_save_error": "Failed to save outline.",
+    "compact_mode": "Compact",
+    "expanded_mode": "Expanded",
+    "progress": "{complete} of {total} complete",
+    "status": {
+      "draft": "Draft",
+      "in_progress": "In Progress",
+      "complete": "Complete"
+    },
+    "item": {
+      "duplicate": "Duplicate",
+      "collapse_children": "Collapse",
+      "expand_children": "Expand",
+      "open_document": "Open Document",
+      "sub_items": "{count} sub-items hidden"
+    }
   },
   "plot_tools": {
     "title": "Plot Development Tools",
@@ -1613,6 +1688,89 @@
   },
   "writing_tools": {
     "title": "Writing Tools",
-    "description": "Craft better stories with prompt ideas and pacing insights — all processed locally, no data sent anywhere."
+    "description": "Craft better stories with prompt ideas and pacing insights — all processed locally, no data sent anywhere.",
+    "section_craft": "Analyse Your Writing",
+    "section_creative": "Inspiration & Ideas",
+    "no_story": "Select a story from the Stories page to use this tool."
+  },
+  "hemingway": {
+    "title": "Style Checker",
+    "description": "Spot adverbs, passive voice, complex sentences and weak verbs — the classic Hemingway-style checks.",
+    "analyze_button": "Check Style",
+    "analyzing": "Checking…",
+    "prose_grade": "Prose grade",
+    "grade_clean": "Clean",
+    "grade_moderate": "Moderate",
+    "grade_wordy": "Wordy",
+    "adverbs": "Adverbs",
+    "passive": "Passive voice",
+    "complex": "Long sentences",
+    "weak_verbs": "Weak verbs",
+    "adverb_list": "Adverbs found:",
+    "tip": "Fewer adverbs, passive constructions, and long sentences make prose cleaner and more direct."
+  },
+  "pov_tense": {
+    "title": "Point of View & Tense",
+    "description": "Detect your story's dominant point of view, tense, and flag any inconsistent paragraphs.",
+    "analyze_button": "Analyse POV & Tense",
+    "analyzing": "Analysing…",
+    "dominant_pov": "Dominant POV",
+    "dominant_tense": "Dominant tense",
+    "pronoun_breakdown": "Pronoun breakdown",
+    "first_person": "1st person",
+    "second_person": "2nd person",
+    "third_person": "3rd person",
+    "inconsistencies": "Potential tense shifts",
+    "consistent": "No tense inconsistencies detected.",
+    "pov_first": "First person",
+    "pov_second": "Second person",
+    "pov_third": "Third person",
+    "pov_unknown": "Unknown",
+    "tense_past": "Past",
+    "tense_present": "Present",
+    "tense_unknown": "Unknown"
+  },
+  "cliche": {
+    "title": "Cliché Detector",
+    "description": "Scan your story for overused phrases and clichés so you can replace them with fresher language.",
+    "scan_button": "Scan for Clichés",
+    "scanning": "Scanning…",
+    "none_found": "No clichés detected — great work!",
+    "found_count": "{{count}} cliché(s) found:",
+    "tip": "Try replacing these phrases with more specific, original language to make your writing stand out."
+  },
+  "name_gen": {
+    "title": "Name Generator",
+    "description": "Generate character and place names for any genre — 100 % offline, no API calls.",
+    "category_label": "Genre / Style",
+    "type_label": "Name type",
+    "type_full": "Full name",
+    "type_first": "First name",
+    "type_last": "Surname",
+    "type_place": "Place name",
+    "generate": "Generate Names",
+    "regenerate": "Regenerate",
+    "tip": "Click a name to select it. Regenerate for a fresh batch."
+  },
+  "rel_map": {
+    "no_characters": "Add characters to this story to build a relationship map.",
+    "no_relationships": "No relationships defined yet.",
+    "click_hint": "Click a character node to view and edit their relationships.",
+    "add_button": "Add relationship",
+    "add_title": "Add Relationship",
+    "target_label": "Other character",
+    "target_placeholder": "Select character…",
+    "type_label": "Relationship type",
+    "label_label": "Optional note",
+    "label_placeholder": "e.g. childhood friends",
+    "add_confirm": "Add",
+    "type_family": "Family",
+    "type_friend": "Friend",
+    "type_enemy": "Enemy",
+    "type_romantic": "Romantic",
+    "type_mentor": "Mentor",
+    "type_rival": "Rival",
+    "type_colleague": "Colleague",
+    "type_other": "Other"
   }
 }
