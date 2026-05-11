@@ -62,6 +62,8 @@ interface OutlineItem {
 
 interface FlatDoc { id: string; name: string; }
 
+const NO_DOC = '__none__';
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const ITEM_COLORS: OutlineItemColor[] = ['none', 'red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'];
@@ -405,7 +407,7 @@ export default function OutlineBuilderPage() {
   const [formStoryDate, setFormStoryDate] = useState('');
   const [formStatus, setFormStatus] = useState<OutlineItemStatus | ''>('');
   const [formWordTarget, setFormWordTarget] = useState('');
-  const [formLinkedDocId, setFormLinkedDocId] = useState('');
+  const [formLinkedDocId, setFormLinkedDocId] = useState(NO_DOC);
 
   useEffect(() => {
     if (!activeStoryId || !user) { setItems([]); return; }
@@ -446,7 +448,7 @@ export default function OutlineBuilderPage() {
   const resetForm = () => {
     setFormTitle(''); setFormType('Scene'); setFormSynopsis(''); setFormNotes('');
     setFormColor('none'); setFormPov(''); setFormLocation(''); setFormStoryDate('');
-    setFormStatus(''); setFormWordTarget(''); setFormLinkedDocId('');
+    setFormStatus(''); setFormWordTarget(''); setFormLinkedDocId(NO_DOC);
     setEditingItem(null);
   };
 
@@ -462,7 +464,7 @@ export default function OutlineBuilderPage() {
     setFormStoryDate(item.storyDate ?? '');
     setFormStatus(item.status ?? '');
     setFormWordTarget(item.wordCountTarget ? String(item.wordCountTarget) : '');
-    setFormLinkedDocId(item.linkedDocumentId ?? '');
+    setFormLinkedDocId(item.linkedDocumentId ?? NO_DOC);
     setIsDialogOpen(true);
   };
 
@@ -481,7 +483,7 @@ export default function OutlineBuilderPage() {
       storyDate: formStoryDate.trim() || undefined,
       status: (formStatus || undefined) as OutlineItemStatus | undefined,
       wordCountTarget: wt && !isNaN(wt) ? wt : undefined,
-      linkedDocumentId: formLinkedDocId || undefined,
+      linkedDocumentId: formLinkedDocId === NO_DOC ? undefined : formLinkedDocId,
     };
     if (editingItem) {
       setItems(prev => updateItemRecursive(prev, { id: editingItem.id, ...fields }));
@@ -851,7 +853,7 @@ export default function OutlineBuilderPage() {
                       <Select value={formLinkedDocId} onValueChange={setFormLinkedDocId}>
                         <SelectTrigger className="col-span-3"><SelectValue placeholder={t('outline.fields.linked_document_none')} /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">{t('outline.fields.linked_document_none')}</SelectItem>
+                          <SelectItem value={NO_DOC}>{t('outline.fields.linked_document_none')}</SelectItem>
                           {docs.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
