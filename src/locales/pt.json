@@ -1039,7 +1039,20 @@
       "title": "Título",
       "title_placeholder": "ex: A Descoberta",
       "notes": "Notas (Opcional)",
-      "notes_placeholder": "Adicione notas breves ou um resumo..."
+      "notes_placeholder": "Adicione notas breves ou um resumo...",
+      "synopsis": "Sinopse",
+      "synopsis_placeholder": "Breve resumo desta cena ou capítulo…",
+      "color": "Cor",
+      "pov": "PDV",
+      "pov_placeholder": "ex: Maria – terceira pessoa",
+      "location": "Local",
+      "location_placeholder": "ex: A mansão, Lisboa",
+      "story_date": "Data/Hora na História",
+      "story_date_placeholder": "ex: Dia 3, anoitecer",
+      "status": "Estado",
+      "word_count_target": "Meta de Palavras",
+      "linked_document": "Doc Ligado",
+      "linked_document_none": "Nenhum"
     },
     "structure": {
       "title": "A Estrutura da Sua História",
@@ -1053,10 +1066,32 @@
       "description": "Agora você pode arrastar itens para reordená-los ou aninhá-los em itens do tipo 'Capítulo'."
     },
     "export": {
-      "notes": "Notas"
+      "notes": "Notas",
+      "synopsis": "Sinopse",
+      "pov": "PDV",
+      "location": "Local",
+      "story_date": "Data na História",
+      "status": "Estado",
+      "word_target": "Meta de Palavras",
+      "linked_doc": "Documento Ligado"
     },
     "toast_save_success": "Estrutura salva com sucesso.",
-    "toast_save_error": "Falha ao salvar a estrutura."
+    "toast_save_error": "Falha ao salvar a estrutura.",
+    "compact_mode": "Compacto",
+    "expanded_mode": "Expandido",
+    "progress": "{complete} de {total} concluídos",
+    "status": {
+      "draft": "Rascunho",
+      "in_progress": "Em Progresso",
+      "complete": "Concluído"
+    },
+    "item": {
+      "duplicate": "Duplicar",
+      "collapse_children": "Recolher",
+      "expand_children": "Expandir",
+      "open_document": "Abrir Documento",
+      "sub_items": "{count} subitens ocultos"
+    }
   },
   "plot_tools": {
     "title": "Ferramentas de Desenvolvimento de Enredo",

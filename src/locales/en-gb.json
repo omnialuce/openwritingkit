@@ -1036,7 +1036,20 @@
       "title": "Title",
       "title_placeholder": "e.g., The Discovery",
       "notes": "Notes (Optional)",
-      "notes_placeholder": "Add brief notes or a summary..."
+      "notes_placeholder": "Add brief notes or a summary...",
+      "synopsis": "Synopsis",
+      "synopsis_placeholder": "Brief summary of this scene or chapter…",
+      "color": "Colour",
+      "pov": "POV",
+      "pov_placeholder": "e.g. Jane – close third person",
+      "location": "Location",
+      "location_placeholder": "e.g. The manor, London",
+      "story_date": "Story Date/Time",
+      "story_date_placeholder": "e.g. Day 3, dusk",
+      "status": "Status",
+      "word_count_target": "Word Target",
+      "linked_document": "Linked Doc",
+      "linked_document_none": "None"
     },
     "structure": {
       "title": "Your Story Outline",
@@ -1050,10 +1063,32 @@
       "description": "You can now drag items to re-order them or nest them under 'Chapter' type items."
     },
     "export": {
-      "notes": "Notes"
+      "notes": "Notes",
+      "synopsis": "Synopsis",
+      "pov": "POV",
+      "location": "Location",
+      "story_date": "Story Date",
+      "status": "Status",
+      "word_target": "Word Target",
+      "linked_doc": "Linked Document"
     },
     "toast_save_success": "Outline saved successfully.",
-    "toast_save_error": "Failed to save outline."
+    "toast_save_error": "Failed to save outline.",
+    "compact_mode": "Compact",
+    "expanded_mode": "Expanded",
+    "progress": "{complete} of {total} complete",
+    "status": {
+      "draft": "Draft",
+      "in_progress": "In Progress",
+      "complete": "Complete"
+    },
+    "item": {
+      "duplicate": "Duplicate",
+      "collapse_children": "Collapse",
+      "expand_children": "Expand",
+      "open_document": "Open Document",
+      "sub_items": "{count} sub-items hidden"
+    }
   },
   "plot_tools": {
     "title": "Plot Development Tools",
