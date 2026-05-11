@@ -2,6 +2,7 @@
 // No network calls — the entire analysis runs in the browser.
 
 import nlp from 'compromise';
+import { stripHtml as sharedStripHtml } from './text-analytics';
 
 export type PacingLevel = 'fast' | 'medium' | 'slow';
 
@@ -61,17 +62,7 @@ function pacingFromAvgLength(avg: number): PacingLevel {
   return 'slow';
 }
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .trim();
-}
+const stripHtml = sharedStripHtml;
 
 function splitParagraphs(text: string): string[] {
   return text
@@ -90,11 +81,12 @@ function sentenceLengths(sentences: string[]): number[] {
 
 function isDialogue(sentence: string): boolean {
   const t = sentence.trim();
-  return (
-    (t.startsWith('"') && t.includes('"', 1)) ||
-    (t.startsWith('‘') && t.includes('’', 1)) ||
-    (t.startsWith('“') && t.includes('”', 1))
-  );
+  // English/standard: quoted runs (straight, smart double, smart single)
+  if (/^[““]/.test(t)) return true;  // “ and “
+  if (/^[‘]/.test(t)) return true;          // ‘
+  // PT-BR / European: em-dash or en-dash at start of line
+  if (/^[—–]/.test(t)) return true;   // — and –
+  return false;
 }
 
 // ---------- main ----------

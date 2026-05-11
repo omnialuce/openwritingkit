@@ -18,6 +18,14 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { RelationshipMap } from '@/components/characters/RelationshipMap';
+import { storage } from '@/lib/storage';
+
+export interface CharacterRelationship {
+  targetId: string;
+  type: 'family' | 'friend' | 'enemy' | 'romantic' | 'mentor' | 'rival' | 'colleague' | 'other';
+  label?: string;
+}
 
 export interface CharacterProfile {
   id: string;
@@ -27,6 +35,7 @@ export interface CharacterProfile {
   backstory?: string;
   imageUrl?: string;
   imageHint?: string;
+  relationships?: CharacterRelationship[];
 }
 
 export default function CharactersPage() {
@@ -47,24 +56,21 @@ export default function CharactersPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && activeStoryId && user) {
+    if (activeStoryId && user) {
       const storageKey = getCharactersStorageKey(activeStoryId, user.uid);
-      const storedCharacters = localStorage.getItem(storageKey);
-      if (storedCharacters) {
-        setCharacters(JSON.parse(storedCharacters));
-      } else {
-        setCharacters([]);
-      }
+      storage.getItem<CharacterProfile[]>(storageKey).then(data => {
+        setCharacters(data ?? []);
+      });
     } else if (!activeStoryId) {
       setCharacters([]);
     }
   }, [activeStoryId, user]);
 
   const saveCharacters = (updatedCharacters: CharacterProfile[]) => {
-    if (typeof window !== 'undefined' && activeStoryId && user) {
+    if (activeStoryId && user) {
       const storageKey = getCharactersStorageKey(activeStoryId, user.uid);
       setCharacters(updatedCharacters);
-      localStorage.setItem(storageKey, JSON.stringify(updatedCharacters));
+      storage.setItem(storageKey, updatedCharacters);
     }
   };
 
@@ -329,13 +335,19 @@ export default function CharactersPage() {
         </DialogContent>
       </Dialog>
       
-      <Card className="text-center mt-12 p-6 border">
-        <Network className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-xl font-semibold mb-2">{t('characters.relationship_map.title')}</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          {t('characters.relationship_map.description')}
-        </p>
-         <p className="text-sm text-primary mt-2">{t('common.coming_soon')}</p>
+      <Card className="mt-12 p-6 border">
+        <div className="flex items-center gap-2 mb-1">
+          <Network className="h-5 w-5 text-primary" />
+          <h3 className="text-xl font-semibold">{t('characters.relationship_map.title')}</h3>
+        </div>
+        <p className="text-muted-foreground text-sm mb-4">{t('characters.relationship_map.description')}</p>
+        <RelationshipMap
+          characters={characters}
+          onUpdateRelationships={(charId, rels) => {
+            const updated = characters.map(c => c.id === charId ? { ...c, relationships: rels } : c);
+            saveCharacters(updated);
+          }}
+        />
       </Card>
     </div>
   );

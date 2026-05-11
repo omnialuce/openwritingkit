@@ -9,6 +9,8 @@ import Focus from '@tiptap/extension-focus';
 import TiptapLink from '@tiptap/extension-link';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
+import CharacterCount from '@tiptap/extension-character-count';
+import Typography from '@tiptap/extension-typography';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
@@ -119,6 +121,12 @@ export function WritingArea() {
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
   const [newDocFilename, setNewDocFilename] = useState('');
+
+  // Find & Replace
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
+  const [findText, setFindText] = useState('');
+  const [replaceText, setReplaceText] = useState('');
+  const [findMatchCount, setFindMatchCount] = useState<number | null>(null);
   
   const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([]);
   
@@ -143,6 +151,8 @@ export function WritingArea() {
         types: ['heading', 'paragraph'],
       }),
       TextStyle,
+      CharacterCount,
+      Typography,
     ],
     content: savedContent,
     immediatelyRender: false,
@@ -321,10 +331,16 @@ export function WritingArea() {
 
   useEffect(() => {
     if (editor) {
-      const textContent = editor.getText();
-      const words = textContent.trim() ? textContent.trim().split(/\s+/).filter(word => word.length > 0) : [];
-      setWordCount(words.length);
-      setCharCount(textContent.length);
+      // Use CharacterCount extension if available, fall back to manual count
+      const cc = editor.storage.characterCount;
+      if (cc) {
+        setWordCount(cc.words());
+        setCharCount(cc.characters());
+      } else {
+        const text = editor.getText();
+        setWordCount(text.trim() ? text.trim().split(/\s+/).filter(w => w.length > 0).length : 0);
+        setCharCount(text.length);
+      }
     }
   }, [savedContent, editor]);
 
@@ -393,6 +409,39 @@ export function WritingArea() {
        console.error("DOCX generation error:", error);
        toast({ title: t('common.error'), description: t('editor.toast.docx_error'), variant: "destructive" });
     }
+  };
+
+  const handleExportMarkdown = () => {
+    if (!editor || !activeStoryId) return;
+    // Convert basic TipTap HTML to Markdown
+    let md = editor.getHTML()
+      .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
+      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
+      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+      .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+      .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+      .replace(/<em[^>]*>(.*?)<\/em>/gi, '_$1_')
+      .replace(/<i[^>]*>(.*?)<\/i>/gi, '_$1_')
+      .replace(/<s[^>]*>(.*?)<\/s>/gi, '~~$1~~')
+      .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+      .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${activeDocumentName || 'document'}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
   };
 
 
@@ -483,6 +532,23 @@ export function WritingArea() {
     }
   };
   
+  const handleFindCount = () => {
+    if (!editor || !findText.trim()) { setFindMatchCount(null); return; }
+    const text = editor.getText();
+    const matches = text.match(new RegExp(findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'));
+    setFindMatchCount(matches ? matches.length : 0);
+  };
+
+  const handleReplaceAll = () => {
+    if (!editor || !findText.trim()) return;
+    const html = editor.getHTML();
+    const escaped = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const replaced = html.replace(new RegExp(escaped, 'gi'), replaceText);
+    editor.commands.setContent(replaced, true);
+    setFindMatchCount(0);
+    toast({ title: t('editor.find_replace.replaced_title'), description: t('editor.find_replace.replaced_desc') });
+  };
+
   const handleSaveToDocuments = (e: React.FormEvent) => {
       e.preventDefault();
       if (!editor || !activeStoryId || !newDocFilename.trim() || !user) return;
@@ -766,6 +832,7 @@ export function WritingArea() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="rounded-none">
                       <DropdownMenuItem onClick={handleExportTXT} disabled={!activeStoryId}>{t('editor.export_txt')}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportMarkdown} disabled={!activeStoryId}>{t('editor.export_md')}</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportHTML} disabled={!activeStoryId}>{t('editor.export_html')}</DropdownMenuItem>
                       <DropdownMenuItem onClick={handleExportDOCX} disabled={!activeStoryId}>{t('editor.export_docx')}</DropdownMenuItem>
                     </DropdownMenuContent>
@@ -783,6 +850,9 @@ export function WritingArea() {
                       <p>{!activeStoryId ? t('editor.tooltip_no_story') : (aiFeaturesEnabled && isMounted ? t('editor.tooltip_get_feedback') : t('editor.tooltip_ai_disabled'))}</p>
                     </TooltipContent>
                   </Tooltip>
+                  <Button variant="ghost" size="icon" onClick={() => setIsFindReplaceOpen(v => !v)} title={t('editor.find_replace.title')} disabled={!activeStoryId}>
+                    <CaseSensitive className={cn("h-5 w-5", !activeStoryId ? "text-muted-foreground/50" : "text-muted-foreground")} />
+                  </Button>
                   <Button variant="ghost" size="icon" onClick={() => { setIsHistoryPanelOpen(!isHistoryPanelOpen); setIsFeedbackPanelOpen(false); }} title={t('editor.history.title')} disabled={!activeDocumentId}>
                       <History className={cn("h-5 w-5", !activeDocumentId ? "text-muted-foreground/50" : "text-muted-foreground")}/>
                   </Button>
@@ -843,7 +913,36 @@ export function WritingArea() {
                 </div>
               </div>
               <EditorToolbar editor={editor} />
-            
+
+              {/* Find & Replace bar */}
+              {isFindReplaceOpen && (
+                <div className="flex flex-wrap items-center gap-2 p-2 border-b bg-muted/30 text-sm">
+                  <Input
+                    value={findText}
+                    onChange={e => { setFindText(e.target.value); setFindMatchCount(null); }}
+                    placeholder={t('editor.find_replace.find_placeholder')}
+                    className="h-7 text-xs w-40"
+                    onKeyDown={e => e.key === 'Enter' && handleFindCount()}
+                  />
+                  <Input
+                    value={replaceText}
+                    onChange={e => setReplaceText(e.target.value)}
+                    placeholder={t('editor.find_replace.replace_placeholder')}
+                    className="h-7 text-xs w-40"
+                  />
+                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleFindCount}>
+                    {t('editor.find_replace.count_button')}
+                    {findMatchCount !== null && ` (${findMatchCount})`}
+                  </Button>
+                  <Button size="sm" variant="default" className="h-7 text-xs" onClick={handleReplaceAll} disabled={!findText.trim()}>
+                    {t('editor.find_replace.replace_all')}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setIsFindReplaceOpen(false); setFindText(''); setReplaceText(''); setFindMatchCount(null); }}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+
           <CardHeader className="p-2 border-b">
              <h2 className="text-lg font-semibold text-center text-muted-foreground">
                 {activeDocumentId ? `${t('editor.editing', { name: activeDocumentName || '' })}` : t('editor.editing_scratchpad')}

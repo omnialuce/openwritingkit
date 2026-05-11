@@ -389,7 +389,7 @@
       "most_active": "Most active: {{start_hour}}:00 - {{end_hour}}:00 ({{saves}} save(s))"
     },
     "advanced": {
-      "section_title": "Advanced Writing Insights (Coming Soon)",
+      "section_title": "Advanced Writing Insights",
       "writing_pattern_title": "Writing Pattern Analysis",
       "writing_pattern_desc": "Analyse sentence length, common phrases, and writing habits.",
       "vocabulary_richness_title": "Vocabulary Richness Analysis",
@@ -398,7 +398,7 @@
       "narrative_pacing_desc": "Get detailed insights into your story's structural flow and tension."
     },
     "general": {
-      "section_title": "General Writing Statistics (Coming Soon)",
+      "section_title": "General Writing Statistics",
       "analysis_pending": "analysis pending",
       "dialogue_ratio_title": "Dialogue Ratio",
       "dialogue_ratio_desc": "Analyse dialogue vs. narrative balance.",
@@ -411,6 +411,32 @@
       "title": "Overall Progress Overview",
       "description": "A visual summary of your writing journey for this story.",
       "footer": "Detailed charts and graphs are coming soon to help you visualise your progress."
+    },
+    "charts": {
+      "section_title": "Writing Activity",
+      "daily_title": "Activity — Last 30 Days",
+      "daily_desc": "Number of auto-saves per day",
+      "hourly_title": "Most Productive Hours",
+      "hourly_desc": "Auto-saves per hour of the day (all time)",
+      "saves_label": "Saves"
+    },
+    "chapters": {
+      "section_title": "Chapter / Scene Length",
+      "chart_title": "Word count per document",
+      "avg": "Avg",
+      "min": "Min",
+      "max": "Max",
+      "words_label": "words"
+    },
+    "deep": {
+      "section_title": "Deep Story Analysis",
+      "scan_button": "Scan Story",
+      "scanning": "Scanning…",
+      "description": "Loads all your story documents and runs a full text analysis locally — nothing is sent anywhere.",
+      "empty_state": "Click \"Scan Story\" to analyse vocabulary richness, dialogue ratio, and reading difficulty.",
+      "dialogue_style": "Dialogue style",
+      "unique_words": "unique words",
+      "grade": "grade"
     }
   },
   "word_goal": {
@@ -959,6 +985,16 @@
       "revert_confirm": "Are you sure you want to revert to this version? The current content will be overwritten, but will be saved in the history.",
       "revert_success_title": "Version Reverted",
       "revert_success_desc": "The document has been reverted to the selected version."
+    },
+    "export_md": "Export as Markdown",
+    "find_replace": {
+      "title": "Find & Replace",
+      "find_placeholder": "Find...",
+      "replace_placeholder": "Replace with...",
+      "count_button": "Count",
+      "replace_all": "Replace All",
+      "replaced_title": "Replacements made",
+      "replaced_desc": "{count} occurrence(s) replaced."
     }
   },
   "outline": {
@@ -1613,6 +1649,89 @@
   },
   "writing_tools": {
     "title": "Writing Tools",
-    "description": "Craft better stories with prompt ideas and pacing insights — all processed locally, no data sent anywhere."
+    "description": "Craft better stories with prompt ideas and pacing insights — all processed locally, no data sent anywhere.",
+    "section_craft": "Analyse Your Writing",
+    "section_creative": "Inspiration & Ideas",
+    "no_story": "Select a story from the Stories page to use this tool."
+  },
+  "hemingway": {
+    "title": "Style Checker",
+    "description": "Spot adverbs, passive voice, complex sentences and weak verbs — the classic Hemingway-style checks.",
+    "analyze_button": "Check Style",
+    "analyzing": "Checking…",
+    "prose_grade": "Prose grade",
+    "grade_clean": "Clean",
+    "grade_moderate": "Moderate",
+    "grade_wordy": "Wordy",
+    "adverbs": "Adverbs",
+    "passive": "Passive voice",
+    "complex": "Long sentences",
+    "weak_verbs": "Weak verbs",
+    "adverb_list": "Adverbs found:",
+    "tip": "Fewer adverbs, passive constructions, and long sentences make prose cleaner and more direct."
+  },
+  "pov_tense": {
+    "title": "Point of View & Tense",
+    "description": "Detect your story's dominant point of view, tense, and flag any inconsistent paragraphs.",
+    "analyze_button": "Analyse POV & Tense",
+    "analyzing": "Analysing…",
+    "dominant_pov": "Dominant POV",
+    "dominant_tense": "Dominant tense",
+    "pronoun_breakdown": "Pronoun breakdown",
+    "first_person": "1st person",
+    "second_person": "2nd person",
+    "third_person": "3rd person",
+    "inconsistencies": "Potential tense shifts",
+    "consistent": "No tense inconsistencies detected.",
+    "pov_first": "First person",
+    "pov_second": "Second person",
+    "pov_third": "Third person",
+    "pov_unknown": "Unknown",
+    "tense_past": "Past",
+    "tense_present": "Present",
+    "tense_unknown": "Unknown"
+  },
+  "cliche": {
+    "title": "Cliché Detector",
+    "description": "Scan your story for overused phrases and clichés so you can replace them with fresher language.",
+    "scan_button": "Scan for Clichés",
+    "scanning": "Scanning…",
+    "none_found": "No clichés detected — great work!",
+    "found_count": "{{count}} cliché(s) found:",
+    "tip": "Try replacing these phrases with more specific, original language to make your writing stand out."
+  },
+  "name_gen": {
+    "title": "Name Generator",
+    "description": "Generate character and place names for any genre — 100 % offline, no API calls.",
+    "category_label": "Genre / Style",
+    "type_label": "Name type",
+    "type_full": "Full name",
+    "type_first": "First name",
+    "type_last": "Surname",
+    "type_place": "Place name",
+    "generate": "Generate Names",
+    "regenerate": "Regenerate",
+    "tip": "Click a name to select it. Regenerate for a fresh batch."
+  },
+  "rel_map": {
+    "no_characters": "Add characters to this story to build a relationship map.",
+    "no_relationships": "No relationships defined yet.",
+    "click_hint": "Click a character node to view and edit their relationships.",
+    "add_button": "Add relationship",
+    "add_title": "Add Relationship",
+    "target_label": "Other character",
+    "target_placeholder": "Select character…",
+    "type_label": "Relationship type",
+    "label_label": "Optional note",
+    "label_placeholder": "e.g. childhood friends",
+    "add_confirm": "Add",
+    "type_family": "Family",
+    "type_friend": "Friend",
+    "type_enemy": "Enemy",
+    "type_romantic": "Romantic",
+    "type_mentor": "Mentor",
+    "type_rival": "Rival",
+    "type_colleague": "Colleague",
+    "type_other": "Other"
   }
 }

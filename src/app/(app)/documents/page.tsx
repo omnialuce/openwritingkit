@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { FolderPlus, FilePlus2, Search, Folder as FolderIcon, FileText as FileTextIcon, BookCopy, AlertTriangle, Upload, Download, Trash2, Edit, History, GripVertical, ChevronDown, ChevronRight, MoreVertical } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -773,13 +772,6 @@ export default function DocumentsPage() {
         </Dialog>
       )}
 
-      <div className="text-center mt-12 p-6 bg-card border">
-        <Image src="/comingsoon.svg" alt={t('documents.coming_soon.alt_text')} width={300} height={150} className="mx-auto mb-4 dark:invert w-full max-w-xs" />
-        <h3 className="text-xl font-semibold mb-2">{t('documents.coming_soon.title')}</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          {t('documents.coming_soon.description')}
-        </p>
-      </div>
     </div>
   );
 }

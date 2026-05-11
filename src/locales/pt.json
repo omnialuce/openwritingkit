@@ -389,7 +389,7 @@
       "most_active": "Mais ativo: {{start_hour}}:00 - {{end_hour}}:00 ({{saves}} salvamento(s))"
     },
     "advanced": {
-      "section_title": "Insights Avançados de Escrita (Em Breve)",
+      "section_title": "Análises Avançadas de Escrita",
       "writing_pattern_title": "Análise de Padrão de Escrita",
       "writing_pattern_desc": "Analise o comprimento da frase, frases comuns e hábitos de escrita.",
       "vocabulary_richness_title": "Análise de Riqueza de Vocabulário",
@@ -398,7 +398,7 @@
       "narrative_pacing_desc": "Obtenha insights detalhados sobre o fluxo estrutural e a tensão da sua história."
     },
     "general": {
-      "section_title": "Estatísticas Gerais de Escrita (Em Breve)",
+      "section_title": "Estatísticas Gerais de Escrita",
       "analysis_pending": "análise pendente",
       "dialogue_ratio_title": "Proporção de Diálogo",
       "dialogue_ratio_desc": "Analise o equilíbrio entre diálogo e narrativa.",
@@ -411,6 +411,32 @@
       "title": "Visão Geral do Progresso",
       "description": "Um resumo visual da sua jornada de escrita para esta história.",
       "footer": "Gráficos e tabelas detalhados estão a caminho para ajudá-lo a visualizar seu progresso."
+    },
+    "charts": {
+      "section_title": "Atividade de Escrita",
+      "daily_title": "Atividade — Últimos 30 Dias",
+      "daily_desc": "Número de salvamentos automáticos por dia",
+      "hourly_title": "Horários Mais Produtivos",
+      "hourly_desc": "Salvamentos automáticos por hora do dia (todo o tempo)",
+      "saves_label": "Salvamentos"
+    },
+    "chapters": {
+      "section_title": "Comprimento de Capítulo / Cena",
+      "chart_title": "Contagem de palavras por documento",
+      "avg": "Méd",
+      "min": "Mín",
+      "max": "Máx",
+      "words_label": "palavras"
+    },
+    "deep": {
+      "section_title": "Análise Profunda da História",
+      "scan_button": "Examinar História",
+      "scanning": "Examinando…",
+      "description": "Carrega todos os documentos da sua história e executa uma análise de texto completa localmente — nada é enviado a lugar nenhum.",
+      "empty_state": "Clique em \"Examinar História\" para analisar riqueza de vocabulário, proporção de diálogo e dificuldade de leitura.",
+      "dialogue_style": "Estilo de diálogo",
+      "unique_words": "palavras únicas",
+      "grade": "nível"
     }
   },
   "word_goal": {
@@ -962,6 +988,16 @@
       "revert_confirm": "Tem certeza de que deseja reverter para esta versão? O conteúdo atual será sobrescrito, mas será salvo no histórico.",
       "revert_success_title": "Versão Revertida",
       "revert_success_desc": "O documento foi revertido para a versão selecionada."
+    },
+    "export_md": "Exportar como Markdown",
+    "find_replace": {
+      "title": "Localizar e Substituir",
+      "find_placeholder": "Localizar...",
+      "replace_placeholder": "Substituir por...",
+      "count_button": "Contar",
+      "replace_all": "Substituir Tudo",
+      "replaced_title": "Substituições realizadas",
+      "replaced_desc": "{count} ocorrência(s) substituída(s)."
     }
   },
   "outline": {
@@ -1616,6 +1652,89 @@
   },
   "writing_tools": {
     "title": "Ferramentas de Escrita",
-    "description": "Crie histórias melhores com sugestões de prompt e análise de ritmo — tudo processado localmente, sem envio de dados."
+    "description": "Crie histórias melhores com sugestões de prompt e análise de ritmo — tudo processado localmente, sem envio de dados.",
+    "section_craft": "Analisar Sua Escrita",
+    "section_creative": "Inspiração e Ideias",
+    "no_story": "Selecione uma história na página de Histórias para usar esta ferramenta."
+  },
+  "hemingway": {
+    "title": "Verificador de Estilo",
+    "description": "Identifique advérbios, voz passiva, frases complexas e verbos fracos — verificações no estilo Hemingway.",
+    "analyze_button": "Verificar Estilo",
+    "analyzing": "Verificando…",
+    "prose_grade": "Nível da prosa",
+    "grade_clean": "Limpa",
+    "grade_moderate": "Moderada",
+    "grade_wordy": "Verbosa",
+    "adverbs": "Advérbios",
+    "passive": "Voz passiva",
+    "complex": "Frases longas",
+    "weak_verbs": "Verbos fracos",
+    "adverb_list": "Advérbios encontrados:",
+    "tip": "Menos advérbios, construções passivas e frases longas tornam a prosa mais limpa e direta."
+  },
+  "pov_tense": {
+    "title": "Ponto de Vista e Tempo Verbal",
+    "description": "Detecte o ponto de vista dominante, o tempo verbal e identifique parágrafos inconsistentes.",
+    "analyze_button": "Analisar PDV e Tempo",
+    "analyzing": "Analisando…",
+    "dominant_pov": "PDV dominante",
+    "dominant_tense": "Tempo verbal dominante",
+    "pronoun_breakdown": "Distribuição de pronomes",
+    "first_person": "1ª pessoa",
+    "second_person": "2ª pessoa",
+    "third_person": "3ª pessoa",
+    "inconsistencies": "Possíveis mudanças de tempo",
+    "consistent": "Nenhuma inconsistência de tempo verbal detectada.",
+    "pov_first": "Primeira pessoa",
+    "pov_second": "Segunda pessoa",
+    "pov_third": "Terceira pessoa",
+    "pov_unknown": "Desconhecido",
+    "tense_past": "Pretérito",
+    "tense_present": "Presente",
+    "tense_unknown": "Desconhecido"
+  },
+  "cliche": {
+    "title": "Detector de Clichês",
+    "description": "Examine sua história em busca de frases desgastadas para substituí-las por uma linguagem mais original.",
+    "scan_button": "Verificar Clichês",
+    "scanning": "Verificando…",
+    "none_found": "Nenhum clichê detectado — ótimo trabalho!",
+    "found_count": "{{count}} clichê(s) encontrado(s):",
+    "tip": "Tente substituir essas frases por uma linguagem mais específica e original para destacar sua escrita."
+  },
+  "name_gen": {
+    "title": "Gerador de Nomes",
+    "description": "Gere nomes de personagens e lugares para qualquer gênero — 100 % offline, sem chamadas de API.",
+    "category_label": "Gênero / Estilo",
+    "type_label": "Tipo de nome",
+    "type_full": "Nome completo",
+    "type_first": "Nome próprio",
+    "type_last": "Sobrenome",
+    "type_place": "Nome de lugar",
+    "generate": "Gerar Nomes",
+    "regenerate": "Gerar Novamente",
+    "tip": "Clique em um nome para selecioná-lo. Gere novamente para uma nova lista."
+  },
+  "rel_map": {
+    "no_characters": "Adicione personagens a esta história para construir um mapa de relacionamentos.",
+    "no_relationships": "Nenhum relacionamento definido ainda.",
+    "click_hint": "Clique em um nó de personagem para ver e editar seus relacionamentos.",
+    "add_button": "Adicionar relacionamento",
+    "add_title": "Adicionar Relacionamento",
+    "target_label": "Outro personagem",
+    "target_placeholder": "Selecione o personagem…",
+    "type_label": "Tipo de relacionamento",
+    "label_label": "Nota opcional",
+    "label_placeholder": "ex.: amigos de infância",
+    "add_confirm": "Adicionar",
+    "type_family": "Família",
+    "type_friend": "Amigo",
+    "type_enemy": "Inimigo",
+    "type_romantic": "Romântico",
+    "type_mentor": "Mentor",
+    "type_rival": "Rival",
+    "type_colleague": "Colega",
+    "type_other": "Outro"
   }
 }
