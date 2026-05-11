@@ -21,11 +21,13 @@ class StorageService {
   public async getItem<T>(key: string): Promise<T | null> {
     if (typeof window !== 'undefined') {
       const item = window.localStorage.getItem(key);
+      if (!item) return null;
       try {
-        return item ? JSON.parse(item) : null;
-      } catch (error) {
-        console.error(`Error parsing JSON from localStorage for key "${key}":`, error);
-        return null;
+        return JSON.parse(item) as T;
+      } catch {
+        // Legacy: value was stored as a plain string without JSON.stringify.
+        // Return it as-is so callers that expect a string still work.
+        return item as unknown as T;
       }
     }
     return null;

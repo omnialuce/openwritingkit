@@ -252,10 +252,12 @@ export function WritingArea() {
     storage.getItem<string>(AI_OPT_IN_KEY).then(val => {
       setAiFeaturesEnabled(val === 'true');
     });
-    storage.getItem<string>(EDITOR_SETTINGS_KEY).then(val => {
+    storage.getItem<EditorSettings | string>(EDITOR_SETTINGS_KEY).then(val => {
       if (val) {
         try {
-          setEditorSettings(prev => ({ ...prev, ...JSON.parse(val) }));
+          // val may be an EditorSettings object (new storage) or a JSON string (old double-encoded data)
+          const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+          setEditorSettings(prev => ({ ...prev, ...parsed }));
         } catch { /* use default */ }
       }
     });
@@ -272,7 +274,7 @@ export function WritingArea() {
   const updateEditorSettings = (newSettings: Partial<EditorSettings>) => {
     setEditorSettings(prev => {
         const updated = { ...prev, ...newSettings };
-        storage.setItem(EDITOR_SETTINGS_KEY, JSON.stringify(updated));
+        storage.setItem(EDITOR_SETTINGS_KEY, updated);
         return updated;
     });
   };
