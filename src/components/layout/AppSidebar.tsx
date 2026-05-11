@@ -31,8 +31,9 @@ export function AppSidebar() {
   const { user } = useAuth();
   const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false);
   
-  const mainNavItems = getMainNavItems(t);
-  const secondaryNavItems = getSecondaryNavItems(t);
+  const tStr = t as (key: string) => string;
+  const mainNavItems = getMainNavItems(tStr);
+  const secondaryNavItems = getSecondaryNavItems(tStr);
 
   const renderNavItem = (item: NavItem) => (
      <SidebarMenuItem key={item.href}>

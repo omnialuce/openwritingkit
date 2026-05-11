@@ -37,7 +37,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from '@/components/ui/textarea';
-import { useStoryContext, getDocumentsStorageKey, type DocumentItem } from '@/contexts/StoryContext';
+import { useStoryContext, getDocumentsStorageKey, type DocumentItem, type DocumentTag, type DocumentStatus } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -101,7 +101,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
     }
   };
 
-  const getTagVariant = (tag: DocumentItem['tags'][number]): "default" | "secondary" | "destructive" | "outline" => {
+  const getTagVariant = (tag: DocumentTag): "default" | "secondary" | "destructive" | "outline" => {
      switch (tag) {
       case "Published": return "default";
       case "WIP": return "secondary";
@@ -204,7 +204,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
                   <p className="text-sm text-muted-foreground">
                     {item.type === "folder" || item.type === "chapter" ?
                      t('documents.item_count', {count: (item.children?.length || 0).toString()}) :
-                     `${item.words || 0} ${t('documents.words')} - ${t('documents.last_modified') ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
+                     `${item.words || 0} ${t('documents.words')} - ${item.lastModified ? new Date(item.lastModified).toLocaleDateString() : 'N/A'}`}
                   </p>
                 </div>
               </div>
@@ -218,7 +218,7 @@ function DocumentListItem({ item, level = 0, onOpenDetails, onDelete, onEditInEd
             {item.tags && item.tags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1" style={{ paddingLeft: `${5 + level * 1.5}rem` }}>
                 {item.tags.map(tag => (
-                  <Badge key={tag} variant={getTagVariant(tag as DocumentItem['tags'][number])} className="text-xs">{tag}</Badge>
+                  <Badge key={tag} variant={getTagVariant(tag as DocumentTag)} className="text-xs">{tag}</Badge>
                 ))}
               </div>
             )}
@@ -492,7 +492,7 @@ export default function DocumentsPage() {
           type: 'file',
           lastModified: new Date().toISOString(),
           status: 'Draft',
-          tags: ['Imported', 'Draft'],
+          tags: ['Draft'] as DocumentTag[],
           words: wordCount,
         };
         
@@ -737,7 +737,7 @@ export default function DocumentsPage() {
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="status" className="text-right">{t('documents.fields.status')}</Label>
-                        <Select value={editedStatus} onValueChange={(value: DocumentItem['status']) => setEditedStatus(value)}>
+                        <Select value={editedStatus} onValueChange={(value: string) => setEditedStatus(value as DocumentStatus)}>
                           <SelectTrigger className="col-span-3">
                             <SelectValue placeholder={t('documents.fields.select_status_placeholder')} />
                           </SelectTrigger>

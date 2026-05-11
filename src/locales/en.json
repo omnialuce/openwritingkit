@@ -1,4 +1,3 @@
-
 {
   "common": {
     "error": "Error",
@@ -230,9 +229,9 @@
       "google_policy_link": "View Google Privacy Policy"
     },
     "toast": {
-      "ai_updated_title": "AI Settings Updated",
-      "ai_enabled_desc": "AI features have been enabled.",
-      "ai_disabled_desc": "AI features have been disabled.",
+      "ai_updated_title": "Grammar Settings Updated",
+      "ai_enabled_desc": "Grammar checking has been enabled.",
+      "ai_disabled_desc": "Grammar checking has been disabled.",
       "reauth_failed_desc": "Re-authentication failed. Please check your password and try again.",
       "email_change_success_title": "Email Updated",
       "password_change_success_title": "Password Updated",
@@ -247,6 +246,17 @@
       "data_import_success_desc": "Data restored. The app will now reload.",
       "data_import_failed_title": "Import Failed",
       "data_import_failed_desc": "The backup file is corrupted or not valid."
+    },
+    "grammar": {
+      "title": "Grammar Checking",
+      "description": "Enable grammar and spelling feedback in the editor. Uses LanguageTool — open-source and self-hostable.",
+      "toggle_label": "Toggle grammar checking",
+      "enable_label": "Enable Grammar & Spelling Feedback",
+      "enable_desc": "When enabled, the feedback button in the editor sends your text to LanguageTool's API for grammar and spelling analysis.",
+      "privacy_title": "External Service Notice",
+      "privacy_desc": "Grammar checking sends your text to the LanguageTool API for processing. LanguageTool is open-source software that you can also self-host. Your text is not stored or used for training.",
+      "transparency_title": "About LanguageTool",
+      "transparency_desc": "Powered by LanguageTool — an open-source grammar and spell checker supporting 30+ languages. Readability scoring is computed entirely on your device."
     }
   },
   "stories": {
@@ -280,8 +290,8 @@
     }
   },
   "ai_tools": {
-    "title": "AI Writing Assistant",
-    "description": "Leverage AI to enhance your creative writing process.",
+    "title": "Writing Tools",
+    "description": "Craft better stories with prompt ideas and pacing insights.",
     "loading_preferences": "Loading AI tool preferences...",
     "disabled": {
       "title": "AI Features Disabled",
@@ -299,7 +309,7 @@
   },
   "pacing_analyzer": {
     "title": "Pacing Analyzer",
-    "description": "Get AI-powered feedback on your story's pacing by linking a document.",
+    "description": "Analyse your story's pacing using sentence-level metrics. No data leaves your device.",
     "doc_label": "Document to Analyze",
     "no_story_placeholder": "No story selected",
     "doc_placeholder": "Select a document or scene",
@@ -308,7 +318,17 @@
     "submit_button": "Analyze Pacing",
     "results": {
       "analysis_title": "Pacing Analysis:",
-      "recommendations_title": "Recommendations:"
+      "recommendations_title": "Recommendations:",
+      "sentence_title": "Sentence Metrics",
+      "avg_sentence_length": "Average sentence length",
+      "sentence_variety": "Sentence variety",
+      "sentence_range": "Sentence range",
+      "structure_title": "Structure",
+      "avg_paragraph_length": "Average paragraph length",
+      "long_paragraphs": "Long paragraphs",
+      "dialogue_ratio": "Dialogue",
+      "sections_title": "Pacing by Section",
+      "callouts_title": "Suggestions"
     },
     "toast": {
       "no_doc_title": "No Document Selected",
@@ -317,11 +337,12 @@
       "doc_empty_desc": "The selected document has no content to analyze.",
       "error_title": "Error Analyzing Pacing",
       "error_desc": "An unexpected error occurred."
-    }
+    },
+    "analyzing_button": "Analysing…"
   },
   "prompt_generator": {
     "title": "Writing Prompt Generator",
-    "description": "Get inspired with a custom writing prompt. Add context for better results.",
+    "description": "Get inspired with a custom writing prompt built from genre-specific templates.",
     "genre_label": "Genre",
     "genre_placeholder": "e.g., Fantasy, Sci-Fi",
     "style_label": "Style",
@@ -338,7 +359,9 @@
     "toast": {
       "error_title": "Error Generating Prompt",
       "error_desc": "An unexpected error occurred."
-    }
+    },
+    "regenerate_button": "Regenerate Prompt",
+    "clear_button_title": "Clear prompt"
   },
   "analytics": {
     "title": "Writing Analytics & Insights",
@@ -417,9 +440,9 @@
     "minute": "minute",
     "minutes": "minutes",
     "toast": {
-        "deadline_set_title": "Deadline Set",
-        "deadline_set_desc": "Deadline set for",
-        "deadline_removed_title": "Deadline Removed"
+      "deadline_set_title": "Deadline Set",
+      "deadline_set_desc": "Deadline set for",
+      "deadline_removed_title": "Deadline Removed"
     }
   },
   "characters": {
@@ -638,7 +661,7 @@
       "button": "Help Fund the Project"
     }
   },
-    "resources": {
+  "resources": {
     "title": "Writing Resources",
     "description": "A curated list of helpful articles, tools, and communities for writers.",
     "visit_site": "Visit Site",
@@ -659,49 +682,178 @@
       "planning": "Planning"
     },
     "list": {
-      "reedsy_blog": { "title": "Reedsy Blog", "description": "A wealth of articles on writing, editing, and publishing." },
-      "creative_penn": { "title": "The Creative Penn", "description": "Articles, podcast, and resources for authors on writing and the business of writing." },
-      "helping_writers": { "title": "Helping Writers Become Authors", "description": "K.M. Weiland's site offers deep insights into story structure and character arcs." },
-      "one_stop": { "title": "One Stop for Writers", "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders." },
-      "self_publishing_podcast": { "title": "Self Publishing Podcast", "description": "Interviews and discussions on self-publishing, marketing, and writing craft." },
-      "shutup_write": { "title": "Shut Up & Write! Podcast", "description": "Focuses on the practical aspects and discipline of a writing life." },
-      "rocking_self_publishing": { "title": "Rocking Self Publishing", "description": "Insights and interviews for self-published authors looking to succeed." },
-      "dead_robots_society": { "title": "Dead Robots' Society", "description": "A podcast by aspiring writers for aspiring writers, covering all things writing." },
-      "grammar_girl": { "title": "Grammar Girl", "description": "Quick and dirty tips to improve your writing, focusing on grammar and style." },
-      "terrible_minds": { "title": "TerribleMinds", "description": "Chuck Wendig's blog on writing, storytelling, and the author life." },
-      "storyfix": { "title": "Story-Fix", "description": "Larry Brooks offers coaching and insights on story structure and commercial fiction." },
-      "copyblogger": { "title": "Copyblogger", "description": "Content marketing and writing advice that can be applied to fiction." },
-      "litreactor": { "title": "LitReactor", "description": "An online writing community offering classes, workshops, and a magazine." },
-      "rewrite_reword": { "title": "Rewrite, Reword, Rework", "description": "A blog focused on the practicalities of editing and revising your work." },
-      "slushpile_hell": { "title": "Slush-Pile Hell", "description": "Humorous and cautionary tales from the slush pile of a literary agent." },
-      "scribophile": { "title": "Scribophile", "description": "One of the largest and most active online writing communities and critique groups." },
-      "submittable": { "title": "Submittable", "description": "A platform for discovering and submitting to literary magazines and contests." },
-      "the_grinder": { "title": "The Grinder", "description": "A free tool for writers to find markets for their fiction and track submissions." },
-      "reedsy_title_gen": { "title": "Book Title Generator", "description": "A tool by Reedsy to help you brainstorm titles for your book." },
-      "behind_the_name": { "title": "Behind the Name", "description": "A comprehensive resource for finding the etymology and history of names." },
-      "word_counters": { "title": "WordCounters", "description": "A tool to count words and analyze text for keyword density and other metrics." },
-      "inspiration_youtube_1": { "title": "Kurt Vonnegut on the Shapes of Stories", "description": "A classic, humorous lecture on the basic shapes of story plots." },
-      "emotion_thesaurus": { "title": "The Emotion Thesaurus", "description": "A popular book for writers to help show, not tell, character emotions." },
-      "inspiration_youtube_3": { "title": "The Clues to a Great Story", "description": "Andrew Stanton's TED talk on the fundamentals of storytelling." },
-      "bird_by_bird": { "title": "Bird by Bird by Anne Lamott", "description": "A beloved book offering advice on writing and life with humor and wisdom." },
-      "inspiration_youtube_4": { "title": "Brandon Sanderson's Lecture Series", "description": "A full university course on writing science fiction and fantasy, available on YouTube." },
-      "article_character_setting": { "title": "Showing Character Through Setting", "description": "An article on how to use setting to reveal character traits." },
-      "article_research_tips": { "title": "Top 7 Tips for Researching Your Novel", "description": "Practical advice on how to effectively research for your story." },
-      "article_after_book": { "title": "What To Do After You Finish Your Book", "description": "A guide on the next steps after completing your manuscript." },
-      "article_beta_reader": { "title": "Six Sets of Questions to Ask as a Beta Reader", "description": "A useful framework for giving and receiving constructive feedback." },
-      "article_free_marketing": { "title": "50+ Ways To Market Your Book For Free", "description": "A list of free marketing strategies for authors." },
-      "article_pinterest": { "title": "Pinterest For Bloggers and Writers", "description": "How to use Pinterest as a tool for inspiration and marketing." },
-      "article_book_genre": { "title": "Do You Know Your Book Genre?", "description": "An article explaining the importance of understanding book genres." },
-      "article_who_reading": { "title": "Who Are You Reading?", "description": "Discusses the importance of reading within your genre." },
-      "article_short_story_comps": { "title": "Short Story Competitions", "description": "A list of writing competitions to enter." },
-      "article_legal_tips": { "title": "7 Legal Tips for Writers", "description": "Essential legal advice every writer should know." },
-      "article_copyright": { "title": "Understanding Copyright and Related Rights", "description": "A PDF guide from the World Intellectual Property Organization." },
-      "article_100_websites": { "title": "The 100 Best Websites for Writers in 2018", "description": "A comprehensive list of valuable online resources for writers." },
-      "writing_bad": { "title": "Writing Bad", "description": "A guide on what not to do, offering lessons through bad examples." },
-      "writers_digest": { "title": "Writer's Digest", "description": "A long-standing resource for writers with articles, competitions, and advice." },
-      "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "A website and course dedicated to helping authors self-publish." },
-      "planning_worksheets": { "title": "Jami Gold's Worksheets", "description": "A collection of in-depth worksheets for plot, character, and scene planning." },
-      "planning_take_off_pants": { "title": "Take Off Your Pants! by Libbie Hawker", "description": "A book focused on a simple, effective method for outlining your novel." }
+      "reedsy_blog": {
+        "title": "Reedsy Blog",
+        "description": "A wealth of articles on writing, editing, and publishing."
+      },
+      "creative_penn": {
+        "title": "The Creative Penn",
+        "description": "Articles, podcast, and resources for authors on writing and the business of writing."
+      },
+      "helping_writers": {
+        "title": "Helping Writers Become Authors",
+        "description": "K.M. Weiland's site offers deep insights into story structure and character arcs."
+      },
+      "one_stop": {
+        "title": "One Stop for Writers",
+        "description": "A powerhouse of tools and resources for writers, including thesauruses and character builders."
+      },
+      "self_publishing_podcast": {
+        "title": "Self Publishing Podcast",
+        "description": "Interviews and discussions on self-publishing, marketing, and writing craft."
+      },
+      "shutup_write": {
+        "title": "Shut Up & Write! Podcast",
+        "description": "Focuses on the practical aspects and discipline of a writing life."
+      },
+      "rocking_self_publishing": {
+        "title": "Rocking Self Publishing",
+        "description": "Insights and interviews for self-published authors looking to succeed."
+      },
+      "dead_robots_society": {
+        "title": "Dead Robots' Society",
+        "description": "A podcast by aspiring writers for aspiring writers, covering all things writing."
+      },
+      "grammar_girl": {
+        "title": "Grammar Girl",
+        "description": "Quick and dirty tips to improve your writing, focusing on grammar and style."
+      },
+      "terrible_minds": {
+        "title": "TerribleMinds",
+        "description": "Chuck Wendig's blog on writing, storytelling, and the author life."
+      },
+      "storyfix": {
+        "title": "Story-Fix",
+        "description": "Larry Brooks offers coaching and insights on story structure and commercial fiction."
+      },
+      "copyblogger": {
+        "title": "Copyblogger",
+        "description": "Content marketing and writing advice that can be applied to fiction."
+      },
+      "litreactor": {
+        "title": "LitReactor",
+        "description": "An online writing community offering classes, workshops, and a magazine."
+      },
+      "rewrite_reword": {
+        "title": "Rewrite, Reword, Rework",
+        "description": "A blog focused on the practicalities of editing and revising your work."
+      },
+      "slushpile_hell": {
+        "title": "Slush-Pile Hell",
+        "description": "Humorous and cautionary tales from the slush pile of a literary agent."
+      },
+      "scribophile": {
+        "title": "Scribophile",
+        "description": "One of the largest and most active online writing communities and critique groups."
+      },
+      "submittable": {
+        "title": "Submittable",
+        "description": "A platform for discovering and submitting to literary magazines and contests."
+      },
+      "the_grinder": {
+        "title": "The Grinder",
+        "description": "A free tool for writers to find markets for their fiction and track submissions."
+      },
+      "reedsy_title_gen": {
+        "title": "Book Title Generator",
+        "description": "A tool by Reedsy to help you brainstorm titles for your book."
+      },
+      "behind_the_name": {
+        "title": "Behind the Name",
+        "description": "A comprehensive resource for finding the etymology and history of names."
+      },
+      "word_counters": {
+        "title": "WordCounters",
+        "description": "A tool to count words and analyze text for keyword density and other metrics."
+      },
+      "inspiration_youtube_1": {
+        "title": "Kurt Vonnegut on the Shapes of Stories",
+        "description": "A classic, humorous lecture on the basic shapes of story plots."
+      },
+      "emotion_thesaurus": {
+        "title": "The Emotion Thesaurus",
+        "description": "A popular book for writers to help show, not tell, character emotions."
+      },
+      "inspiration_youtube_3": {
+        "title": "The Clues to a Great Story",
+        "description": "Andrew Stanton's TED talk on the fundamentals of storytelling."
+      },
+      "bird_by_bird": {
+        "title": "Bird by Bird by Anne Lamott",
+        "description": "A beloved book offering advice on writing and life with humor and wisdom."
+      },
+      "inspiration_youtube_4": {
+        "title": "Brandon Sanderson's Lecture Series",
+        "description": "A full university course on writing science fiction and fantasy, available on YouTube."
+      },
+      "article_character_setting": {
+        "title": "Showing Character Through Setting",
+        "description": "An article on how to use setting to reveal character traits."
+      },
+      "article_research_tips": {
+        "title": "Top 7 Tips for Researching Your Novel",
+        "description": "Practical advice on how to effectively research for your story."
+      },
+      "article_after_book": {
+        "title": "What To Do After You Finish Your Book",
+        "description": "A guide on the next steps after completing your manuscript."
+      },
+      "article_beta_reader": {
+        "title": "Six Sets of Questions to Ask as a Beta Reader",
+        "description": "A useful framework for giving and receiving constructive feedback."
+      },
+      "article_free_marketing": {
+        "title": "50+ Ways To Market Your Book For Free",
+        "description": "A list of free marketing strategies for authors."
+      },
+      "article_pinterest": {
+        "title": "Pinterest For Bloggers and Writers",
+        "description": "How to use Pinterest as a tool for inspiration and marketing."
+      },
+      "article_book_genre": {
+        "title": "Do You Know Your Book Genre?",
+        "description": "An article explaining the importance of understanding book genres."
+      },
+      "article_who_reading": {
+        "title": "Who Are You Reading?",
+        "description": "Discusses the importance of reading within your genre."
+      },
+      "article_short_story_comps": {
+        "title": "Short Story Competitions",
+        "description": "A list of writing competitions to enter."
+      },
+      "article_legal_tips": {
+        "title": "7 Legal Tips for Writers",
+        "description": "Essential legal advice every writer should know."
+      },
+      "article_copyright": {
+        "title": "Understanding Copyright and Related Rights",
+        "description": "A PDF guide from the World Intellectual Property Organization."
+      },
+      "article_100_websites": {
+        "title": "The 100 Best Websites for Writers in 2018",
+        "description": "A comprehensive list of valuable online resources for writers."
+      },
+      "writing_bad": {
+        "title": "Writing Bad",
+        "description": "A guide on what not to do, offering lessons through bad examples."
+      },
+      "writers_digest": {
+        "title": "Writer's Digest",
+        "description": "A long-standing resource for writers with articles, competitions, and advice."
+      },
+      "self_pub_bootcamp": {
+        "title": "Self-Publishing Boot Camp",
+        "description": "A website and course dedicated to helping authors self-publish."
+      },
+      "planning_worksheets": {
+        "title": "Jami Gold's Worksheets",
+        "description": "A collection of in-depth worksheets for plot, character, and scene planning."
+      },
+      "planning_take_off_pants": {
+        "title": "Take Off Your Pants! by Libbie Hawker",
+        "description": "A book focused on a simple, effective method for outlining your novel."
+      }
     }
   },
   "editor": {
@@ -779,7 +931,7 @@
     "tooltip_get_feedback": "Get Writing Feedback",
     "tooltip_ai_disabled": "AI features disabled in Settings",
     "feedback": {
-      "title": "AI Writing Feedback",
+      "title": "Writing Feedback",
       "close_button_title": "Close Feedback Panel",
       "overall_assessment_title": "Overall Assessment",
       "readability_title": "Readability",
@@ -788,7 +940,7 @@
       "grammar_title": "Grammar & Spelling Suggestions",
       "grammar_original": "Original",
       "grammar_suggested": "Suggested",
-      "grammar_none_found": "No specific grammar or spelling issues found by the AI."
+      "grammar_none_found": "No grammar or spelling issues found."
     },
     "save_as_dialog": {
       "title": "Save to Documents",
@@ -1065,55 +1217,94 @@
         "title": "24 Chapter Outline",
         "description": "A detailed chapter-by-chapter plot structure.",
         "part1": "Part 1: Chapters 1-6",
-        "ch1": "Chapter 1", "ch1_desc": "Introduce protagonist and setting.",
-        "ch2": "Chapter 2", "ch2_desc": "Inciting incident.",
-        "ch3": "Chapter 3", "ch3_desc": "Immediate reaction to inciting incident.",
-        "ch4": "Chapter 4", "ch4_desc": "Protagonist makes a decision.",
-        "ch5": "Chapter 5", "ch5_desc": "Protagonist makes a plan.",
-        "ch6": "Chapter 6", "ch6_desc": "First plot point.",
+        "ch1": "Chapter 1",
+        "ch1_desc": "Introduce protagonist and setting.",
+        "ch2": "Chapter 2",
+        "ch2_desc": "Inciting incident.",
+        "ch3": "Chapter 3",
+        "ch3_desc": "Immediate reaction to inciting incident.",
+        "ch4": "Chapter 4",
+        "ch4_desc": "Protagonist makes a decision.",
+        "ch5": "Chapter 5",
+        "ch5_desc": "Protagonist makes a plan.",
+        "ch6": "Chapter 6",
+        "ch6_desc": "First plot point.",
         "part2": "Part 2: Chapters 7-12",
-        "ch7": "Chapter 7", "ch7_desc": "Protagonist enters a new world.",
-        "ch8": "Chapter 8", "ch8_desc": "Protagonist meets new characters.",
-        "ch9": "Chapter 9", "ch9_desc": "First pinch point.",
-        "ch10": "Chapter 10", "ch10_desc": "Protagonist learns new skills.",
-        "ch11": "Chapter 11", "ch11_desc": "Protagonist faces a setback.",
-        "ch12": "Chapter 12", "ch12_desc": "Midpoint.",
+        "ch7": "Chapter 7",
+        "ch7_desc": "Protagonist enters a new world.",
+        "ch8": "Chapter 8",
+        "ch8_desc": "Protagonist meets new characters.",
+        "ch9": "Chapter 9",
+        "ch9_desc": "First pinch point.",
+        "ch10": "Chapter 10",
+        "ch10_desc": "Protagonist learns new skills.",
+        "ch11": "Chapter 11",
+        "ch11_desc": "Protagonist faces a setback.",
+        "ch12": "Chapter 12",
+        "ch12_desc": "Midpoint.",
         "part3": "Part 3: Chapters 13-18",
-        "ch13": "Chapter 13", "ch13_desc": "Protagonist takes action.",
-        "ch14": "Chapter 14", "ch14_desc": "Protagonist faces a new challenge.",
-        "ch15": "Chapter 15", "ch15_desc": "Second pinch point.",
-        "ch16": "Chapter 16", "ch16_desc": "Protagonist has a realization.",
-        "ch17": "Chapter 17", "ch17_desc": "Protagonist makes a new plan.",
-        "ch18": "Chapter 18", "ch18_desc": "Third plot point.",
+        "ch13": "Chapter 13",
+        "ch13_desc": "Protagonist takes action.",
+        "ch14": "Chapter 14",
+        "ch14_desc": "Protagonist faces a new challenge.",
+        "ch15": "Chapter 15",
+        "ch15_desc": "Second pinch point.",
+        "ch16": "Chapter 16",
+        "ch16_desc": "Protagonist has a realization.",
+        "ch17": "Chapter 17",
+        "ch17_desc": "Protagonist makes a new plan.",
+        "ch18": "Chapter 18",
+        "ch18_desc": "Third plot point.",
         "part4": "Part 4: Chapters 19-24",
-        "ch19": "Chapter 19", "ch19_desc": "Protagonist is at their lowest point.",
-        "ch20": "Chapter 20", "ch20_desc": "Protagonist has a moment of clarity.",
-        "ch21": "Chapter 21", "ch21_desc": "Protagonist prepares for the final confrontation.",
-        "ch22": "Chapter 22", "ch22_desc": "Climax.",
-        "ch23": "Chapter 23", "ch23_desc": "Falling action.",
-        "ch24": "Chapter 24", "ch24_desc": "Resolution."
+        "ch19": "Chapter 19",
+        "ch19_desc": "Protagonist is at their lowest point.",
+        "ch20": "Chapter 20",
+        "ch20_desc": "Protagonist has a moment of clarity.",
+        "ch21": "Chapter 21",
+        "ch21_desc": "Protagonist prepares for the final confrontation.",
+        "ch22": "Chapter 22",
+        "ch22_desc": "Climax.",
+        "ch23": "Chapter 23",
+        "ch23_desc": "Falling action.",
+        "ch24": "Chapter 24",
+        "ch24_desc": "Resolution."
       },
       "27_chapter_outline": {
         "title": "27 Chapter Outline",
         "description": "A three-act plot structure broken down into 27 chapters.",
         "act1": "Act 1",
-        "ch1_3": "Chapters 1-3", "ch1_3_desc": "Introduce protagonist and their world.",
-        "ch4": "Chapter 4", "ch4_desc": "Inciting incident.",
-        "ch5": "Chapter 5", "ch5_desc": "Protagonist's reaction.",
-        "ch6_7": "Chapters 6-7", "ch6_7_desc": "Protagonist makes a choice.",
-        "ch8": "Chapter 8", "ch8_desc": "Protagonist makes a plan.",
-        "ch9": "Chapter 9", "ch9_desc": "First plot point.",
+        "ch1_3": "Chapters 1-3",
+        "ch1_3_desc": "Introduce protagonist and their world.",
+        "ch4": "Chapter 4",
+        "ch4_desc": "Inciting incident.",
+        "ch5": "Chapter 5",
+        "ch5_desc": "Protagonist's reaction.",
+        "ch6_7": "Chapters 6-7",
+        "ch6_7_desc": "Protagonist makes a choice.",
+        "ch8": "Chapter 8",
+        "ch8_desc": "Protagonist makes a plan.",
+        "ch9": "Chapter 9",
+        "ch9_desc": "First plot point.",
         "act2": "Act 2",
-        "ch10_11": "Chapters 10-11", "ch10_11_desc": "Protagonist enters a new world.",
-        "ch12_14": "Chapters 12-14", "ch12_14_desc": "Protagonist learns the rules.",
-        "ch15_16": "Chapters 15-16", "ch15_16_desc": "First pinch point.",
-        "ch17": "Chapter 17", "ch17_desc": "Midpoint.",
-        "ch18_21": "Chapters 18-21", "ch18_21_desc": "Protagonist takes action.",
-        "ch22": "Chapter 22", "ch22_desc": "Second pinch point.",
+        "ch10_11": "Chapters 10-11",
+        "ch10_11_desc": "Protagonist enters a new world.",
+        "ch12_14": "Chapters 12-14",
+        "ch12_14_desc": "Protagonist learns the rules.",
+        "ch15_16": "Chapters 15-16",
+        "ch15_16_desc": "First pinch point.",
+        "ch17": "Chapter 17",
+        "ch17_desc": "Midpoint.",
+        "ch18_21": "Chapters 18-21",
+        "ch18_21_desc": "Protagonist takes action.",
+        "ch22": "Chapter 22",
+        "ch22_desc": "Second pinch point.",
         "act3": "Act 3",
-        "ch23": "Chapter 23", "ch23_desc": "Third plot point.",
-        "ch24_26": "Chapters 24-26", "ch24_26_desc": "Climax.",
-        "ch27": "Chapter 27", "ch27_desc": "Resolution."
+        "ch23": "Chapter 23",
+        "ch23_desc": "Third plot point.",
+        "ch24_26": "Chapters 24-26",
+        "ch24_26_desc": "Climax.",
+        "ch27": "Chapter 27",
+        "ch27_desc": "Resolution."
       },
       "snowflake": {
         "title": "The Snowflake Method",
@@ -1419,5 +1610,9 @@
       "placeholder": "Add a new task...",
       "empty": "No tasks yet. Add one above."
     }
+  },
+  "writing_tools": {
+    "title": "Writing Tools",
+    "description": "Craft better stories with prompt ideas and pacing insights — all processed locally, no data sent anywhere."
   }
 }

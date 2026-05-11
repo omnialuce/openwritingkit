@@ -1,4 +1,3 @@
-
 {
   "common": {
     "error": "Erro",
@@ -230,9 +229,9 @@
       "google_policy_link": "Ver Política de Privacidade do Google"
     },
     "toast": {
-      "ai_updated_title": "Configurações de IA Atualizadas",
-      "ai_enabled_desc": "Os recursos de IA foram ativados.",
-      "ai_disabled_desc": "Os recursos de IA foram desativados.",
+      "ai_updated_title": "Configurações Gramaticais Atualizadas",
+      "ai_enabled_desc": "A verificação gramatical foi ativada.",
+      "ai_disabled_desc": "A verificação gramatical foi desativada.",
       "reauth_failed_desc": "A reautenticação falhou. Verifique sua senha e tente novamente.",
       "email_change_success_title": "Email Atualizado",
       "password_change_success_title": "Senha Atualizada",
@@ -247,6 +246,17 @@
       "data_import_success_desc": "Dados restaurados. O aplicativo será recarregado agora.",
       "data_import_failed_title": "Falha na Importação",
       "data_import_failed_desc": "O arquivo de backup está corrompido ou não é válido."
+    },
+    "grammar": {
+      "title": "Verificação Gramatical",
+      "description": "Ative o feedback de gramática e ortografia no editor. Usa LanguageTool — código aberto e auto-hospedável.",
+      "toggle_label": "Ativar verificação gramatical",
+      "enable_label": "Ativar Feedback de Gramática e Ortografia",
+      "enable_desc": "Quando ativado, o botão de feedback no editor envia seu texto à API do LanguageTool para análise de gramática e ortografia.",
+      "privacy_title": "Aviso de Serviço Externo",
+      "privacy_desc": "A verificação gramatical envia seu texto à API do LanguageTool para processamento. O LanguageTool é um software de código aberto que também pode ser auto-hospedado. Seu texto não é armazenado nem usado para treinamento.",
+      "transparency_title": "Sobre o LanguageTool",
+      "transparency_desc": "Desenvolvido com LanguageTool — um verificador gramatical e ortográfico de código aberto com suporte a mais de 30 idiomas. A pontuação de legibilidade é calculada inteiramente no seu dispositivo."
     }
   },
   "stories": {
@@ -280,8 +290,8 @@
     }
   },
   "ai_tools": {
-    "title": "Assistente de Escrita com IA",
-    "description": "Utilize a IA para aprimorar seu processo de escrita criativa.",
+    "title": "Ferramentas de Escrita",
+    "description": "Crie histórias melhores com sugestões de prompt e análise de ritmo.",
     "loading_preferences": "Carregando preferências de ferramentas de IA...",
     "disabled": {
       "title": "Recursos de IA Desativados",
@@ -299,7 +309,7 @@
   },
   "pacing_analyzer": {
     "title": "Analisador de Ritmo",
-    "description": "Receba feedback com IA sobre o ritmo da sua história vinculando um documento.",
+    "description": "Analise o ritmo da sua história com métricas de nível de sentença. Nenhum dado sai do seu dispositivo.",
     "doc_label": "Documento para Análise",
     "no_story_placeholder": "Nenhuma história selecionada",
     "doc_placeholder": "Selecione um documento ou cena",
@@ -308,7 +318,17 @@
     "submit_button": "Analisar Ritmo",
     "results": {
       "analysis_title": "Análise de Ritmo:",
-      "recommendations_title": "Recomendações:"
+      "recommendations_title": "Recomendações:",
+      "sentence_title": "Métricas de Sentenças",
+      "avg_sentence_length": "Comprimento médio de sentença",
+      "sentence_variety": "Variedade de sentenças",
+      "sentence_range": "Variação de sentenças",
+      "structure_title": "Estrutura",
+      "avg_paragraph_length": "Comprimento médio de parágrafo",
+      "long_paragraphs": "Parágrafos longos",
+      "dialogue_ratio": "Diálogo",
+      "sections_title": "Ritmo por Seção",
+      "callouts_title": "Sugestões"
     },
     "toast": {
       "no_doc_title": "Nenhum Documento Selecionado",
@@ -317,11 +337,12 @@
       "doc_empty_desc": "O documento selecionado não tem conteúdo para analisar.",
       "error_title": "Erro ao Analisar o Ritmo",
       "error_desc": "Ocorreu um erro inesperado."
-    }
+    },
+    "analyzing_button": "Analisando…"
   },
   "prompt_generator": {
     "title": "Gerador de Ideias de Escrita",
-    "description": "Inspire-se com uma ideia de escrita personalizada. Adicione contexto para melhores resultados.",
+    "description": "Inspire-se com um prompt personalizado construído a partir de modelos específicos de gênero.",
     "genre_label": "Gênero",
     "genre_placeholder": "ex: Fantasia, Ficção Científica",
     "style_label": "Estilo",
@@ -338,7 +359,9 @@
     "toast": {
       "error_title": "Erro ao Gerar Ideia",
       "error_desc": "Ocorreu um erro inesperado."
-    }
+    },
+    "regenerate_button": "Regerar Prompt",
+    "clear_button_title": "Limpar prompt"
   },
   "analytics": {
     "title": "Análises de Escrita e Insights",
@@ -662,49 +685,178 @@
       "planning": "Planejamento"
     },
     "list": {
-      "reedsy_blog": { "title": "Blog da Reedsy", "description": "Uma vasta gama de artigos sobre escrita, edição e publicação." },
-      "creative_penn": { "title": "The Creative Penn", "description": "Artigos, podcast e recursos para autores sobre escrita e o negócio da escrita." },
-      "helping_writers": { "title": "Helping Writers Become Authors", "description": "O site de K.M. Weiland oferece insights profundos sobre estrutura de histórias e arcos de personagens." },
-      "one_stop": { "title": "One Stop for Writers", "description": "Uma potência de ferramentas e recursos para escritores, incluindo dicionários de sinônimos e construtores de personagens." },
-      "self_publishing_podcast": { "title": "Self Publishing Podcast", "description": "Entrevistas e discussões sobre autopublicação, marketing e ofício da escrita." },
-      "shutup_write": { "title": "Shut Up & Write! Podcast", "description": "Foca nos aspectos práticos e na disciplina de uma vida de escritor." },
-      "rocking_self_publishing": { "title": "Rocking Self Publishing", "description": "Insights e entrevistas para autores autopublicados que buscam o sucesso." },
-      "dead_robots_society": { "title": "Dead Robots' Society", "description": "Um podcast de escritores aspirantes para escritores aspirantes, cobrindo tudo sobre escrita." },
-      "grammar_girl": { "title": "Grammar Girl", "description": "Dicas rápidas e práticas para melhorar sua escrita, com foco em gramática e estilo." },
-      "terrible_minds": { "title": "TerribleMinds", "description": "O blog de Chuck Wendig sobre escrita, narração de histórias e a vida de autor." },
-      "storyfix": { "title": "Story-Fix", "description": "Larry Brooks oferece coaching e insights sobre estrutura de histórias e ficção comercial." },
-      "copyblogger": { "title": "Copyblogger", "description": "Marketing de conteúdo e conselhos de escrita que podem ser aplicados à ficção." },
-      "litreactor": { "title": "LitReactor", "description": "Uma comunidade de escrita online que oferece aulas, workshops e uma revista." },
-      "rewrite_reword": { "title": "Rewrite, Reword, Rework", "description": "Um blog focado nas práticas de edição e revisão do seu trabalho." },
-      "slushpile_hell": { "title": "Slush-Pile Hell", "description": "Contos humorísticos e de advertência da pilha de manuscritos não solicitados de um agente literário." },
-      "scribophile": { "title": "Scribophile", "description": "Uma das maiores e mais ativas comunidades de escrita e grupos de crítica online." },
-      "submittable": { "title": "Submittable", "description": "Uma plataforma para descobrir e enviar trabalhos para revistas literárias e concursos." },
-      "the_grinder": { "title": "The Grinder", "description": "Uma ferramenta gratuita para escritores encontrarem mercados para sua ficção e acompanharem as submissões." },
-      "reedsy_title_gen": { "title": "Gerador de Títulos de Livros da Reedsy", "description": "Uma ferramenta da Reedsy para ajudar a ter ideias de títulos para o seu livro." },
-      "behind_the_name": { "title": "Behind the Name", "description": "Um recurso abrangente para encontrar a etimologia e a história dos nomes." },
-      "word_counters": { "title": "WordCounters", "description": "Uma ferramenta para contar palavras e analisar texto para densidade de palavras-chave e outras métricas." },
-      "inspiration_youtube_1": { "title": "Kurt Vonnegut sobre as Formas das Histórias", "description": "Uma palestra clássica e humorística sobre as formas básicas de enredos de histórias." },
-      "emotion_thesaurus": { "title": "The Emotion Thesaurus", "description": "Um livro popular para escritores para ajudar a mostrar, não contar, as emoções dos personagens." },
-      "inspiration_youtube_3": { "title": "As Pistas para uma Ótima História", "description": "A palestra de Andrew Stanton no TED sobre os fundamentos da narração de histórias." },
-      "bird_by_bird": { "title": "Bird by Bird de Anne Lamott", "description": "Um livro amado que oferece conselhos sobre escrita e vida com humor e sabedoria." },
-      "inspiration_youtube_4": { "title": "Série de Palestras de Brandon Sanderson", "description": "Um curso universitário completo sobre escrita de ficção científica e fantasia, disponível no YouTube." },
-      "article_character_setting": { "title": "Mostrando Personagem Através do Cenário", "description": "Um artigo sobre como usar o cenário para revelar traços de caráter." },
-      "article_research_tips": { "title": "7 Dicas para Pesquisar seu Romance", "description": "Conselhos práticos sobre como pesquisar eficazmente para sua história." },
-      "article_after_book": { "title": "O que Fazer Depois de Terminar seu Livro", "description": "Um guia sobre os próximos passos após a conclusão do seu manuscrito." },
-      "article_beta_reader": { "title": "Seis Conjuntos de Perguntas para Fazer como Leitor Beta", "description": "Um quadro útil para dar e receber feedback construtivo." },
-      "article_free_marketing": { "title": "Mais de 50 Maneiras de Divulgar seu Livro de Graça", "description": "Uma lista de estratégias de marketing gratuitas para autores." },
-      "article_pinterest": { "title": "Pinterest Para Blogueiros e Escritores", "description": "Como usar o Pinterest como ferramenta de inspiração e marketing." },
-      "article_book_genre": { "title": "Você Conhece o Gênero do seu Livro?", "description": "Um artigo explicando a importância de entender os gêneros literários." },
-      "article_who_reading": { "title": "Quem Você Está Lendo?", "description": "Discute a importância de ler dentro do seu gênero." },
-      "article_short_story_comps": { "title": "Competições de Contos", "description": "Uma lista de concursos de escrita para participar." },
-      "article_legal_tips": { "title": "7 Dicas Legais para Escritores", "description": "Conselhos legais essenciais que todo escritor deve saber." },
-      "article_copyright": { "title": "Entendendo os Direitos Autorais e Direitos Conexos", "description": "Um guia em PDF da Organização Mundial da Propriedade Intelectual." },
-      "article_100_websites": { "title": "Os 100 Melhores Sites para Escritores em 2018", "description": "Uma lista abrangente de valiosos recursos online para escritores." },
-      "writing_bad": { "title": "Writing Bad", "description": "Um guia sobre o que não fazer, oferecendo lições através de maus exemplos." },
-      "writers_digest": { "title": "Writer's Digest", "description": "Um recurso de longa data para escritores com artigos, concursos e conselhos." },
-      "self_pub_bootcamp": { "title": "Self-Publishing Boot Camp", "description": "Um site e curso dedicados a ajudar autores a se autopublicarem." },
-      "planning_worksheets": { "title": "Planilhas de Jami Gold", "description": "Uma coleção de planilhas detalhadas para planejamento de enredo, personagem e cena." },
-      "planning_take_off_pants": { "title": "Take Off Your Pants! por Libbie Hawker", "description": "Um livro focado em um método simples e eficaz para delinear seu romance." }
+      "reedsy_blog": {
+        "title": "Blog da Reedsy",
+        "description": "Uma vasta gama de artigos sobre escrita, edição e publicação."
+      },
+      "creative_penn": {
+        "title": "The Creative Penn",
+        "description": "Artigos, podcast e recursos para autores sobre escrita e o negócio da escrita."
+      },
+      "helping_writers": {
+        "title": "Helping Writers Become Authors",
+        "description": "O site de K.M. Weiland oferece insights profundos sobre estrutura de histórias e arcos de personagens."
+      },
+      "one_stop": {
+        "title": "One Stop for Writers",
+        "description": "Uma potência de ferramentas e recursos para escritores, incluindo dicionários de sinônimos e construtores de personagens."
+      },
+      "self_publishing_podcast": {
+        "title": "Self Publishing Podcast",
+        "description": "Entrevistas e discussões sobre autopublicação, marketing e ofício da escrita."
+      },
+      "shutup_write": {
+        "title": "Shut Up & Write! Podcast",
+        "description": "Foca nos aspectos práticos e na disciplina de uma vida de escritor."
+      },
+      "rocking_self_publishing": {
+        "title": "Rocking Self Publishing",
+        "description": "Insights e entrevistas para autores autopublicados que buscam o sucesso."
+      },
+      "dead_robots_society": {
+        "title": "Dead Robots' Society",
+        "description": "Um podcast de escritores aspirantes para escritores aspirantes, cobrindo tudo sobre escrita."
+      },
+      "grammar_girl": {
+        "title": "Grammar Girl",
+        "description": "Dicas rápidas e práticas para melhorar sua escrita, com foco em gramática e estilo."
+      },
+      "terrible_minds": {
+        "title": "TerribleMinds",
+        "description": "O blog de Chuck Wendig sobre escrita, narração de histórias e a vida de autor."
+      },
+      "storyfix": {
+        "title": "Story-Fix",
+        "description": "Larry Brooks oferece coaching e insights sobre estrutura de histórias e ficção comercial."
+      },
+      "copyblogger": {
+        "title": "Copyblogger",
+        "description": "Marketing de conteúdo e conselhos de escrita que podem ser aplicados à ficção."
+      },
+      "litreactor": {
+        "title": "LitReactor",
+        "description": "Uma comunidade de escrita online que oferece aulas, workshops e uma revista."
+      },
+      "rewrite_reword": {
+        "title": "Rewrite, Reword, Rework",
+        "description": "Um blog focado nas práticas de edição e revisão do seu trabalho."
+      },
+      "slushpile_hell": {
+        "title": "Slush-Pile Hell",
+        "description": "Contos humorísticos e de advertência da pilha de manuscritos não solicitados de um agente literário."
+      },
+      "scribophile": {
+        "title": "Scribophile",
+        "description": "Uma das maiores e mais ativas comunidades de escrita e grupos de crítica online."
+      },
+      "submittable": {
+        "title": "Submittable",
+        "description": "Uma plataforma para descobrir e enviar trabalhos para revistas literárias e concursos."
+      },
+      "the_grinder": {
+        "title": "The Grinder",
+        "description": "Uma ferramenta gratuita para escritores encontrarem mercados para sua ficção e acompanharem as submissões."
+      },
+      "reedsy_title_gen": {
+        "title": "Gerador de Títulos de Livros da Reedsy",
+        "description": "Uma ferramenta da Reedsy para ajudar a ter ideias de títulos para o seu livro."
+      },
+      "behind_the_name": {
+        "title": "Behind the Name",
+        "description": "Um recurso abrangente para encontrar a etimologia e a história dos nomes."
+      },
+      "word_counters": {
+        "title": "WordCounters",
+        "description": "Uma ferramenta para contar palavras e analisar texto para densidade de palavras-chave e outras métricas."
+      },
+      "inspiration_youtube_1": {
+        "title": "Kurt Vonnegut sobre as Formas das Histórias",
+        "description": "Uma palestra clássica e humorística sobre as formas básicas de enredos de histórias."
+      },
+      "emotion_thesaurus": {
+        "title": "The Emotion Thesaurus",
+        "description": "Um livro popular para escritores para ajudar a mostrar, não contar, as emoções dos personagens."
+      },
+      "inspiration_youtube_3": {
+        "title": "As Pistas para uma Ótima História",
+        "description": "A palestra de Andrew Stanton no TED sobre os fundamentos da narração de histórias."
+      },
+      "bird_by_bird": {
+        "title": "Bird by Bird de Anne Lamott",
+        "description": "Um livro amado que oferece conselhos sobre escrita e vida com humor e sabedoria."
+      },
+      "inspiration_youtube_4": {
+        "title": "Série de Palestras de Brandon Sanderson",
+        "description": "Um curso universitário completo sobre escrita de ficção científica e fantasia, disponível no YouTube."
+      },
+      "article_character_setting": {
+        "title": "Mostrando Personagem Através do Cenário",
+        "description": "Um artigo sobre como usar o cenário para revelar traços de caráter."
+      },
+      "article_research_tips": {
+        "title": "7 Dicas para Pesquisar seu Romance",
+        "description": "Conselhos práticos sobre como pesquisar eficazmente para sua história."
+      },
+      "article_after_book": {
+        "title": "O que Fazer Depois de Terminar seu Livro",
+        "description": "Um guia sobre os próximos passos após a conclusão do seu manuscrito."
+      },
+      "article_beta_reader": {
+        "title": "Seis Conjuntos de Perguntas para Fazer como Leitor Beta",
+        "description": "Um quadro útil para dar e receber feedback construtivo."
+      },
+      "article_free_marketing": {
+        "title": "Mais de 50 Maneiras de Divulgar seu Livro de Graça",
+        "description": "Uma lista de estratégias de marketing gratuitas para autores."
+      },
+      "article_pinterest": {
+        "title": "Pinterest Para Blogueiros e Escritores",
+        "description": "Como usar o Pinterest como ferramenta de inspiração e marketing."
+      },
+      "article_book_genre": {
+        "title": "Você Conhece o Gênero do seu Livro?",
+        "description": "Um artigo explicando a importância de entender os gêneros literários."
+      },
+      "article_who_reading": {
+        "title": "Quem Você Está Lendo?",
+        "description": "Discute a importância de ler dentro do seu gênero."
+      },
+      "article_short_story_comps": {
+        "title": "Competições de Contos",
+        "description": "Uma lista de concursos de escrita para participar."
+      },
+      "article_legal_tips": {
+        "title": "7 Dicas Legais para Escritores",
+        "description": "Conselhos legais essenciais que todo escritor deve saber."
+      },
+      "article_copyright": {
+        "title": "Entendendo os Direitos Autorais e Direitos Conexos",
+        "description": "Um guia em PDF da Organização Mundial da Propriedade Intelectual."
+      },
+      "article_100_websites": {
+        "title": "Os 100 Melhores Sites para Escritores em 2018",
+        "description": "Uma lista abrangente de valiosos recursos online para escritores."
+      },
+      "writing_bad": {
+        "title": "Writing Bad",
+        "description": "Um guia sobre o que não fazer, oferecendo lições através de maus exemplos."
+      },
+      "writers_digest": {
+        "title": "Writer's Digest",
+        "description": "Um recurso de longa data para escritores com artigos, concursos e conselhos."
+      },
+      "self_pub_bootcamp": {
+        "title": "Self-Publishing Boot Camp",
+        "description": "Um site e curso dedicados a ajudar autores a se autopublicarem."
+      },
+      "planning_worksheets": {
+        "title": "Planilhas de Jami Gold",
+        "description": "Uma coleção de planilhas detalhadas para planejamento de enredo, personagem e cena."
+      },
+      "planning_take_off_pants": {
+        "title": "Take Off Your Pants! por Libbie Hawker",
+        "description": "Um livro focado em um método simples e eficaz para delinear seu romance."
+      }
     }
   },
   "editor": {
@@ -782,7 +934,7 @@
     "tooltip_get_feedback": "Obter Feedback de Escrita",
     "tooltip_ai_disabled": "Recursos de IA desativados nas Configurações",
     "feedback": {
-      "title": "Feedback de Escrita da IA",
+      "title": "Feedback de Escrita",
       "close_button_title": "Fechar Painel de Feedback",
       "overall_assessment_title": "Avaliação Geral",
       "readability_title": "Legibilidade",
@@ -791,7 +943,7 @@
       "grammar_title": "Sugestões de Gramática e Ortografia",
       "grammar_original": "Original",
       "grammar_suggested": "Sugerido",
-      "grammar_none_found": "Nenhum problema específico de gramática ou ortografia encontrado pela IA."
+      "grammar_none_found": "Nenhum problema de gramática ou ortografia encontrado."
     },
     "save_as_dialog": {
       "title": "Salvar em Documentos",
@@ -1068,55 +1220,94 @@
         "title": "Estrutura de 24 Capítulos",
         "description": "Uma estrutura de enredo detalhada capítulo por capítulo.",
         "part1": "Parte 1: Capítulos 1-6",
-        "ch1": "Capítulo 1", "ch1_desc": "Apresente o protagonista e o cenário.",
-        "ch2": "Capítulo 2", "ch2_desc": "Incidente incitante.",
-        "ch3": "Capítulo 3", "ch3_desc": "Reação imediata ao incidente incitante.",
-        "ch4": "Capítulo 4", "ch4_desc": "O protagonista toma uma decisão.",
-        "ch5": "Capítulo 5", "ch5_desc": "O protagonista faz um plano.",
-        "ch6": "Capítulo 6", "ch6_desc": "Primeiro ponto da trama.",
+        "ch1": "Capítulo 1",
+        "ch1_desc": "Apresente o protagonista e o cenário.",
+        "ch2": "Capítulo 2",
+        "ch2_desc": "Incidente incitante.",
+        "ch3": "Capítulo 3",
+        "ch3_desc": "Reação imediata ao incidente incitante.",
+        "ch4": "Capítulo 4",
+        "ch4_desc": "O protagonista toma uma decisão.",
+        "ch5": "Capítulo 5",
+        "ch5_desc": "O protagonista faz um plano.",
+        "ch6": "Capítulo 6",
+        "ch6_desc": "Primeiro ponto da trama.",
         "part2": "Parte 2: Capítulos 7-12",
-        "ch7": "Capítulo 7", "ch7_desc": "O protagonista entra em um novo mundo.",
-        "ch8": "Capítulo 8", "ch8_desc": "O protagonista conhece novos personagens.",
-        "ch9": "Capítulo 9", "ch9_desc": "Primeiro ponto de aperto.",
-        "ch10": "Capítulo 10", "ch10_desc": "O protagonista aprende novas habilidades.",
-        "ch11": "Capítulo 11", "ch11_desc": "O protagonista enfrenta um revés.",
-        "ch12": "Capítulo 12", "ch12_desc": "Ponto médio.",
+        "ch7": "Capítulo 7",
+        "ch7_desc": "O protagonista entra em um novo mundo.",
+        "ch8": "Capítulo 8",
+        "ch8_desc": "O protagonista conhece novos personagens.",
+        "ch9": "Capítulo 9",
+        "ch9_desc": "Primeiro ponto de aperto.",
+        "ch10": "Capítulo 10",
+        "ch10_desc": "O protagonista aprende novas habilidades.",
+        "ch11": "Capítulo 11",
+        "ch11_desc": "O protagonista enfrenta um revés.",
+        "ch12": "Capítulo 12",
+        "ch12_desc": "Ponto médio.",
         "part3": "Parte 3: Capítulos 13-18",
-        "ch13": "Capítulo 13", "ch13_desc": "O protagonista entra em ação.",
-        "ch14": "Capítulo 14", "ch14_desc": "O protagonista enfrenta um novo desafio.",
-        "ch15": "Capítulo 15", "ch15_desc": "Segundo ponto de aperto.",
-        "ch16": "Capítulo 16", "ch16_desc": "O protagonista tem uma percepção.",
-        "ch17": "Capítulo 17", "ch17_desc": "O protagonista faz um novo plano.",
-        "ch18": "Capítulo 18", "ch18_desc": "Terceiro ponto da trama.",
+        "ch13": "Capítulo 13",
+        "ch13_desc": "O protagonista entra em ação.",
+        "ch14": "Capítulo 14",
+        "ch14_desc": "O protagonista enfrenta um novo desafio.",
+        "ch15": "Capítulo 15",
+        "ch15_desc": "Segundo ponto de aperto.",
+        "ch16": "Capítulo 16",
+        "ch16_desc": "O protagonista tem uma percepção.",
+        "ch17": "Capítulo 17",
+        "ch17_desc": "O protagonista faz um novo plano.",
+        "ch18": "Capítulo 18",
+        "ch18_desc": "Terceiro ponto da trama.",
         "part4": "Parte 4: Capítulos 19-24",
-        "ch19": "Capítulo 19", "ch19_desc": "O protagonista está em seu ponto mais baixo.",
-        "ch20": "Capítulo 20", "ch20_desc": "O protagonista tem um momento de clareza.",
-        "ch21": "Capítulo 21", "ch21_desc": "O protagonista se prepara para o confronto final.",
-        "ch22": "Capítulo 22", "ch22_desc": "Clímax.",
-        "ch23": "Capítulo 23", "ch23_desc": "Ação descendente.",
-        "ch24": "Capítulo 24", "ch24_desc": "Resolução."
+        "ch19": "Capítulo 19",
+        "ch19_desc": "O protagonista está em seu ponto mais baixo.",
+        "ch20": "Capítulo 20",
+        "ch20_desc": "O protagonista tem um momento de clareza.",
+        "ch21": "Capítulo 21",
+        "ch21_desc": "O protagonista se prepara para o confronto final.",
+        "ch22": "Capítulo 22",
+        "ch22_desc": "Clímax.",
+        "ch23": "Capítulo 23",
+        "ch23_desc": "Ação descendente.",
+        "ch24": "Capítulo 24",
+        "ch24_desc": "Resolução."
       },
       "27_chapter_outline": {
         "title": "Estrutura de 27 Capítulos",
         "description": "Uma estrutura de enredo de três atos dividida em 27 capítulos.",
         "act1": "Ato 1",
-        "ch1_3": "Capítulos 1-3", "ch1_3_desc": "Apresente o protagonista e seu mundo.",
-        "ch4": "Capítulo 4", "ch4_desc": "Incidente incitante.",
-        "ch5": "Capítulo 5", "ch5_desc": "Reação do protagonista.",
-        "ch6_7": "Capítulos 6-7", "ch6_7_desc": "O protagonista faz uma escolha.",
-        "ch8": "Capítulo 8", "ch8_desc": "O protagonista faz um plano.",
-        "ch9": "Capítulo 9", "ch9_desc": "Primeiro ponto da trama.",
+        "ch1_3": "Capítulos 1-3",
+        "ch1_3_desc": "Apresente o protagonista e seu mundo.",
+        "ch4": "Capítulo 4",
+        "ch4_desc": "Incidente incitante.",
+        "ch5": "Capítulo 5",
+        "ch5_desc": "Reação do protagonista.",
+        "ch6_7": "Capítulos 6-7",
+        "ch6_7_desc": "O protagonista faz uma escolha.",
+        "ch8": "Capítulo 8",
+        "ch8_desc": "O protagonista faz um plano.",
+        "ch9": "Capítulo 9",
+        "ch9_desc": "Primeiro ponto da trama.",
         "act2": "Ato 2",
-        "ch10_11": "Capítulos 10-11", "ch10_11_desc": "O protagonista entra em um novo mundo.",
-        "ch12_14": "Capítulos 12-14", "ch12_14_desc": "O protagonista aprende as regras.",
-        "ch15_16": "Capítulos 15-16", "ch15_16_desc": "Primeiro ponto de aperto.",
-        "ch17": "Capítulo 17", "ch17_desc": "Ponto médio.",
-        "ch18_21": "Capítulos 18-21", "ch18_21_desc": "O protagonista entra em ação.",
-        "ch22": "Capítulo 22", "ch22_desc": "Segundo ponto de aperto.",
+        "ch10_11": "Capítulos 10-11",
+        "ch10_11_desc": "O protagonista entra em um novo mundo.",
+        "ch12_14": "Capítulos 12-14",
+        "ch12_14_desc": "O protagonista aprende as regras.",
+        "ch15_16": "Capítulos 15-16",
+        "ch15_16_desc": "Primeiro ponto de aperto.",
+        "ch17": "Capítulo 17",
+        "ch17_desc": "Ponto médio.",
+        "ch18_21": "Capítulos 18-21",
+        "ch18_21_desc": "O protagonista entra em ação.",
+        "ch22": "Capítulo 22",
+        "ch22_desc": "Segundo ponto de aperto.",
         "act3": "Ato 3",
-        "ch23": "Capítulo 23", "ch23_desc": "Terceiro ponto da trama.",
-        "ch24_26": "Capítulos 24-26", "ch24_26_desc": "Clímax.",
-        "ch27": "Capítulo 27", "ch27_desc": "Resolução."
+        "ch23": "Capítulo 23",
+        "ch23_desc": "Terceiro ponto da trama.",
+        "ch24_26": "Capítulos 24-26",
+        "ch24_26_desc": "Clímax.",
+        "ch27": "Capítulo 27",
+        "ch27_desc": "Resolução."
       },
       "snowflake": {
         "title": "O Método Floco de Neve",
@@ -1422,7 +1613,9 @@
       "placeholder": "Adicionar nova tarefa...",
       "empty": "Nenhuma tarefa ainda. Adicione uma acima."
     }
+  },
+  "writing_tools": {
+    "title": "Ferramentas de Escrita",
+    "description": "Crie histórias melhores com sugestões de prompt e análise de ritmo — tudo processado localmente, sem envio de dados."
   }
 }
-
-    

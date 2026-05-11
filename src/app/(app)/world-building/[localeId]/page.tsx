@@ -167,10 +167,10 @@ export default function LocaleSheetPage() {
     textContent += `${'='.repeat(35)}\n\n`;
 
     Object.entries(dynamicLocaleSheetFields).forEach(([sectionKey, fields]) => {
-      const sectionName = t(localeSheetSections[sectionKey as keyof typeof localeSheetSections]);
+      const sectionName = t(localeSheetSections[sectionKey as keyof typeof localeSheetSections] as never);
       textContent += `--- ${sectionName.toUpperCase()} ---\n\n`;
       fields.forEach(field => {
-        if (field.type !== 'display') {
+        if ((field as { type?: string }).type !== 'display') {
           textContent += `${field.label}:\n${sheetData[field.id] || t('world_building_sheet.export.not_applicable')}\n\n`;
         }
       });
@@ -266,14 +266,14 @@ export default function LocaleSheetPage() {
           <AccordionItem key={sectionKey} value={sectionKey} className="border-b-0">
             <Card>
               <AccordionTrigger className="p-6 text-xl hover:no-underline">
-                {t(localeSheetSections[sectionKey as keyof typeof localeSheetSections])}
+                {t(localeSheetSections[sectionKey as keyof typeof localeSheetSections] as never)}
               </AccordionTrigger>
               <AccordionContent>
                 <div className="grid gap-6 p-6 pt-0">
                   {fields.map(field => (
                     <div key={field.id} className="grid gap-2">
                       <Label htmlFor={field.id}>{field.label}</Label>
-                      {field.type === 'display' ? (
+                      {(field as { type?: string }).type === 'display' ? (
                         <Input id={field.id} readOnly value={locale.name} className="bg-muted" />
                       ) : (
                         <Textarea

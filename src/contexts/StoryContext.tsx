@@ -346,4 +346,4 @@ export const getPlotTemplateDataKey = (storyId: string | null, templateId: strin
   return storyId && userId ? `openwritingkit-story-${storyId}-plottemplate-${templateId}-user-${userId}` : null;
 }
 
-export type { CharacterProfile, Locale, Story };
+export type { CharacterProfile, Story };
