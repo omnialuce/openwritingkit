@@ -187,36 +187,69 @@ export default function SettingsPage() {
         try {
             const content = reader.result as string;
             if (!content) throw new Error("File content is empty.");
-            const backupData = JSON.parse(content);
+            const backupData: Record<string, unknown> = JSON.parse(content);
+            const currentUserId = user?.id ?? null;
+
+            // Detect an old user ID embedded in backup keys so we can remap them
+            // to the current user's ID. This handles backups made under a different
+            // auth provider (e.g. Firebase → Supabase migration where UIDs changed).
+            // We find the old UID by looking for the canonical stories-list key:
+            //   openwritingkit-user-{uid}-stories
+            let oldUserId: string | null = null;
+            if (currentUserId) {
+              const storiesKeyPrefix = 'openwritingkit-user-';
+              const storiesKeySuffix = '-stories';
+              for (const key of Object.keys(backupData)) {
+                if (key.startsWith(storiesKeyPrefix) && key.endsWith(storiesKeySuffix)) {
+                  const candidate = key.slice(storiesKeyPrefix.length, -storiesKeySuffix.length);
+                  if (candidate !== currentUserId && candidate !== 'anonymous') {
+                    oldUserId = candidate;
+                    break;
+                  }
+                }
+              }
+            }
+
+            // Remap keys: replace every occurrence of the old UID with the current one.
+            // Only keys are remapped — values are left untouched.
+            const remappedData: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(backupData)) {
+              const newKey = oldUserId && currentUserId
+                ? key.replaceAll(oldUserId, currentUserId)
+                : key;
+              remappedData[newKey] = value;
+            }
 
             // Clear all existing app data first
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                 if (key && key.startsWith('openwritingkit-')) {
-                    keysToRemove.push(key);
-                }
+                if (key && key.startsWith('openwritingkit-')) keysToRemove.push(key);
             }
             keysToRemove.forEach(key => localStorage.removeItem(key));
 
-            // Write imported data to localStorage
-            for (const key in backupData) {
-                if (Object.prototype.hasOwnProperty.call(backupData, key)) {
-                   localStorage.setItem(key, typeof backupData[key] === 'string' ? backupData[key] : JSON.stringify(backupData[key]));
-                }
+            // Write remapped data to localStorage
+            for (const [key, value] of Object.entries(remappedData)) {
+              localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
             }
 
             // Push imported data to cloud so the next session restore pulls the
             // correct data instead of old cloud state overwriting the import.
-            if (user) {
+            if (currentUserId) {
               try {
-                await cloudSync.pushAll(user.id);
+                await cloudSync.pushAll(currentUserId);
               } catch {
                 // Non-fatal — local data is correct, cloud sync will catch up
               }
             }
 
-            toast({ title: t('settings.toast.data_import_success_title'), description: t('settings.toast.data_import_success_desc') });
+            const remapped = oldUserId != null;
+            toast({
+              title: t('settings.toast.data_import_success_title'),
+              description: remapped
+                ? `${t('settings.toast.data_import_success_desc')} (user ID remapped from old account)`
+                : t('settings.toast.data_import_success_desc'),
+            });
             setTimeout(() => window.location.reload(), 1500);
         } catch (error) {
             console.error("Import error:", error);
