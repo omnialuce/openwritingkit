@@ -2,6 +2,121 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+
+// ---------------------------------------------------------------------------
+// Backup key normalisation
+// ---------------------------------------------------------------------------
+// Backups span multiple app generations with different key conventions:
+//   Gen 1 – no user ID:        openwritingkit-story-{id}-characters
+//   Gen 2 – email as user ID:  openwritingkit-user-email@x.com-stories
+//   Gen 3 – Firebase UID:      openwritingkit-story-{id}-characters-user-{fbUid}
+//                               openwritingkit-story-{id}-writing-streak-{fbUid}
+// This function remaps everything to the current Supabase user ID format.
+function normalizeImportedData(
+  backup: Record<string, unknown>,
+  currentUserId: string,
+): Record<string, unknown> {
+  const keys = Object.keys(backup);
+
+  // Collect every old user identifier from *-stories keys
+  const oldUserIds: string[] = [];
+  for (const key of keys) {
+    if (key.startsWith('openwritingkit-user-') && key.endsWith('-stories')) {
+      const candidate = key.slice('openwritingkit-user-'.length, -'-stories'.length);
+      if (candidate !== currentUserId && candidate !== 'anonymous') {
+        oldUserIds.push(candidate);
+      }
+    }
+  }
+
+  // Merge every *-stories array into one deduplicated list
+  const storyMap = new Map<string, unknown>();
+  for (const key of keys) {
+    if (key.startsWith('openwritingkit-user-') && key.endsWith('-stories')) {
+      try {
+        const v = backup[key];
+        const arr: unknown[] = Array.isArray(v) ? v : JSON.parse(v as string);
+        for (const s of arr) {
+          if (s && typeof s === 'object' && 'id' in s) {
+            storyMap.set((s as { id: string }).id, s);
+          }
+        }
+      } catch { /* malformed entry – skip */ }
+    }
+  }
+
+  // Story-data resource names that use the "-user-{uid}" suffix convention
+  const USER_SUFFIX = new Set([
+    'characters', 'documents', 'outline-items-v3', 'outline-items',
+    'world-building-v2', 'world-building', 'research', 'research-todos',
+    'activity-log', 'deadline', 'plot-settings', 'plotpoints',
+    'scratchpad', 'timeline-events', 'word-goal',
+  ]);
+  // Story-data keys that use a bare "-{uid}" suffix (no "-user-" separator)
+  const PLAIN_SUFFIX = new Set([
+    'writing-streak', 'last-active-date', 'last-streak-date',
+  ]);
+
+  const result: Record<string, unknown> = {};
+
+  for (const [origKey, value] of Object.entries(backup)) {
+    // Stories lists and active-story keys are rebuilt below
+    if (
+      origKey.startsWith('openwritingkit-user-') &&
+      (origKey.endsWith('-stories') || origKey.endsWith('-active-story-id'))
+    ) continue;
+
+    // Determine whether this is a legacy unscoped story-data key
+    // (i.e. it has no old UID appended and no -user- segment yet)
+    let legacySuffix: '-user-' | '-' | null = null;
+    if (origKey.startsWith('openwritingkit-story-')) {
+      const alreadyHasUid =
+        origKey.includes('-user-') ||
+        oldUserIds.some((id) => origKey.endsWith('-' + id));
+      if (!alreadyHasUid) {
+        // Resource name = everything after openwritingkit-story-{storyId}-
+        const afterPrefix = origKey.slice('openwritingkit-story-'.length);
+        const resource = afterPrefix.slice(afterPrefix.indexOf('-') + 1);
+        if (USER_SUFFIX.has(resource)) {
+          legacySuffix = '-user-';
+        } else if (PLAIN_SUFFIX.has(resource)) {
+          legacySuffix = '-';
+        } else if (resource.startsWith('character-') && resource.endsWith('-sheet')) {
+          legacySuffix = '-user-';
+        }
+      }
+    }
+
+    // Remap all old user identifiers to the current one
+    let newKey = origKey;
+    for (const oldId of oldUserIds) {
+      newKey = newKey.replaceAll(oldId, currentUserId);
+    }
+
+    // Append user scoping for legacy keys that had none
+    if (legacySuffix) {
+      newKey = `${newKey}${legacySuffix}${currentUserId}`;
+    }
+
+    result[newKey] = value;
+  }
+
+  // Write unified stories list
+  result[`openwritingkit-user-${currentUserId}-stories`] =
+    Array.from(storyMap.values());
+
+  // Carry over active-story-id from whichever old key exists (prefer later formats)
+  for (const oldId of [...oldUserIds].reverse()) {
+    const src = `openwritingkit-user-${oldId}-active-story-id`;
+    if (backup[src] !== undefined) {
+      result[`openwritingkit-user-${currentUserId}-active-story-id`] = backup[src];
+      break;
+    }
+  }
+
+  return result;
+}
+// ---------------------------------------------------------------------------
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -190,35 +305,10 @@ export default function SettingsPage() {
             const backupData: Record<string, unknown> = JSON.parse(content);
             const currentUserId = user?.id ?? null;
 
-            // Detect an old user ID embedded in backup keys so we can remap them
-            // to the current user's ID. This handles backups made under a different
-            // auth provider (e.g. Firebase → Supabase migration where UIDs changed).
-            // We find the old UID by looking for the canonical stories-list key:
-            //   openwritingkit-user-{uid}-stories
-            let oldUserId: string | null = null;
-            if (currentUserId) {
-              const storiesKeyPrefix = 'openwritingkit-user-';
-              const storiesKeySuffix = '-stories';
-              for (const key of Object.keys(backupData)) {
-                if (key.startsWith(storiesKeyPrefix) && key.endsWith(storiesKeySuffix)) {
-                  const candidate = key.slice(storiesKeyPrefix.length, -storiesKeySuffix.length);
-                  if (candidate !== currentUserId && candidate !== 'anonymous') {
-                    oldUserId = candidate;
-                    break;
-                  }
-                }
-              }
-            }
-
-            // Remap keys: replace every occurrence of the old UID with the current one.
-            // Only keys are remapped — values are left untouched.
-            const remappedData: Record<string, unknown> = {};
-            for (const [key, value] of Object.entries(backupData)) {
-              const newKey = oldUserId && currentUserId
-                ? key.replaceAll(oldUserId, currentUserId)
-                : key;
-              remappedData[newKey] = value;
-            }
+            // Normalise all key formats across backup generations
+            const normalised = currentUserId
+              ? normalizeImportedData(backupData, currentUserId)
+              : backupData;
 
             // Clear all existing app data first
             const keysToRemove: string[] = [];
@@ -228,8 +318,8 @@ export default function SettingsPage() {
             }
             keysToRemove.forEach(key => localStorage.removeItem(key));
 
-            // Write remapped data to localStorage
-            for (const [key, value] of Object.entries(remappedData)) {
+            // Write normalised data to localStorage
+            for (const [key, value] of Object.entries(normalised)) {
               localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
             }
 
@@ -243,12 +333,9 @@ export default function SettingsPage() {
               }
             }
 
-            const remapped = oldUserId != null;
             toast({
               title: t('settings.toast.data_import_success_title'),
-              description: remapped
-                ? `${t('settings.toast.data_import_success_desc')} (user ID remapped from old account)`
-                : t('settings.toast.data_import_success_desc'),
+              description: t('settings.toast.data_import_success_desc'),
             });
             setTimeout(() => window.location.reload(), 1500);
         } catch (error) {
