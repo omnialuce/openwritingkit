@@ -46,42 +46,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let cancelled = false;
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (cancelled) return;
       if (session?.user) {
         const appUser = toAppUser(session.user);
         setCloudUserId(appUser.id);
-        // Only pull from cloud on session restore if localStorage has no app data
-        // (i.e. this is a new device). If local data already exists we trust it
-        // as the up-to-date cache and skip the pull to avoid overwriting recent
-        // imports or writes.
+        setUser(appUser);
+        // On a fresh device (no local data) pull from cloud in the background,
+        // then reload so all contexts pick up the restored data.
         const hasLocalData = Array.from({ length: localStorage.length }, (_, i) =>
           localStorage.key(i),
         ).some((k) => k?.startsWith('openwritingkit-'));
         if (!hasLocalData) {
-          try {
-            await cloudSync.pullAll(appUser.id);
-          } catch {
-            // Non-fatal: app works offline / from cache
-          }
+          cloudSync.pullAll(appUser.id)
+            .then(() => { window.location.reload(); })
+            .catch(() => { /* non-fatal — app works from empty state */ });
         }
-        setUser(appUser);
       }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         const appUser = toAppUser(session.user);
         setCloudUserId(appUser.id);
+        setUser(appUser);
+        // On fresh sign-in to a new device, pull cloud data in background then reload.
         if (event === 'SIGNED_IN') {
-          try {
-            await cloudSync.pullAll(appUser.id);
-          } catch {
-            // Non-fatal: app works from localStorage cache
+          const hasLocalData = Array.from({ length: localStorage.length }, (_, i) =>
+            localStorage.key(i),
+          ).some((k) => k?.startsWith('openwritingkit-'));
+          if (!hasLocalData) {
+            cloudSync.pullAll(appUser.id)
+              .then(() => { window.location.reload(); })
+              .catch(() => {});
           }
         }
-        setUser(appUser);
       } else {
         setCloudUserId(null);
         setUser(null);
