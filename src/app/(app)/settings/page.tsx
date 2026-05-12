@@ -176,22 +176,19 @@ export default function SettingsPage() {
       toast({ title: t('settings.toast.data_import_no_file_title'), description: t('settings.toast.data_import_no_file_desc'), variant: "destructive" });
       return;
     }
-    
+
     if (!confirm(t('settings.data_management.import_confirm'))) {
         if(fileInputRef.current) fileInputRef.current.value = "";
         return;
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async () => {
         try {
-            // Correctly access the file content from the reader's result
-            const content = reader.result as string; 
-            if (!content) {
-                throw new Error("File content is empty.");
-            }
+            const content = reader.result as string;
+            if (!content) throw new Error("File content is empty.");
             const backupData = JSON.parse(content);
-            
+
             // Clear all existing app data first
             const keysToRemove: string[] = [];
             for (let i = 0; i < localStorage.length; i++) {
@@ -202,12 +199,23 @@ export default function SettingsPage() {
             }
             keysToRemove.forEach(key => localStorage.removeItem(key));
 
-            // Import new data
+            // Write imported data to localStorage
             for (const key in backupData) {
                 if (Object.prototype.hasOwnProperty.call(backupData, key)) {
                    localStorage.setItem(key, typeof backupData[key] === 'string' ? backupData[key] : JSON.stringify(backupData[key]));
                 }
             }
+
+            // Push imported data to cloud so the next session restore pulls the
+            // correct data instead of old cloud state overwriting the import.
+            if (user) {
+              try {
+                await cloudSync.pushAll(user.id);
+              } catch {
+                // Non-fatal — local data is correct, cloud sync will catch up
+              }
+            }
+
             toast({ title: t('settings.toast.data_import_success_title'), description: t('settings.toast.data_import_success_desc') });
             setTimeout(() => window.location.reload(), 1500);
         } catch (error) {

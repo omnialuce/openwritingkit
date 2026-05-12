@@ -51,7 +51,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session?.user) {
         const appUser = toAppUser(session.user);
         setCloudUserId(appUser.id);
-        await cloudSync.pullAll(appUser.id);
+        // Only pull from cloud on session restore if localStorage has no app data
+        // (i.e. this is a new device). If local data already exists we trust it
+        // as the up-to-date cache and skip the pull to avoid overwriting recent
+        // imports or writes.
+        const hasLocalData = Array.from({ length: localStorage.length }, (_, i) =>
+          localStorage.key(i),
+        ).some((k) => k?.startsWith('openwritingkit-'));
+        if (!hasLocalData) {
+          try {
+            await cloudSync.pullAll(appUser.id);
+          } catch {
+            // Non-fatal: app works offline / from cache
+          }
+        }
         setUser(appUser);
       }
       setLoading(false);
@@ -62,7 +75,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const appUser = toAppUser(session.user);
         setCloudUserId(appUser.id);
         if (event === 'SIGNED_IN') {
-          await cloudSync.pullAll(appUser.id);
+          try {
+            await cloudSync.pullAll(appUser.id);
+          } catch {
+            // Non-fatal: app works from localStorage cache
+          }
         }
         setUser(appUser);
       } else {
