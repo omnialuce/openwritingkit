@@ -46,22 +46,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let cancelled = false;
 
+    // sessionStorage flag prevents the post-pull reload from looping.
+    // It persists across window.location.reload() but not across tab close,
+    // so users always get a fresh pull when they open a new tab after logout.
+    const PULL_DONE_KEY = 'owk-cloud-pull-done';
+
+    function maybePullAndReload(userId: string) {
+      if (sessionStorage.getItem(PULL_DONE_KEY)) return;
+      sessionStorage.setItem(PULL_DONE_KEY, '1');
+      cloudSync.pullAll(userId)
+        .then(() => { window.location.reload(); })
+        .catch(() => { /* non-fatal */ });
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (cancelled) return;
       if (session?.user) {
         const appUser = toAppUser(session.user);
         setCloudUserId(appUser.id);
         setUser(appUser);
-        // On a fresh device (no local data) pull from cloud in the background,
-        // then reload so all contexts pick up the restored data.
         const hasLocalData = Array.from({ length: localStorage.length }, (_, i) =>
           localStorage.key(i),
         ).some((k) => k?.startsWith('openwritingkit-'));
-        if (!hasLocalData) {
-          cloudSync.pullAll(appUser.id)
-            .then(() => { window.location.reload(); })
-            .catch(() => { /* non-fatal — app works from empty state */ });
-        }
+        if (!hasLocalData) maybePullAndReload(appUser.id);
       }
       setLoading(false);
     });
@@ -71,16 +78,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const appUser = toAppUser(session.user);
         setCloudUserId(appUser.id);
         setUser(appUser);
-        // On fresh sign-in to a new device, pull cloud data in background then reload.
         if (event === 'SIGNED_IN') {
           const hasLocalData = Array.from({ length: localStorage.length }, (_, i) =>
             localStorage.key(i),
           ).some((k) => k?.startsWith('openwritingkit-'));
-          if (!hasLocalData) {
-            cloudSync.pullAll(appUser.id)
-              .then(() => { window.location.reload(); })
-              .catch(() => {});
-          }
+          if (!hasLocalData) maybePullAndReload(appUser.id);
         }
       } else {
         setCloudUserId(null);
@@ -169,6 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await supabase.auth.signOut();
     setCloudUserId(null);
     setUser(null);
+    sessionStorage.removeItem('owk-cloud-pull-done');
     router.push('/login');
     toast({ title: t('auth.logout_success_title'), description: t('auth.logout_success_desc') });
   };
