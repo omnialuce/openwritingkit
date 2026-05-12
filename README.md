@@ -35,9 +35,9 @@ An open-source, privacy-first writing companion built for fiction writers. All s
 
 ## Privacy & Data Storage
 
-**Local-first:** All story content, outlines, characters, world building, and research are stored in your browser's `localStorage`, namespaced by user ID. Nothing is sent to any server unless you explicitly use the Writing Feedback feature.
+**Local-first with cloud sync:** All story content, outlines, characters, world building, and research are stored in your browser's `localStorage` for instant reads, and shadow-synced to your Supabase Storage account in the background. On sign-in from a new device, all your data is automatically downloaded from the cloud.
 
-**Backup & Restore:** Because data lives in the browser, use **Settings → Data Management** to export a full backup file and import it on another device or after clearing browser storage.
+**Backup & Restore:** Settings → Data Management lets you export a JSON backup file. Settings → Cloud Storage lets you manually push or pull from the cloud (useful for first-time migrations).
 
 **Writing Feedback (LanguageTool):** By default, the feedback feature calls the public LanguageTool API. For a fully private setup, [self-host LanguageTool](https://dev.languagetool.org/http-server) and point the app at your instance via `NEXT_PUBLIC_LANGUAGETOOL_URL`. No text is stored by the app itself.
 
@@ -55,8 +55,8 @@ An open-source, privacy-first writing companion built for fiction writers. All s
 | Rich text editor | TipTap v2 |
 | NLP (local) | compromise v14 |
 | Charts | recharts v2 |
-| Auth | Firebase (email/password + Google OAuth via NextAuth) |
-| Storage | Browser `localStorage` via async wrapper |
+| Auth | Supabase Auth (email/password + Google OAuth) |
+| Storage | Browser `localStorage` as cache, Supabase Storage for cloud sync |
 | Drag & drop | @hello-pangea/dnd |
 | Grammar feedback | LanguageTool API (optional self-hosted) |
 
@@ -68,7 +68,7 @@ An open-source, privacy-first writing companion built for fiction writers. All s
 
 - **Node.js** 18 or higher — [nodejs.org](https://nodejs.org/)
 - **Git** — [git-scm.com](https://git-scm.com/)
-- A **Firebase project** (free tier is sufficient)
+- A **Supabase project** (free tier is sufficient)
 
 ### 1. Clone the repository
 
@@ -95,27 +95,23 @@ Open `.env.local` and set:
 
 | Variable | Required | Description |
 |---|---|---|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Yes | Firebase web app config |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Yes | Firebase web app config |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Yes | Firebase web app config |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Yes | Firebase web app config |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Yes | Firebase web app config |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | Yes | Firebase web app config |
-| `GOOGLE_CLIENT_ID` | Optional | Google OAuth sign-in |
-| `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth sign-in |
-| `NEXTAUTH_SECRET` | Yes | Generate with `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | Yes | `http://localhost:3000` for local dev |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | From Supabase → Project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | From Supabase → Project Settings → API |
 | `INVITE_CODE` | Optional | If set, users must enter this code to register |
 | `NEXT_PUBLIC_LANGUAGETOOL_URL` | Optional | Self-hosted LanguageTool endpoint; omit to use the public API |
 
-### 4. Set up Firebase
+### 4. Set up Supabase
 
-1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a project.
-2. Under **Authentication → Sign-in method**, enable **Email/Password** and optionally **Google**.
-3. Under **Project Settings → Your apps**, create a **Web app** and copy the config values into `.env.local`.
-4. *(Optional)* If you want server-side Firestore operations, generate a service account key under **Project Settings → Service accounts** and paste the JSON as a single line into `FIREBASE_SERVICE_ACCOUNT_KEY`.
+1. Create a free project at [supabase.com](https://supabase.com/).
+2. Under **Authentication → Providers**, enable **Email** and optionally **Google**. For Google, create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com/) with `https://<your-project-ref>.supabase.co/auth/v1/callback` as the redirect URI, then paste the client ID and secret into the Supabase Google provider form.
+3. Under **Storage**, create a private bucket called **`owk-data`**.
+4. Under **Storage → Policies** on the `owk-data` bucket, add a policy for SELECT, INSERT, UPDATE, and DELETE with this expression so users can only access their own folder:
+   ```sql
+   (bucket_id = 'owk-data') AND ((storage.foldername(name))[1] = auth.uid()::text)
+   ```
+5. From **Project Settings → API**, copy the Project URL and `anon public` key into `.env.local`.
 
-> **Note:** There is no public sign-up by default. Either leave `INVITE_CODE` blank to allow open registration, or set it to restrict access to invited users. You can also add users manually in the Firebase Authentication console.
+> **Note:** There is no public sign-up by default. Leave `INVITE_CODE` blank to allow open registration, or set it to restrict access to invited users. Invite codes are validated server-side and never exposed to the browser.
 
 ### 5. Run the development server
 

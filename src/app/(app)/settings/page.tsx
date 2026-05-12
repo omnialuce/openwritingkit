@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, SpellCheck2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion } from 'lucide-react';
+import { Moon, Sun, SpellCheck2, KeyRound, Settings as SettingsIcon, AlertCircle, Info, Download, Upload, Loader2, Eye, EyeOff, MessageCircleQuestion, Cloud, CloudDownload } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/lib/storage';
+import { cloudSync } from '@/lib/cloud-sync';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,6 +29,8 @@ export default function SettingsPage() {
 
   const [aiFeaturesEnabled, setAiFeaturesEnabled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isCloudPushing, setIsCloudPushing] = useState(false);
+  const [isCloudPulling, setIsCloudPulling] = useState(false);
 
   // State for security forms
   const [newEmail, setNewEmail] = useState('');
@@ -139,6 +142,34 @@ export default function SettingsPage() {
     toast({ title: t('settings.toast.data_export_success_title'), description: t('settings.toast.data_export_success_desc') });
   };
   
+  const handlePushToCloud = async () => {
+    if (!user) return;
+    setIsCloudPushing(true);
+    try {
+      await cloudSync.pushAll(user.id);
+      toast({ title: t('settings.cloud.push_success_title'), description: t('settings.cloud.push_success_desc') });
+    } catch {
+      toast({ title: t('common.error'), description: t('settings.cloud.push_error_desc'), variant: 'destructive' });
+    } finally {
+      setIsCloudPushing(false);
+    }
+  };
+
+  const handlePullFromCloud = async () => {
+    if (!user) return;
+    if (!confirm(t('settings.cloud.pull_confirm'))) return;
+    setIsCloudPulling(true);
+    try {
+      await cloudSync.pullAll(user.id);
+      toast({ title: t('settings.cloud.pull_success_title'), description: t('settings.cloud.pull_success_desc') });
+      setTimeout(() => window.location.reload(), 1500);
+    } catch {
+      toast({ title: t('common.error'), description: t('settings.cloud.pull_error_desc'), variant: 'destructive' });
+    } finally {
+      setIsCloudPulling(false);
+    }
+  };
+
   const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -376,7 +407,39 @@ export default function SettingsPage() {
             </div>
         </CardContent>
       </Card>
-      
+
+      <Card id="cloud-storage">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Cloud className="h-5 w-5"/>{t('settings.cloud.title')}</CardTitle>
+          <CardDescription>{t('settings.cloud.description')}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <Button onClick={handlePushToCloud} disabled={!user || isCloudPushing}>
+              {isCloudPushing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}
+              {t('settings.cloud.push_button')}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t('settings.cloud.push_desc')}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button variant="outline" onClick={handlePullFromCloud} disabled={!user || isCloudPulling}>
+              {isCloudPulling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CloudDownload className="mr-2 h-4 w-4" />}
+              {t('settings.cloud.pull_button')}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t('settings.cloud.pull_desc')}</p>
+          </div>
+        </CardContent>
+        <CardContent>
+          <div className="mt-2 p-4 border-l-4 border-primary bg-primary/10 rounded-r-lg">
+            <div className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-primary" />
+              <h4 className="font-semibold text-primary">{t('settings.cloud.info_title')}</h4>
+            </div>
+            <p className="text-sm text-primary/90 mt-2">{t('settings.cloud.info_desc')}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Grammar Checking Card */}
       <Card>
         <CardHeader>

@@ -261,6 +261,23 @@
       "privacy_desc": "A verificação gramatical envia seu texto à API do LanguageTool para processamento. O LanguageTool é um software de código aberto que também pode ser auto-hospedado. Seu texto não é armazenado nem usado para treinamento.",
       "transparency_title": "Sobre o LanguageTool",
       "transparency_desc": "Desenvolvido com LanguageTool — um verificador gramatical e ortográfico de código aberto com suporte a mais de 30 idiomas. A pontuação de legibilidade é calculada inteiramente no seu dispositivo."
+    },
+    "cloud": {
+      "title": "Armazenamento na Nuvem",
+      "description": "Os seus dados são sincronizados automaticamente para a nuvem. Use estes controlos para backup ou restauro manual.",
+      "push_button": "Fazer Backup para a Nuvem",
+      "push_desc": "Envie os seus dados locais atuais para a sua conta na nuvem. Útil para a sincronização inicial.",
+      "push_success_title": "Backup feito",
+      "push_success_desc": "Todos os seus dados foram enviados com sucesso.",
+      "push_error_desc": "Falha ao fazer backup. Tente novamente.",
+      "pull_button": "Restaurar da Nuvem",
+      "pull_desc": "Baixe todos os seus dados da nuvem e substitua os locais. Use isto num dispositivo novo.",
+      "pull_confirm": "Isto irá substituir os dados locais pelos que estão na nuvem. Continuar?",
+      "pull_success_title": "Restaurado da nuvem",
+      "pull_success_desc": "Os seus dados da nuvem foram baixados. A recarregar…",
+      "pull_error_desc": "Falha ao restaurar da nuvem. Tente novamente.",
+      "info_title": "Sincronização automática ativa",
+      "info_desc": "Cada alteração é guardada automaticamente na nuvem em segundo plano. Os botões acima são apenas necessários para migrações iniciais ou restauros completos."
     }
   },
   "stories": {

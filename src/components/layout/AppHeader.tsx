@@ -79,7 +79,7 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.photoURL || "user-profile.png"} alt="User Avatar" data-ai-hint="user avatar" />
+                  <AvatarImage src="user-profile.png" alt="User Avatar" data-ai-hint="user avatar" />
                   <AvatarFallback>{user.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
               </Button>

@@ -1,42 +1,42 @@
-
-// src/contexts/AuthContext.tsx
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  User, 
-  signOut, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  updateEmail,
-  updatePassword,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  type AuthError 
-} from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, addDoc } from 'firebase/firestore';
-import { app as firebaseApp } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
+import type { User } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
+import { cloudSync } from '@/lib/cloud-sync';
+import { setCloudUserId } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from './LanguageContext';
 
+// AppUser exposes both `id` (Supabase native) and `uid` (Firebase-compatible
+// alias) so existing call sites using user.uid keep working unchanged.
+export interface AppUser {
+  id: string;
+  uid: string;
+  email: string | null;
+}
+
+function toAppUser(u: User): AppUser {
+  return { id: u.id, uid: u.id, email: u.email ?? null };
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   logout: () => Promise<void>;
-  login: (email: string, pass: string) => Promise<void | AuthError>;
+  login: (email: string, pass: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   signup: (email: string, pass: string, inviteCode: string) => Promise<void>;
-  changeUserEmail: (currentPass: string, newEmail: string) => Promise<{success: boolean, message: string}>;
-  changeUserPassword: (currentPass: string, newPass: string) => Promise<{success: boolean, message: string}>;
+  changeUserEmail: (currentPass: string, newEmail: string) => Promise<{ success: boolean; message: string }>;
+  changeUserPassword: (currentPass: string, newPass: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -44,164 +44,143 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    const auth = getAuth(firebaseApp);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (user) {
-        user.getIdToken().then((token) => {
-            document.cookie = `firebaseIdToken=${token}; path=/; max-age=3600`;
-        });
-      } else {
-         document.cookie = 'firebaseIdToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    let cancelled = false;
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (cancelled) return;
+      if (session?.user) {
+        const appUser = toAppUser(session.user);
+        setCloudUserId(appUser.id);
+        await cloudSync.pullAll(appUser.id);
+        setUser(appUser);
       }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const appUser = toAppUser(session.user);
+        setCloudUserId(appUser.id);
+        if (event === 'SIGNED_IN') {
+          await cloudSync.pullAll(appUser.id);
+        }
+        setUser(appUser);
+      } else {
+        setCloudUserId(null);
+        setUser(null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
-  
+
   useEffect(() => {
     if (loading) return;
-
     const isPublicPage = ['/login', '/signup'].includes(pathname);
-
-    if (!user && !isPublicPage) {
-      router.push('/login');
-    }
-
-    if (user && isPublicPage) {
-      router.push('/');
-    }
+    if (!user && !isPublicPage) router.push('/login');
+    if (user && isPublicPage) router.push('/');
   }, [user, loading, pathname, router]);
 
   const login = async (email: string, pass: string) => {
-    const auth = getAuth(firebaseApp);
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-      toast({
-          title: t('auth.login_success_title'),
-          description: t('auth.login_success_desc')
-      });
-      router.push('/');
-    } catch (error) {
-      console.error("Firebase Login Error: ", error);
-      let errorMessage = t('auth.login_error_default');
-      const errorCode = (error as AuthError).code;
-      
-      switch (errorCode) {
-        case 'auth/invalid-credential':
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          errorMessage = t('auth.login_error_invalid_credential');
-          break;
-        case 'auth/too-many-requests':
-          errorMessage = t('auth.login_error_too_many_requests');
-          break;
-        case 'auth/network-request-failed':
-          errorMessage = t('auth.login_error_network');
-          break;
-      }
-      
-      toast({
-          title: t('auth.login_failed_title'),
-          description: errorMessage,
-          variant: 'destructive'
-      });
-      return error as AuthError;
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+      const msg = error.message.toLowerCase().includes('invalid')
+        ? t('auth.login_error_invalid_credential')
+        : error.message;
+      toast({ title: t('auth.login_failed_title'), description: msg, variant: 'destructive' });
+      return;
+    }
+    toast({ title: t('auth.login_success_title'), description: t('auth.login_success_desc') });
+    router.push('/');
+  };
+
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/` },
+    });
+    if (error) {
+      toast({ title: t('auth.login_failed_title'), description: error.message, variant: 'destructive' });
     }
   };
 
   const signup = async (email: string, pass: string, inviteCode: string) => {
-      const auth = getAuth(firebaseApp);
-      const db = getFirestore(firebaseApp);
-
-      // Placeholder for invite code validation
-      if (!inviteCode || inviteCode.trim() === '') {
-        toast({ title: t('signup.toast.missing_fields_title'), description: t('signup.toast.missing_fields_desc'), variant: 'destructive' });
+    // Server-side invite validation
+    try {
+      const res = await fetch('/api/validate-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: inviteCode }),
+      });
+      if (!res.ok) {
+        toast({
+          title: t('signup.toast.missing_fields_title'),
+          description: t('signup.toast.missing_fields_desc'),
+          variant: 'destructive',
+        });
         return;
       }
-      
-      try {
-        // 1. Create User in Firebase Auth
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        const newUser = userCredential.user;
-        
-        toast({ title: t('signup.toast.signup_successful_title'), description: t('signup.toast.signup_successful_desc') });
-        router.push('/login');
-
-      } catch (error: any) {
-         let message = t('auth.login_error_default');
-         if (error.code === 'auth/email-already-in-use') {
-            message = 'This email address is already in use by another account.';
-        } else if (error.code === 'auth/invalid-email') {
-            message = 'The email address is not valid.';
-        } else if (error.code === 'auth/weak-password' || error.code === 'auth/password-does-not-meet-requirements') {
-            message = 'Password does not meet requirements. It must be at least 6 characters and include an uppercase letter and a non-alphanumeric character.';
-        }
-        console.error("Signup error:", error);
-        toast({ title: t('signup.toast.signup_failed_title'), description: message, variant: 'destructive' });
-      }
-  };
-
-  const changeUserEmail = async (currentPass: string, newEmailAddress: string) => {
-    if (!user || !user.email) return { success: false, message: 'User not logged in.' };
-    const auth = getAuth(firebaseApp);
-
-    try {
-        const credential = EmailAuthProvider.credential(user.email, currentPass);
-        await reauthenticateWithCredential(user, credential);
-        await updateEmail(user, newEmailAddress);
-        return { success: true, message: 'Email updated successfully. Please log in again.' };
-    } catch (error: any) {
-        let message = 'An unexpected error occurred.';
-        if (error.code === 'auth/invalid-credential') {
-            message = 'Incorrect password. Please try again.';
-        } else if (error.code === 'auth/email-already-in-use') {
-            message = 'This email address is already in use by another account.';
-        } else if (error.code === 'auth/invalid-email') {
-            message = 'The new email address is not valid.';
-        }
-        console.error("Email change error", error);
-        return { success: false, message };
+    } catch {
+      toast({
+        title: t('signup.toast.signup_failed_title'),
+        description: t('auth.login_error_network'),
+        variant: 'destructive',
+      });
+      return;
     }
-  };
 
-  const changeUserPassword = async (currentPass: string, newPass: string) => {
-    if (!user || !user.email) return { success: false, message: 'User not logged in.' };
-
-    try {
-        const credential = EmailAuthProvider.credential(user.email, currentPass);
-        await reauthenticateWithCredential(user, credential);
-        await updatePassword(user, newPass);
-        return { success: true, message: 'Password updated successfully. Please log in again.' };
-    } catch (error: any) {
-        let message = 'An unexpected error occurred.';
-         if (error.code === 'auth/invalid-credential') {
-            message = 'Incorrect password. Please try again.';
-        } else if (error.code === 'auth/weak-password' || error.code === 'auth/password-does-not-meet-requirements') {
-            message = 'The new password is too weak or does not meet complexity requirements.';
-        }
-        console.error("Password change error", error);
-        return { success: false, message };
+    const { error } = await supabase.auth.signUp({ email, password: pass });
+    if (error) {
+      toast({
+        title: t('signup.toast.signup_failed_title'),
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
     }
+    toast({
+      title: t('signup.toast.signup_successful_title'),
+      description: t('signup.toast.signup_successful_desc'),
+    });
+    router.push('/login');
   };
-
 
   const logout = async () => {
-    const auth = getAuth(firebaseApp);
-    await signOut(auth);
-    // Explicitly clear the user state and the cookie
+    await supabase.auth.signOut();
+    setCloudUserId(null);
     setUser(null);
-    document.cookie = 'firebaseIdToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     router.push('/login');
-    toast({
-        title: t('auth.logout_success_title'),
-        description: t('auth.logout_success_desc')
-    });
+    toast({ title: t('auth.logout_success_title'), description: t('auth.logout_success_desc') });
   };
 
-  const value = { user, loading, logout, login, signup, changeUserEmail, changeUserPassword };
-  
+  // Supabase's updateUser handles re-authentication via the active session;
+  // the currentPass param is accepted for API parity but Supabase doesn't need it.
+  const changeUserEmail = async (_currentPass: string, newEmail: string) => {
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+    if (error) return { success: false, message: error.message };
+    return { success: true, message: 'Confirmation email sent. Check your inbox to complete the change.' };
+  };
+
+  const changeUserPassword = async (_currentPass: string, newPass: string) => {
+    const { error } = await supabase.auth.updateUser({ password: newPass });
+    if (error) return { success: false, message: error.message };
+    return { success: true, message: 'Password updated successfully.' };
+  };
+
+  const value = {
+    user,
+    loading,
+    logout,
+    login,
+    loginWithGoogle,
+    signup,
+    changeUserEmail,
+    changeUserPassword,
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">

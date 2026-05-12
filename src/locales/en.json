@@ -261,6 +261,23 @@
       "privacy_desc": "Grammar checking sends your text to the LanguageTool API for processing. LanguageTool is open-source software that you can also self-host. Your text is not stored or used for training.",
       "transparency_title": "About LanguageTool",
       "transparency_desc": "Powered by LanguageTool — an open-source grammar and spell checker supporting 30+ languages. Readability scoring is computed entirely on your device."
+    },
+    "cloud": {
+      "title": "Cloud Storage",
+      "description": "Your data is automatically synced to the cloud. Use these controls for manual backup or restore.",
+      "push_button": "Back up to Cloud",
+      "push_desc": "Push your current local data to your cloud account. Useful for the initial sync.",
+      "push_success_title": "Backed up to cloud",
+      "push_success_desc": "All your data has been uploaded successfully.",
+      "push_error_desc": "Failed to back up to cloud. Please try again.",
+      "pull_button": "Restore from Cloud",
+      "pull_desc": "Download all your cloud data and replace local data. Use this on a new device.",
+      "pull_confirm": "This will replace any local data with what is in the cloud. Continue?",
+      "pull_success_title": "Restored from cloud",
+      "pull_success_desc": "Your cloud data has been downloaded. Reloading…",
+      "pull_error_desc": "Failed to restore from cloud. Please try again.",
+      "info_title": "Auto-sync enabled",
+      "info_desc": "Every change you make is automatically saved to the cloud in the background. The manual buttons above are only needed for one-time migrations or full restores."
     }
   },
   "stories": {

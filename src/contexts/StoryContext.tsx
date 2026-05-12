@@ -69,7 +69,7 @@ const getStoriesStorageKey = (userId: string | undefined | null) =>
   userId ? `openwritingkit-user-${userId}-stories` : 'openwritingkit-stories-anonymous';
 
 export function StoryProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth(); // Get the current user from next-auth session
+  const { user } = useAuth();
   const [stories, setStories] = useState<Story[]>([]);
   const [activeStoryId, setActiveStoryIdState] = useState<string | null>(null);
   const [activeStoryName, setActiveStoryName] = useState<string | null>(null);
@@ -101,17 +101,17 @@ export function StoryProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const loadedStories = JSON.parse(localStorage.getItem(storiesStorageKey) || '[]') as Story[];
+    const loadedStories = (await storage.getItem<Story[]>(storiesStorageKey)) ?? [];
     setStories(loadedStories);
 
-    const storedActiveId = localStorage.getItem(activeStoryIdKey);
+    const storedActiveId = await storage.getItem<string>(activeStoryIdKey);
     if (storedActiveId) {
       const foundActiveStory = loadedStories.find(s => s.id === storedActiveId);
       if (foundActiveStory) {
         setActiveStoryIdState(storedActiveId);
         setActiveStoryName(foundActiveStory.title);
       } else {
-        localStorage.removeItem(activeStoryIdKey);
+        await storage.removeItem(activeStoryIdKey);
         setActiveStoryIdState(null);
         setActiveStoryName(null);
       }
@@ -129,11 +129,11 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   const setActiveStory = useCallback((storyId: string | null) => {
     if (!user) return;
     if (storyId) {
-      localStorage.setItem(activeStoryIdKey, storyId);
+      storage.setItem(activeStoryIdKey, storyId);
       const story = stories.find(s => s.id === storyId);
       setActiveStoryName(story ? story.title : null);
     } else {
-      localStorage.removeItem(activeStoryIdKey);
+      storage.removeItem(activeStoryIdKey);
       setActiveStoryName(null);
     }
     setActiveStoryIdState(storyId);
@@ -143,14 +143,14 @@ export function StoryProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     const updatedStories = [...stories, newStory];
     setStories(updatedStories);
-    localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
+    storage.setItem(storiesStorageKey, updatedStories);
   }, [user, stories, storiesStorageKey]);
 
   const updateStory = useCallback((updatedStoryData: Story) => {
     if (!user) return;
     const updatedStories = stories.map(s => s.id === updatedStoryData.id ? updatedStoryData : s);
     setStories(updatedStories);
-    localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
+    storage.setItem(storiesStorageKey, updatedStories);
     if (activeStoryId === updatedStoryData.id) {
       setActiveStoryName(updatedStoryData.title);
     }
@@ -230,7 +230,7 @@ export function StoryProvider({ children }: { children: ReactNode }) {
 
     const updatedStories = stories.filter(s => s.id !== storyId);
     setStories(updatedStories);
-    localStorage.setItem(storiesStorageKey, JSON.stringify(updatedStories));
+    await storage.setItem(storiesStorageKey, updatedStories);
 
     // If the deleted story was active, clear the active state
     if (activeStoryId === storyId) {

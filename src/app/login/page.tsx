@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator';
 
 export default function LoginPage() {
   const { t } = useLanguage();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -81,6 +81,15 @@ export default function LoginPage() {
               {t('login.sign_in_button')}
             </Button>
           </form>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center"><Separator /></div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+          <Button type="button" variant="outline" className="w-full" onClick={loginWithGoogle} disabled={isLoading}>
+            Continue with Google
+          </Button>
         </CardContent>
          <CardFooter className="flex-col space-y-4">
             <Separator />
