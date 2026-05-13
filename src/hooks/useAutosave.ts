@@ -43,6 +43,7 @@ function useAutosave<T extends string>(
   const [history, setHistory] = useState<Array<VersionHistoryEntry<T>>>([]);
   const isInitialLoad = useRef(true);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedRef = useRef<T>(initialValue);
 
   // Load data effect
   useEffect(() => {
@@ -60,11 +61,14 @@ function useAutosave<T extends string>(
           const item = await storage.getItem<DocumentData<T>>(storageKey);
           if (!isCancelled) {
               if (item) {
-                setCurrentTextInternal(item.current || initialValue);
+                const loaded = item.current || initialValue;
+                setCurrentTextInternal(loaded);
+                lastSavedRef.current = loaded;
                 setHistory(item.history || []);
                 setLastSavedTime(item.lastSaved ? new Date(item.lastSaved) : null);
               } else {
                 setCurrentTextInternal(initialValue);
+                lastSavedRef.current = initialValue;
                 setHistory([]);
                 setLastSavedTime(null);
               }
@@ -155,6 +159,7 @@ function useAutosave<T extends string>(
         documentData.lastSaved = timestamp;
 
         await storage.setItem(storageKey, documentData);
+        lastSavedRef.current = textToSave;
         setLastSavedTime(now);
 
         const docIdMatch = storageKey.match(/-doc-([^-]*)-/);
@@ -216,8 +221,7 @@ function useAutosave<T extends string>(
     }
 
     saveTimeoutRef.current = setTimeout(async () => {
-      const item = await storage.getItem<DocumentData<T>>(storageKey);
-      if (currentText !== item?.current) {
+      if (currentText !== lastSavedRef.current) {
         await saveDocument(currentText);
       }
     }, saveInterval);

@@ -50,19 +50,21 @@ function getHourlyActivity(log: ActivityLogEntry[]): Array<{ hour: string; saves
   return counts.map((saves, h) => ({ hour: `${String(h).padStart(2, '0')}h`, saves }));
 }
 
+function collectDocItems(items: DocumentItem[]): DocumentItem[] {
+  const result: DocumentItem[] = [];
+  for (const item of items) {
+    if (item.type === 'file' || item.type === 'scene') result.push(item);
+    if (item.children) result.push(...collectDocItems(item.children));
+  }
+  return result;
+}
+
 async function loadAllDocText(storyId: string, userId: string, docs: DocumentItem[]): Promise<string> {
-  let html = '';
-  const collect = async (items: DocumentItem[]) => {
-    for (const item of items) {
-      if (item.type === 'file' || item.type === 'scene') {
-        const data = await storage.getItem<EditorData>(getEditorContentKey(storyId, item.id, userId));
-        if (data?.current) html += ' ' + data.current;
-      }
-      if (item.children) await collect(item.children);
-    }
-  };
-  await collect(docs);
-  return html;
+  const fileItems = collectDocItems(docs);
+  const results = await Promise.all(
+    fileItems.map(item => storage.getItem<EditorData>(getEditorContentKey(storyId, item.id, userId)))
+  );
+  return results.reduce((html, data) => data?.current ? html + ' ' + data.current : html, '');
 }
 
 function getAllDocItems(items: DocumentItem[]): DocumentItem[] {

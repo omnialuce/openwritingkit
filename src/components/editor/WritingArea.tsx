@@ -251,9 +251,22 @@ export function WritingArea() {
     }
   }, [historyDocumentId, consumeHistoryDocumentId, openDocument]);
 
+  const isFirstLoadRef = useRef(true);
+
   useEffect(() => {
-    if (editor && savedContent !== editor.getHTML()) {
+    isFirstLoadRef.current = true;
+  }, [editorStorageKey]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const currentHtml = editor.getHTML();
+    const isEmpty = currentHtml === '' || currentHtml === '<p></p>';
+    if (isFirstLoadRef.current && isEmpty && savedContent && savedContent !== '<p></p>') {
       editor.commands.setContent(savedContent, false);
+      isFirstLoadRef.current = false;
+    } else if (isFirstLoadRef.current && !isEmpty) {
+      // Editor already has content (e.g. initial value set by useEditor); mark load done.
+      isFirstLoadRef.current = false;
     }
   }, [savedContent, editor]);
 

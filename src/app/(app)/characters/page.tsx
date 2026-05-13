@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle, FileText, Network, Download } from 'lucide-react';
+import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle, FileText, Network, Download, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getCharactersStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
@@ -45,7 +45,8 @@ export default function CharactersPage() {
   const [characters, setCharacters] = useState<CharacterProfile[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCharacter, setEditingCharacter] = useState<CharacterProfile | null>(null);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [description, setDescription] = useState('');
@@ -100,30 +101,35 @@ export default function CharactersPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !activeStoryId) return;
 
-    const newCharacterData = {
-      name: name.trim(),
-      role: role.trim() || undefined,
-      description: description.trim() || undefined,
-      backstory: backstory.trim() || undefined,
-      imageUrl: imageUrl.trim() || undefined,
-      imageHint: imageHint.trim() || undefined,
-    };
+    setIsSubmitting(true);
+    try {
+      const newCharacterData = {
+        name: name.trim(),
+        role: role.trim() || undefined,
+        description: description.trim() || undefined,
+        backstory: backstory.trim() || undefined,
+        imageUrl: imageUrl.trim() || undefined,
+        imageHint: imageHint.trim() || undefined,
+      };
 
-    if (editingCharacter) {
-      const updatedCharacters = characters.map(char =>
-        char.id === editingCharacter.id ? { ...char, ...newCharacterData } : char
-      );
-      saveCharacters(updatedCharacters);
-    } else {
-      const newCharacterWithId = { ...newCharacterData, id: crypto.randomUUID() };
-      saveCharacters([...characters, newCharacterWithId]);
+      if (editingCharacter) {
+        const updatedCharacters = characters.map(char =>
+          char.id === editingCharacter.id ? { ...char, ...newCharacterData } : char
+        );
+        saveCharacters(updatedCharacters);
+      } else {
+        const newCharacterWithId = { ...newCharacterData, id: crypto.randomUUID() };
+        saveCharacters([...characters, newCharacterWithId]);
+      }
+      setIsDialogOpen(false);
+      resetForm();
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const handleDeleteCharacter = (id: string) => {
@@ -327,7 +333,10 @@ export default function CharactersPage() {
                   <DialogClose asChild>
                     <Button type="button" variant="outline">{t('common.cancel')}</Button>
                   </DialogClose>
-                  <Button type="submit">{editingCharacter ? t('common.save') : t('characters.create_button')}</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {editingCharacter ? t('common.save') : t('characters.create_button')}
+                  </Button>
                 </DialogFooter>
               </form>
             </div>

@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   ListTree, PlusCircle, Edit3, Trash2, Save, GripVertical,
   AlertTriangle, Download, Loader2, ChevronDown, ChevronRight, Copy, ExternalLink, AlignJustify,
+  Circle, Clock, CheckCircle2,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -222,7 +223,10 @@ function OutlineItemDisplay({
               </div>
               <Badge variant={typeBadgeVariant} className="text-xs shrink-0">{typeLabel}</Badge>
               {statusLabel && item.status && (
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0", STATUS_CLASS[item.status])}>
+                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0 flex items-center", STATUS_CLASS[item.status])}>
+                  {item.status === 'Draft' && <Circle className="h-3 w-3 mr-1 inline" />}
+                  {item.status === 'In Progress' && <Clock className="h-3 w-3 mr-1 inline" />}
+                  {item.status === 'Complete' && <CheckCircle2 className="h-3 w-3 mr-1 inline" />}
                   {statusLabel}
                 </span>
               )}
@@ -386,6 +390,7 @@ export default function OutlineBuilderPage() {
   const [items, setItems] = useState<OutlineItem[]>([]);
   const [compact, setCompact] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Side data
   const [characters, setCharacters] = useState<CharacterProfile[]>([]);
@@ -473,38 +478,43 @@ export default function OutlineBuilderPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim()) return;
-    const wt = formWordTarget ? parseInt(formWordTarget, 10) : undefined;
-    const fields = {
-      title: formTitle.trim(),
-      type: formType,
-      synopsis: formSynopsis.trim() || undefined,
-      notes: formNotes.trim() || undefined,
-      color: formColor,
-      pov: formPov.trim() || undefined,
-      location: formLocation.trim() || undefined,
-      storyDate: formStoryDate.trim() || undefined,
-      status: (formStatus || undefined) as OutlineItemStatus | undefined,
-      wordCountTarget: wt && !isNaN(wt) ? wt : undefined,
-      linkedDocumentId: formLinkedDocId === NO_DOC ? undefined : formLinkedDocId,
-    };
-    if (editingItem) {
-      const newItems = updateItemRecursive(items, { id: editingItem.id, ...fields });
-      setItems(newItems);
-      persistItems(newItems);
-    } else {
-      const newItems = [...items, createNewItem(
-        fields.title, fields.type, fields.synopsis, fields.notes, fields.color,
-        fields.pov, fields.location, fields.storyDate, fields.status,
-        fields.wordCountTarget, fields.linkedDocumentId,
-      )];
-      setItems(newItems);
-      persistItems(newItems);
+    setIsSubmitting(true);
+    try {
+      const wt = formWordTarget ? parseInt(formWordTarget, 10) : undefined;
+      const fields = {
+        title: formTitle.trim(),
+        type: formType,
+        synopsis: formSynopsis.trim() || undefined,
+        notes: formNotes.trim() || undefined,
+        color: formColor,
+        pov: formPov.trim() || undefined,
+        location: formLocation.trim() || undefined,
+        storyDate: formStoryDate.trim() || undefined,
+        status: (formStatus || undefined) as OutlineItemStatus | undefined,
+        wordCountTarget: wt && !isNaN(wt) ? wt : undefined,
+        linkedDocumentId: formLinkedDocId === NO_DOC ? undefined : formLinkedDocId,
+      };
+      if (editingItem) {
+        const newItems = updateItemRecursive(items, { id: editingItem.id, ...fields });
+        setItems(newItems);
+        persistItems(newItems);
+      } else {
+        const newItems = [...items, createNewItem(
+          fields.title, fields.type, fields.synopsis, fields.notes, fields.color,
+          fields.pov, fields.location, fields.storyDate, fields.status,
+          fields.wordCountTarget, fields.linkedDocumentId,
+        )];
+        setItems(newItems);
+        persistItems(newItems);
+      }
+      setIsDialogOpen(false);
+      resetForm();
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const handleDelete = useCallback((id: string) => {
@@ -897,7 +907,10 @@ export default function OutlineBuilderPage() {
                     <DialogClose asChild>
                       <Button type="button" variant="outline">{t('common.cancel')}</Button>
                     </DialogClose>
-                    <Button type="submit">{editingItem ? t('common.save') : t('outline.add_dialog.add_button')}</Button>
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                      {editingItem ? t('common.save') : t('outline.add_dialog.add_button')}
+                    </Button>
                   </DialogFooter>
                 </form>
               </div>

@@ -1,10 +1,11 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import type { CharacterProfile } from '@/app/(app)/characters/page';
 import { storage } from '@/lib/storage';
+import { Loader2 } from 'lucide-react';
 
 export interface Locale {
   id: string;
@@ -253,12 +254,48 @@ export function StoryProvider({ children }: { children: ReactNode }) {
   }, []);
 
 
+  const contextValue = useMemo(() => ({
+    stories,
+    activeStoryId,
+    activeStoryName,
+    setActiveStory,
+    addStory,
+    updateStory,
+    updateDocumentMetadata,
+    deleteStory,
+    refreshStories,
+    documentToOpen,
+    setDocumentToOpen,
+    consumeDocumentToOpen,
+    historyDocumentId,
+    setHistoryDocumentId,
+    consumeHistoryDocumentId,
+    getActivityLogKey,
+  }), [
+    stories,
+    activeStoryId,
+    activeStoryName,
+    setActiveStory,
+    addStory,
+    updateStory,
+    updateDocumentMetadata,
+    deleteStory,
+    refreshStories,
+    documentToOpen,
+    historyDocumentId,
+    getActivityLogKey,
+  ]);
+
   if (!isLoaded) {
-    return null;
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <StoryContext.Provider value={{ stories, activeStoryId, activeStoryName, setActiveStory, addStory, updateStory, updateDocumentMetadata, deleteStory, refreshStories, documentToOpen, setDocumentToOpen, consumeDocumentToOpen, historyDocumentId, setHistoryDocumentId, consumeHistoryDocumentId, getActivityLogKey }}>
+    <StoryContext.Provider value={contextValue}>
       {children}
     </StoryContext.Provider>
   );

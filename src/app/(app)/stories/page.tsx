@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { BookOpenCheck, PlusCircle, Edit, Trash2, CheckCircle } from 'lucide-react';
+import { BookOpenCheck, PlusCircle, Edit, Trash2, CheckCircle, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, type Story } from '@/contexts/StoryContext';
 import { cn } from '@/lib/utils';
@@ -21,7 +21,8 @@ export default function StoriesPage() {
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingStory, setEditingStory] = useState<Story | null>(null);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
@@ -48,25 +49,30 @@ export default function StoriesPage() {
     setIsDialogOpen(true);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    const now = new Date().toISOString();
-    const storyData = {
-      title: title.trim(),
-      description: description.trim(),
-      lastModified: now,
-    };
+    setIsSubmitting(true);
+    try {
+      const now = new Date().toISOString();
+      const storyData = {
+        title: title.trim(),
+        description: description.trim(),
+        lastModified: now,
+      };
 
-    if (editingStory) {
-      contextUpdateStory({ ...editingStory, ...storyData });
-    } else {
-      const newStoryWithId = { ...storyData, id: crypto.randomUUID() };
-      contextAddStory(newStoryWithId);
+      if (editingStory) {
+        contextUpdateStory({ ...editingStory, ...storyData });
+      } else {
+        const newStoryWithId = { ...storyData, id: crypto.randomUUID() };
+        contextAddStory(newStoryWithId);
+      }
+      setIsDialogOpen(false);
+      resetForm();
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const handleDeleteStory = (id: string) => {
@@ -192,7 +198,10 @@ export default function StoriesPage() {
                   <DialogClose asChild>
                     <Button type="button" variant="outline">{t('common.cancel')}</Button>
                   </DialogClose>
-                  <Button type="submit">{editingStory ? t('common.save') : t('stories.create_button')}</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {editingStory ? t('common.save') : t('stories.create_button')}
+                  </Button>
                 </DialogFooter>
               </form>
             </div>

@@ -25,28 +25,23 @@ const countWords = (htmlString: string): number => {
 };
 
 
+function collectFileItems(items: DocumentItem[]): DocumentItem[] {
+  const result: DocumentItem[] = [];
+  for (const item of items) {
+    if (item.type === 'file' || item.type === 'scene') result.push(item);
+    if (item.children) result.push(...collectFileItems(item.children));
+  }
+  return result;
+}
+
 const getTotalWordCount = async (storyId: string, userId: string): Promise<number> => {
-    let totalWords = 0;
     const documentsKey = getDocumentsStorageKey(storyId, userId);
     const documents = await storage.getItem<DocumentItem[]>(documentsKey) || [];
-  
-    const processItems = async (items: DocumentItem[]) => {
-      for (const item of items) {
-        if (item.type === 'file' || item.type === 'scene') {
-          const editorKey = getEditorContentKey(storyId, item.id, userId);
-          const editorData = await storage.getItem<EditorData>(editorKey);
-          if (editorData?.current) {
-            totalWords += countWords(editorData.current);
-          }
-        }
-        if (item.children) {
-          await processItems(item.children);
-        }
-      }
-    };
-  
-    await processItems(documents);
-    return totalWords;
+    const fileItems = collectFileItems(documents);
+    const results = await Promise.all(
+      fileItems.map(item => storage.getItem<EditorData>(getEditorContentKey(storyId, item.id, userId)))
+    );
+    return results.reduce((total, editorData) => total + (editorData?.current ? countWords(editorData.current) : 0), 0);
   };
 
 export function WordGoalCard() {

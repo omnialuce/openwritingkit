@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user && isPublicPage) router.push('/');
   }, [user, loading, pathname, router]);
 
-  const login = async (email: string, pass: string) => {
+  const login = useCallback(async (email: string, pass: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (error) {
       const msg = error.message.toLowerCase().includes('invalid')
@@ -114,9 +114,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     toast({ title: t('auth.login_success_title'), description: t('auth.login_success_desc') });
     router.push('/');
-  };
+  }, [t, toast, router]);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = useCallback(async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/` },
@@ -124,9 +124,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       toast({ title: t('auth.login_failed_title'), description: error.message, variant: 'destructive' });
     }
-  };
+  }, [t, toast]);
 
-  const signup = async (email: string, pass: string, inviteCode: string) => {
+  const signup = useCallback(async (email: string, pass: string, inviteCode: string) => {
     // Server-side invite validation
     try {
       const res = await fetch('/api/validate-invite', {
@@ -165,18 +165,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       description: t('signup.toast.signup_successful_desc'),
     });
     router.push('/login');
-  };
+  }, [t, toast, router]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setCloudUserId(null);
     setUser(null);
     sessionStorage.removeItem('owk-cloud-pull-done');
     router.push('/login');
     toast({ title: t('auth.logout_success_title'), description: t('auth.logout_success_desc') });
-  };
+  }, [t, toast, router]);
 
-  const changeUserEmail = async (currentPass: string, newEmail: string) => {
+  const changeUserEmail = useCallback(async (currentPass: string, newEmail: string) => {
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: user!.email!,
       password: currentPass,
@@ -185,9 +185,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) return { success: false, message: error.message };
     return { success: true, message: 'Confirmation email sent. Check your inbox to complete the change.' };
-  };
+  }, [user]);
 
-  const changeUserPassword = async (currentPass: string, newPass: string) => {
+  const changeUserPassword = useCallback(async (currentPass: string, newPass: string) => {
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: user!.email!,
       password: currentPass,
@@ -196,9 +196,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.auth.updateUser({ password: newPass });
     if (error) return { success: false, message: error.message };
     return { success: true, message: 'Password updated successfully.' };
-  };
+  }, [user]);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     logout,
@@ -207,7 +207,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signup,
     changeUserEmail,
     changeUserPassword,
-  };
+  }), [user, loading, logout, login, loginWithGoogle, signup, changeUserEmail, changeUserPassword]);
 
   if (loading) {
     return (
