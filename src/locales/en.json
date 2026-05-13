@@ -928,7 +928,6 @@
     "export_docx": "Export as DOCX",
     "export_pdf": "Export as PDF",
     "clear_content_button_title": "Clear Content",
-    "clear_content_confirm_title": "Clear all content?",
     "clear_content_confirm": "Are you sure you want to clear all content? This action cannot be undone.",
     "focus_mode": "Focus Mode",
     "exit_focus_mode": "Exit Focus Mode",
