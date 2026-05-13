@@ -9,6 +9,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import Script from 'next/script';
+import { StorageQuotaWatcher } from '@/components/StorageQuotaWatcher';
 
 export const metadata: Metadata = {
   title: 'OpenWritingKit',
@@ -47,6 +48,7 @@ export default function RootLayout({
           <LanguageProvider>
             <AuthProvider>
               <StoryProvider>
+                <StorageQuotaWatcher />
                 <MainLayout>
                   {children}
                 </MainLayout>

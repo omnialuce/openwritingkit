@@ -62,7 +62,7 @@ export default function StoriesPage() {
     if (editingStory) {
       contextUpdateStory({ ...editingStory, ...storyData });
     } else {
-      const newStoryWithId = { ...storyData, id: Date.now().toString() };
+      const newStoryWithId = { ...storyData, id: crypto.randomUUID() };
       contextAddStory(newStoryWithId);
     }
     setIsDialogOpen(false);

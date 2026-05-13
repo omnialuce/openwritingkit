@@ -98,7 +98,18 @@ function normalizeImportedData(
       newKey = `${newKey}${legacySuffix}${currentUserId}`;
     }
 
-    result[newKey] = value;
+    // Strip version history from document content keys to avoid hitting the
+    // 5 MB localStorage quota during import. Histories are typically 20-50×
+    // larger than the actual content. Only current and lastSaved are kept.
+    let storedValue = value;
+    if (newKey.includes('-doc-') && newKey.includes('-user-')) {
+      const docData = value as Record<string, unknown>;
+      if (docData && typeof docData === 'object' && 'current' in docData) {
+        storedValue = { current: docData.current, lastSaved: docData.lastSaved ?? null };
+      }
+    }
+
+    result[newKey] = storedValue;
   }
 
   // Write unified stories list

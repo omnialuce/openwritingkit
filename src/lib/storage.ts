@@ -2,20 +2,32 @@
 
 import { cloudSync } from './cloud-sync';
 
-// The active user ID is set by AuthContext after login so this module can
-// shadow-write to the cloud without importing AuthContext (which would create
-// a circular dependency).
 let _cloudUserId: string | null = null;
+// Callback set by the app to surface a quota warning toast without this lib
+// importing UI components (which would create circular deps).
+let _onQuotaExceeded: (() => void) | null = null;
 
 export function setCloudUserId(uid: string | null) {
   _cloudUserId = uid;
+}
+
+export function setOnQuotaExceeded(cb: () => void) {
+  _onQuotaExceeded = cb;
 }
 
 class StorageService {
   async setItem<T>(key: string, value: T): Promise<void> {
     if (typeof window === 'undefined') return;
     const json = JSON.stringify(value);
-    window.localStorage.setItem(key, json);
+    try {
+      window.localStorage.setItem(key, json);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+        _onQuotaExceeded?.();
+        return;
+      }
+      throw e;
+    }
     if (_cloudUserId) {
       cloudSync.push(_cloudUserId, key, json).catch(() => {});
     }
@@ -28,7 +40,6 @@ class StorageService {
     try {
       return JSON.parse(item) as T;
     } catch {
-      // Legacy: value was stored as a plain string without JSON.stringify
       return item as unknown as T;
     }
   }

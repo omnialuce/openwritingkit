@@ -58,6 +58,13 @@ import { Separator } from '@/components/ui/separator';
 
 const AI_OPT_IN_KEY = 'openwritingkit-ai-opt-in';
 
+function sanitiseHtml(dirty: string): string {
+  const doc = new DOMParser().parseFromString(dirty, 'text/html');
+  // Remove script and style elements
+  doc.querySelectorAll('script, style, iframe, object, embed').forEach(el => el.remove());
+  return doc.body.innerHTML;
+}
+
 interface EditorSettings {
   fontSize: number;
   lineHeight: number;
@@ -750,7 +757,7 @@ export function WritingArea() {
         <div className="p-4 border-t">
           <h4 className="font-semibold mb-2">{t('editor.history.preview_title')}</h4>
           <ScrollArea className="h-32 border rounded-md p-2 bg-muted text-sm">
-            <div dangerouslySetInnerHTML={{ __html: selectedHistoryVersion.text }} className="prose dark:prose-invert prose-sm" />
+            <div dangerouslySetInnerHTML={{ __html: sanitiseHtml(selectedHistoryVersion.text) }} className="prose dark:prose-invert prose-sm" />
           </ScrollArea>
           <Button className="w-full mt-3" onClick={() => handleRevertVersion(selectedHistoryVersion)}>
             <Undo className="mr-2 h-4 w-4" /> {t('editor.history.revert_button')}

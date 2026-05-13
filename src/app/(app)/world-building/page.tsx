@@ -11,11 +11,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Globe, PlusCircle, Edit, Trash2, AlertTriangle, FileText } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useStoryContext, getWorldBuildingStorageKey, type Locale } from '@/contexts/StoryContext';
+import { useStoryContext, getWorldBuildingStorageKey, getLocaleSheetStorageKey, type Locale } from '@/contexts/StoryContext';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Badge } from '@/components/ui/badge';
+import { storage } from '@/lib/storage';
 
 export default function WorldBuildingPage() {
   const { t } = useLanguage();
@@ -34,7 +35,11 @@ export default function WorldBuildingPage() {
       const storageKey = getWorldBuildingStorageKey(activeStoryId, user.uid);
       const storedLocales = localStorage.getItem(storageKey);
       if (storedLocales) {
-        setLocales(JSON.parse(storedLocales));
+        try {
+          setLocales(JSON.parse(storedLocales));
+        } catch {
+          setLocales([]);
+        }
       } else {
         setLocales([]);
       }
@@ -87,7 +92,7 @@ export default function WorldBuildingPage() {
       );
       saveLocales(updatedLocales);
     } else {
-      const newLocaleWithId = { ...newLocaleData, id: Date.now().toString() };
+      const newLocaleWithId = { ...newLocaleData, id: crypto.randomUUID() };
       saveLocales([...locales, newLocaleWithId]);
     }
     setIsDialogOpen(false);
@@ -97,7 +102,10 @@ export default function WorldBuildingPage() {
   const handleDeleteLocale = (id: string) => {
     const updatedLocales = locales.filter(loc => loc.id !== id);
     saveLocales(updatedLocales);
-    // Note: This doesn't delete the associated sheet data, which might be desired.
+    if (activeStoryId && user) {
+      const sheetKey = getLocaleSheetStorageKey(activeStoryId, id, user.uid);
+      storage.removeItem(sheetKey);
+    }
   };
 
   if (!activeStoryId) {

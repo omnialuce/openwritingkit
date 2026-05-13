@@ -432,6 +432,11 @@ export default function OutlineBuilderPage() {
     storage.getItem<DocumentItem[]>(docsKey).then(d => setDocs(d ? flattenDocs(d) : []));
   }, [activeStoryId, user]);
 
+  const persistItems = (newItems: OutlineItem[]) => {
+    if (!activeStoryId || !user) return;
+    storage.setItem(getOutlineStorageKey(activeStoryId, user.uid), newItems);
+  };
+
   const handleSave = async () => {
     if (!activeStoryId || !user) return;
     setIsLoading(true);
@@ -486,29 +491,45 @@ export default function OutlineBuilderPage() {
       linkedDocumentId: formLinkedDocId === NO_DOC ? undefined : formLinkedDocId,
     };
     if (editingItem) {
-      setItems(prev => updateItemRecursive(prev, { id: editingItem.id, ...fields }));
+      const newItems = updateItemRecursive(items, { id: editingItem.id, ...fields });
+      setItems(newItems);
+      persistItems(newItems);
     } else {
-      setItems(prev => [...prev, createNewItem(
+      const newItems = [...items, createNewItem(
         fields.title, fields.type, fields.synopsis, fields.notes, fields.color,
         fields.pov, fields.location, fields.storyDate, fields.status,
         fields.wordCountTarget, fields.linkedDocumentId,
-      )]);
+      )];
+      setItems(newItems);
+      persistItems(newItems);
     }
     setIsDialogOpen(false);
     resetForm();
   };
 
   const handleDelete = useCallback((id: string) => {
-    setItems(prev => deleteItemRecursive(prev, id));
-  }, []);
+    setItems(prev => {
+      const newItems = deleteItemRecursive(prev, id);
+      persistItems(newItems);
+      return newItems;
+    });
+  }, [activeStoryId, user]);
 
   const handleDuplicate = useCallback((id: string) => {
-    setItems(prev => duplicateItemRecursive(prev, id));
-  }, []);
+    setItems(prev => {
+      const newItems = duplicateItemRecursive(prev, id);
+      persistItems(newItems);
+      return newItems;
+    });
+  }, [activeStoryId, user]);
 
   const handleToggleCollapse = useCallback((id: string) => {
-    setItems(prev => updateItemRecursive(prev, { id, isCollapsed: !findById(prev, id)?.isCollapsed }));
-  }, []);
+    setItems(prev => {
+      const newItems = updateItemRecursive(prev, { id, isCollapsed: !findById(prev, id)?.isCollapsed });
+      persistItems(newItems);
+      return newItems;
+    });
+  }, [activeStoryId, user]);
 
   const findById = (items: OutlineItem[], id: string): OutlineItem | null => {
     for (const item of items) {
@@ -562,6 +583,7 @@ export default function OutlineBuilderPage() {
     if (!removed) return;
     insertInto(newItems, destination.droppableId, destination.index, removed);
     setItems(newItems);
+    persistItems(newItems);
   };
 
   // Export

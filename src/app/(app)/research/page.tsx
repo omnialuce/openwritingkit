@@ -56,13 +56,23 @@ export default function ResearchPage() {
     if (typeof window !== 'undefined' && activeStoryId && user) {
       const notesKey = getResearchStorageKey(activeStoryId, user.uid);
       const storedNotes = localStorage.getItem(notesKey);
-      if (storedNotes) setNotes(JSON.parse(storedNotes));
-      else setNotes([]);
+      if (storedNotes) {
+        try {
+          setNotes(JSON.parse(storedNotes));
+        } catch {
+          setNotes([]);
+        }
+      } else setNotes([]);
 
       const todosKey = getResearchTodosStorageKey(activeStoryId, user.uid);
       const storedTodos = localStorage.getItem(todosKey);
-      if (storedTodos) setTodos(JSON.parse(storedTodos));
-      else setTodos([]);
+      if (storedTodos) {
+        try {
+          setTodos(JSON.parse(storedTodos));
+        } catch {
+          setTodos([]);
+        }
+      } else setTodos([]);
     } else if (!activeStoryId) {
       setNotes([]);
       setTodos([]);
@@ -121,7 +131,7 @@ export default function ResearchPage() {
       );
       saveNotes(updatedNotes);
     } else {
-      const newNoteWithId = { ...newNoteData, id: Date.now().toString() };
+      const newNoteWithId = { ...newNoteData, id: crypto.randomUUID() };
       saveNotes([...notes, newNoteWithId]);
     }
     setIsNoteDialogOpen(false);
@@ -137,7 +147,7 @@ export default function ResearchPage() {
     e.preventDefault();
     if (!newTodoText.trim() || !activeStoryId) return;
     const newTodo: TodoItem = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       text: newTodoText.trim(),
       completed: false,
     };

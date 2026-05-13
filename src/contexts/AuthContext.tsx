@@ -176,15 +176,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     toast({ title: t('auth.logout_success_title'), description: t('auth.logout_success_desc') });
   };
 
-  // Supabase's updateUser handles re-authentication via the active session;
-  // the currentPass param is accepted for API parity but Supabase doesn't need it.
-  const changeUserEmail = async (_currentPass: string, newEmail: string) => {
+  const changeUserEmail = async (currentPass: string, newEmail: string) => {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user!.email!,
+      password: currentPass,
+    });
+    if (signInError) return { success: false, message: 'Current password is incorrect.' };
     const { error } = await supabase.auth.updateUser({ email: newEmail });
     if (error) return { success: false, message: error.message };
     return { success: true, message: 'Confirmation email sent. Check your inbox to complete the change.' };
   };
 
-  const changeUserPassword = async (_currentPass: string, newPass: string) => {
+  const changeUserPassword = async (currentPass: string, newPass: string) => {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user!.email!,
+      password: currentPass,
+    });
+    if (signInError) return { success: false, message: 'Current password is incorrect.' };
     const { error } = await supabase.auth.updateUser({ password: newPass });
     if (error) return { success: false, message: error.message };
     return { success: true, message: 'Password updated successfully.' };

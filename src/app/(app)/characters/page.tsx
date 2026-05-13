@@ -119,7 +119,7 @@ export default function CharactersPage() {
       );
       saveCharacters(updatedCharacters);
     } else {
-      const newCharacterWithId = { ...newCharacterData, id: Date.now().toString() };
+      const newCharacterWithId = { ...newCharacterData, id: crypto.randomUUID() };
       saveCharacters([...characters, newCharacterWithId]);
     }
     setIsDialogOpen(false);

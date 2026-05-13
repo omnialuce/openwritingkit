@@ -1,49 +1,46 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
 
-const PROTECTED_ROUTES = ['/', '/editor', '/documents', '/outline', '/characters', '/plot-tools', '/world-building', '/research', '/ai-tools', '/analytics', '/settings', '/resources', '/feedback', '/stories'];
 const PUBLIC_ROUTES = ['/login', '/signup'];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionToken = request.cookies.get('firebaseIdToken');
 
-  // Handle the root path redirect
-  if (pathname === '/') {
-    if (sessionToken) {
-      // If user is at root and logged in, let them stay (new dashboard)
-      return NextResponse.next();
-    }
-    // If user is at root and not logged in, send to login
+  // Pass cookies through so Supabase can refresh the session token if needed
+  const response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
+  );
+
+  // getUser() validates the JWT server-side — never trust cookies alone
+  const { data: { user } } = await supabase.auth.getUser();
+  const isPublic = PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
+
+  if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Redirect unauthenticated users from protected routes to login
-  if (!sessionToken && PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
-    // Exception for root, which is handled above
-    if (pathname !== '/') {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-  
-  // Redirect authenticated users from public routes (like login) to dashboard
-  if (sessionToken && PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
+  if (user && isPublic) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - *.svg, *.png (image files)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$|.*\\.ico$).*)',
   ],
 };

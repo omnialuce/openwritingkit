@@ -141,20 +141,24 @@ export function StoryProvider({ children }: { children: ReactNode }) {
 
   const addStory = useCallback((newStory: Story) => {
     if (!user) return;
-    const updatedStories = [...stories, newStory];
-    setStories(updatedStories);
-    storage.setItem(storiesStorageKey, updatedStories);
-  }, [user, stories, storiesStorageKey]);
+    setStories(prev => {
+      const updatedStories = [...prev, newStory];
+      storage.setItem(storiesStorageKey, updatedStories);
+      return updatedStories;
+    });
+  }, [user, storiesStorageKey]);
 
   const updateStory = useCallback((updatedStoryData: Story) => {
     if (!user) return;
-    const updatedStories = stories.map(s => s.id === updatedStoryData.id ? updatedStoryData : s);
-    setStories(updatedStories);
-    storage.setItem(storiesStorageKey, updatedStories);
+    setStories(prev => {
+      const updatedStories = prev.map(s => s.id === updatedStoryData.id ? updatedStoryData : s);
+      storage.setItem(storiesStorageKey, updatedStories);
+      return updatedStories;
+    });
     if (activeStoryId === updatedStoryData.id) {
       setActiveStoryName(updatedStoryData.title);
     }
-  }, [user, stories, activeStoryId, storiesStorageKey]);
+  }, [user, activeStoryId, storiesStorageKey]);
   
   const updateDocumentMetadata = useCallback((docId: string, metadata: { words: number; lastModified: string }) => {
     if (!activeStoryId || !user) return;

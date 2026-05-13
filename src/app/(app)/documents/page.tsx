@@ -344,6 +344,9 @@ export default function DocumentsPage() {
   const [newItemName, setNewItemName] = useState('');
   const [newItemType, setNewItemType] = useState<DocumentItem['type']>('file');
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+
   // State for Details dialog
   const [selectedItemForDialog, setSelectedItemForDialog] = useState<DocumentItem | null>(null);
   const [editedName, setEditedName] = useState('');
@@ -354,12 +357,30 @@ export default function DocumentsPage() {
 
   const documentsStorageKey = getDocumentsStorageKey(activeStoryId, user?.uid);
 
+  const flattenDocuments = (items: DocumentItem[]): DocumentItem[] => {
+    return items.reduce<DocumentItem[]>((acc, item) => {
+      acc.push(item);
+      if (item.children) acc.push(...flattenDocuments(item.children));
+      return acc;
+    }, []);
+  };
+
+  const filteredDocuments = searchQuery.trim()
+    ? flattenDocuments(documents).filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : null;
+
   useEffect(() => {
     if (typeof window !== 'undefined' && activeStoryId && user) {
       setIsLoading(true);
       const storedData = localStorage.getItem(documentsStorageKey);
       if (storedData) {
-        setDocuments(JSON.parse(storedData));
+        try {
+          setDocuments(JSON.parse(storedData));
+        } catch {
+          setDocuments([]);
+        }
       } else {
         setDocuments([]); // Start with empty array for a new story
       }
@@ -382,7 +403,7 @@ export default function DocumentsPage() {
     if (!newItemName.trim() || !activeStoryId) return;
 
     const newItem: DocumentItem = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: newItemName.trim(),
       type: newItemType,
       lastModified: new Date().toISOString(),
@@ -405,11 +426,16 @@ export default function DocumentsPage() {
   };
 
   const handleDeleteItem = (id: string) => {
-    setDocuments(prevDocs => {
-      const updatedDocs = deleteItemRecursive(prevDocs, id);
-      saveDocuments(updatedDocs);
-      return updatedDocs;
-    });
+    const itemToDelete = findItem(documents, id);
+    const updatedDocs = deleteItemRecursive(documents, id);
+    setDocuments(updatedDocs);
+    if (activeStoryId && user) {
+      localStorage.setItem(documentsStorageKey, JSON.stringify(updatedDocs));
+      if (itemToDelete && (itemToDelete.type === 'file' || itemToDelete.type === 'scene')) {
+        const editorKey = getEditorContentKey(activeStoryId, id, user.uid);
+        storage.removeItem(editorKey);
+      }
+    }
   };
 
   const handleOpenDetailsDialog = (item: DocumentItem) => {
@@ -486,7 +512,7 @@ export default function DocumentsPage() {
         const wordCount = htmlContent.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
 
         const newDoc: DocumentItem = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           name: file.name.replace(/\.docx$/, ''),
           type: 'file',
           lastModified: new Date().toISOString(),
@@ -626,7 +652,12 @@ export default function DocumentsPage() {
             <CardTitle>{t('documents.list_title')}</CardTitle>
             <div className="relative w-full md:max-w-xs">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t('common.search_placeholder')} className="pl-8" />
+              <Input
+                placeholder={t('common.search_placeholder')}
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
           <CardDescription>
@@ -634,7 +665,33 @@ export default function DocumentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {documents.length > 0 ? (
+          {filteredDocuments ? (
+            filteredDocuments.length > 0 ? (
+              <div className="border-t">
+                {filteredDocuments.map(item => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 p-3 border-b hover:bg-secondary/50 cursor-pointer"
+                    onClick={() => handleOpenDetailsDialog(item)}
+                  >
+                    {item.type === 'folder' ? (
+                      <FolderIcon className="h-4 w-4 text-primary shrink-0" />
+                    ) : item.type === 'chapter' ? (
+                      <BookCopy className="h-4 w-4 text-primary shrink-0" />
+                    ) : (
+                      <FileTextIcon className="h-4 w-4 text-primary shrink-0" />
+                    )}
+                    <span className="text-sm font-medium">{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <Search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">{t('common.search_placeholder')}</p>
+              </div>
+            )
+          ) : documents.length > 0 ? (
              <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="documents-droppable" type="DOCUMENT">
                 {(provided, snapshot) => (
