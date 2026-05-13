@@ -39,6 +39,10 @@ export default function SignupPage() {
       toast({ title: t('signup.toast.password_mismatch_title'), description: t('signup.toast.password_mismatch_desc'), variant: "destructive" });
       return;
     }
+    if (password.length < 8) {
+      toast({ title: t('signup.toast.password_too_short_title'), description: t('signup.toast.password_too_short_desc'), variant: "destructive" });
+      return;
+    }
     setIsLoading(true);
     await signup(email, password, inviteCode);
     setIsLoading(false);

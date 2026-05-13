@@ -84,19 +84,19 @@ export default function LoginPage() {
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center"><Separator /></div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or</span>
+              <span className="bg-background px-2 text-muted-foreground">{t('login.or')}</span>
             </div>
           </div>
           <Button type="button" variant="outline" className="w-full" onClick={loginWithGoogle} disabled={isLoading}>
-            Continue with Google
+            {t('login.continue_with_google')}
           </Button>
         </CardContent>
          <CardFooter className="flex-col space-y-4">
             <Separator />
             <p className="text-sm text-muted-foreground">
-                Don't have an account?{' '}
+                {t('login.no_account')}{' '}
                 <Link href="/signup" className="font-semibold text-primary hover:underline">
-                    Sign up
+                    {t('login.sign_up')}
                 </Link>
             </p>
         </CardFooter>

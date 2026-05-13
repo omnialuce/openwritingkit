@@ -1,7 +1,7 @@
 // src/app/(app)/characters/page.tsx
 'use client';
 
-import React, { useState, useEffect, FormEvent, useRef } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, PlusCircle, Edit, Trash2, FileImage, AlertTriangle, FileText, Network, Download, Loader2 } from 'lucide-react';
+import { Users, PlusCircle, Edit, Trash2, AlertTriangle, FileText, Network, Download, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStoryContext, getCharactersStorageKey } from '@/contexts/StoryContext';
 import Link from 'next/link';
@@ -53,8 +53,6 @@ export default function CharactersPage() {
   const [backstory, setBackstory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imageHint, setImageHint] = useState('');
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (activeStoryId && user) {

@@ -14,9 +14,10 @@ import Typography from '@tiptap/extension-typography';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Save, Download, Trash2, Palette, Sun, Moon, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, Pilcrow, CaseSensitive, Type, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon } from 'lucide-react';
+import { Save, Download, Trash2, Palette, Upload, Expand, Minimize, Play, Pause, RotateCcw, TimerIcon, Sparkles, Loader2, X, AlertTriangle, FileUp, FolderOpen, XCircle, CaseSensitive, History, Undo, Bold, Italic, Strikethrough, Link as LinkIcon } from 'lucide-react';
 import useAutosave, { type VersionHistoryEntry } from '@/hooks/useAutosave';
 import { EditorToolbar } from './EditorToolbar';
 import {
@@ -128,6 +129,16 @@ export function WritingArea() {
   
   const [isSaveToDocDialogOpen, setIsSaveToDocDialogOpen] = useState(false);
   const [newDocFilename, setNewDocFilename] = useState('');
+
+  // Link dialog
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
+
+  // Revert version confirm dialog
+  const [pendingRevertVersion, setPendingRevertVersion] = useState<VersionHistoryEntry<string> | null>(null);
+
+  // Clear content confirm dialog
+  const [clearContentDialogOpen, setClearContentDialogOpen] = useState(false);
 
   // Find & Replace
   const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
@@ -643,11 +654,16 @@ export function WritingArea() {
     };
 
     const handleRevertVersion = (version: VersionHistoryEntry<string>) => {
-      if (editor && confirm(t('editor.history.revert_confirm'))) {
-        setSavedContent(version.text);
-        editor.commands.setContent(version.text, true);
+      setPendingRevertVersion(version);
+    };
+
+    const confirmRevertVersion = () => {
+      if (editor && pendingRevertVersion) {
+        setSavedContent(pendingRevertVersion.text);
+        editor.commands.setContent(pendingRevertVersion.text, true);
         toast({ title: t('editor.history.revert_success_title'), description: t('editor.history.revert_success_desc') });
         setSelectedHistoryVersion(null);
+        setPendingRevertVersion(null);
       }
     };
 
@@ -790,6 +806,7 @@ export function WritingArea() {
             size="icon"
             onClick={toggleFullScreen}
             title={t('editor.exit_focus_mode')}
+            aria-label={t('editor.exit_focus_mode')}
             >
             <Minimize className="h-5 w-5" />
             </Button>
@@ -809,7 +826,7 @@ export function WritingArea() {
             <Toggle size="sm" pressed={editor.isActive('bold')} onPressedChange={() => editor.chain().focus().toggleBold().run()}><Bold className="h-4 w-4" /></Toggle>
             <Toggle size="sm" pressed={editor.isActive('italic')} onPressedChange={() => editor.chain().focus().toggleItalic().run()}><Italic className="h-4 w-4" /></Toggle>
             <Toggle size="sm" pressed={editor.isActive('strike')} onPressedChange={() => editor.chain().focus().toggleStrike().run()}><Strikethrough className="h-4 w-4" /></Toggle>
-            <Toggle size="sm" pressed={editor.isActive('link')} onPressedChange={() => { const url = window.prompt('URL'); if(url) {editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()}}}><LinkIcon className="h-4 w-4" /></Toggle>
+            <Toggle size="sm" pressed={editor.isActive('link')} onPressedChange={() => { setLinkUrl(editor.getAttributes('link').href || ''); setLinkDialogOpen(true); }}><LinkIcon className="h-4 w-4" /></Toggle>
           </BubbleMenu>
           
             <div className="flex items-center justify-between p-1 border-b border-border flex-wrap">
@@ -834,19 +851,19 @@ export function WritingArea() {
                      </Button>
                   )}
 
-                  <Button variant="ghost" size="icon" title={t('editor.save_button_title')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" title={t('editor.save_button_title')} aria-label={t('editor.save_button_title')} disabled={!activeStoryId}>
                     <Save className={cn("h-5 w-5", isSaving ? "animate-pulse text-primary" : "text-muted-foreground")} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title={t('editor.save_as_new_button_title')} disabled={!activeStoryId || activeDocumentId !== null}>
+                  <Button variant="ghost" size="icon" onClick={() => setIsSaveToDocDialogOpen(true)} title={t('editor.save_as_new_button_title')} aria-label={t('editor.save_as_new_button_title')} disabled={!activeStoryId || activeDocumentId !== null}>
                     <FileUp className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <input type="file" ref={fileInputRef} onChange={handleFileImport} accept=".txt,.html,.md,.docx" style={{ display: 'none' }} />
-                  <Button variant="ghost" size="icon" onClick={handleImportClick} title={t('editor.import_button_title')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={handleImportClick} title={t('editor.import_button_title')} aria-label={t('editor.import_button_title')} disabled={!activeStoryId}>
                     <Upload className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title={t('editor.export_button_title')} disabled={!activeStoryId}>
+                      <Button variant="ghost" size="icon" title={t('editor.export_button_title')} aria-label={t('editor.export_button_title')} disabled={!activeStoryId}>
                         <Download className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -857,12 +874,12 @@ export function WritingArea() {
                       <DropdownMenuItem onClick={handleExportDOCX} disabled={!activeStoryId}>{t('editor.export_docx')}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId && confirm(t('editor.clear_content_confirm'))) { editor?.commands.clearContent(true); if(!activeDocumentId) clearSavedContent();} }} title={t('editor.clear_content_button_title')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={() => { if(activeStoryId) setClearContentDialogOpen(true); }} title={t('editor.clear_content_button_title')} aria-label={t('editor.clear_content_button_title')} disabled={!activeStoryId}>
                     <Trash2 className="h-5 w-5 text-destructive" />
                   </Button>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                       <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={!activeStoryId || isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-disabled={!activeStoryId || !aiFeaturesEnabled || !isMounted}>
+                       <Button variant="ghost" size="icon" onClick={handleGetFeedback} disabled={!activeStoryId || isFetchingFeedback || !aiFeaturesEnabled || !isMounted} aria-label={t('editor.tooltip_get_feedback')} aria-disabled={!activeStoryId || !aiFeaturesEnabled || !isMounted}>
                         {isFetchingFeedback ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className={cn("h-5 w-5", activeStoryId && aiFeaturesEnabled && isMounted ? "text-muted-foreground" : "text-muted-foreground/50")} />}
                       </Button>
                     </TooltipTrigger>
@@ -870,17 +887,17 @@ export function WritingArea() {
                       <p>{!activeStoryId ? t('editor.tooltip_no_story') : (aiFeaturesEnabled && isMounted ? t('editor.tooltip_get_feedback') : t('editor.tooltip_ai_disabled'))}</p>
                     </TooltipContent>
                   </Tooltip>
-                  <Button variant="ghost" size="icon" onClick={() => setIsFindReplaceOpen(v => !v)} title={t('editor.find_replace.title')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={() => setIsFindReplaceOpen(v => !v)} title={t('editor.find_replace.title')} aria-label={t('editor.find_replace.title')} disabled={!activeStoryId}>
                     <CaseSensitive className={cn("h-5 w-5", !activeStoryId ? "text-muted-foreground/50" : "text-muted-foreground")} />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => { setIsHistoryPanelOpen(!isHistoryPanelOpen); setIsFeedbackPanelOpen(false); }} title={t('editor.history.title')} disabled={!activeDocumentId}>
+                  <Button variant="ghost" size="icon" onClick={() => { setIsHistoryPanelOpen(!isHistoryPanelOpen); setIsFeedbackPanelOpen(false); }} title={t('editor.history.title')} aria-label={t('editor.history.title')} disabled={!activeDocumentId}>
                       <History className={cn("h-5 w-5", !activeDocumentId ? "text-muted-foreground/50" : "text-muted-foreground")}/>
                   </Button>
                 </div>
                 <div className="flex items-center gap-0.5 md:gap-1 flex-wrap">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" title={t('editor.customize_view_title')}>
+                      <Button variant="ghost" size="icon" title={t('editor.customize_view_title')} aria-label={t('editor.customize_view_title')}>
                         <Palette className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -919,14 +936,14 @@ export function WritingArea() {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? t('editor.pause_session') : t('editor.start_session')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={handleTimerToggle} title={isTimerRunning ? t('editor.pause_session') : t('editor.start_session')} aria-label={isTimerRunning ? t('editor.pause_session') : t('editor.start_session')} disabled={!activeStoryId}>
                     {isTimerRunning ? <Pause className="h-5 w-5 text-muted-foreground" /> : <Play className="h-5 w-5 text-muted-foreground" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title={t('editor.reset_session')} disabled={!activeStoryId || (sessionTime === 0 && !isTimerRunning)}>
+                  <Button variant="ghost" size="icon" onClick={handleTimerReset} title={t('editor.reset_session')} aria-label={t('editor.reset_session')} disabled={!activeStoryId || (sessionTime === 0 && !isTimerRunning)}>
                     <RotateCcw className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   <span className="text-xs md:text-sm text-muted-foreground min-w-[60px] md:min-w-[70px] text-center px-1"><TimerIcon className="inline h-4 w-4 mr-0.5 md:mr-1" />{formatTime(sessionTime)}</span>
-                  <Button variant="ghost" size="icon" onClick={toggleFullScreen} title={t('editor.full_screen_mode')} disabled={!activeStoryId}>
+                  <Button variant="ghost" size="icon" onClick={toggleFullScreen} title={t('editor.full_screen_mode')} aria-label={t('editor.full_screen_mode')} disabled={!activeStoryId}>
                     <Expand className="h-5 w-5 text-muted-foreground" />
                   </Button>
                   
@@ -1069,6 +1086,88 @@ export function WritingArea() {
             </form>
         </DialogContent>
       </Dialog>
+
+      {/* Link insertion dialog */}
+      <Dialog open={linkDialogOpen} onOpenChange={(open) => { setLinkDialogOpen(open); if (!open) setLinkUrl(''); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('editor.link_dialog.title')}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="link-url" className="sr-only">URL</Label>
+            <Input
+              id="link-url"
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              placeholder="https://"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (linkUrl) {
+                    editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
+                  }
+                  setLinkDialogOpen(false);
+                  setLinkUrl('');
+                }
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">{t('common.cancel')}</Button>
+            </DialogClose>
+            <Button
+              type="button"
+              onClick={() => {
+                if (linkUrl) {
+                  editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
+                }
+                setLinkDialogOpen(false);
+                setLinkUrl('');
+              }}
+            >
+              {t('editor.link_dialog.insert_button')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Revert version confirm dialog */}
+      <AlertDialog open={!!pendingRevertVersion} onOpenChange={(open) => { if (!open) setPendingRevertVersion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('editor.history.revert_confirm_title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('editor.history.revert_confirm')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingRevertVersion(null)}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRevertVersion}>{t('editor.history.revert_button')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Clear content confirm dialog */}
+      <AlertDialog open={clearContentDialogOpen} onOpenChange={setClearContentDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('editor.clear_content_confirm_title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('editor.clear_content_confirm')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                editor?.commands.clearContent(true);
+                if (!activeDocumentId) clearSavedContent();
+                setClearContentDialogOpen(false);
+              }}
+            >
+              {t('editor.clear_content_button_title')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </TooltipProvider>
   );
 }

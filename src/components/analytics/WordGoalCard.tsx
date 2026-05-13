@@ -71,16 +71,17 @@ export function WordGoalCard() {
   useEffect(() => {
     setIsMounted(true);
     if (activeStoryId && user?.uid) {
-      const savedGoal = localStorage.getItem(wordGoalStorageKey);
-      if (savedGoal) {
-        const numGoal = parseInt(savedGoal, 10);
-        setGoal(numGoal);
-        setInputValue(numGoal.toString());
-      } else {
-        setGoal(50000);
-        setInputValue("50000");
-      }
-      updateCurrentWords(); 
+      storage.getItem<string>(wordGoalStorageKey).then(savedGoal => {
+        if (savedGoal) {
+          const numGoal = parseInt(savedGoal, 10);
+          setGoal(numGoal);
+          setInputValue(numGoal.toString());
+        } else {
+          setGoal(50000);
+          setInputValue("50000");
+        }
+      });
+      updateCurrentWords();
     } else if (!activeStoryId) {
       setGoal(50000);
       setInputValue("50000");
@@ -124,10 +125,10 @@ export function WordGoalCard() {
     const numValue = parseInt(inputValue, 10);
     if (!isNaN(numValue) && numValue > 0) {
       setGoal(numValue);
-      localStorage.setItem(wordGoalStorageKey, numValue.toString());
+      storage.setItem(wordGoalStorageKey, numValue.toString());
       setIsEditingGoal(false);
     } else {
-      setInputValue(goal.toString()); 
+      setInputValue(goal.toString());
     }
   };
 

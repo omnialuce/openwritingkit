@@ -46,7 +46,11 @@
     "password_label": "Password",
     "show_password": "Show password",
     "hide_password": "Hide password",
-    "sign_in_button": "Sign In"
+    "sign_in_button": "Sign In",
+    "or": "or",
+    "no_account": "Don't have an account?",
+    "sign_up": "Sign up",
+    "continue_with_google": "Continue with Google"
   },
   "signup": {
     "title": "Create an Account",
@@ -67,7 +71,9 @@
       "password_mismatch_desc": "Your passwords do not match.",
       "signup_successful_title": "Sign Up Successful",
       "signup_successful_desc": "Please log in with your new account.",
-      "signup_failed_title": "Sign Up Failed"
+      "signup_failed_title": "Sign Up Failed",
+      "password_too_short_title": "Password Too Short",
+      "password_too_short_desc": "Password must be at least 8 characters long."
     }
   },
   "auth": {
@@ -922,6 +928,7 @@
     "export_docx": "Export as DOCX",
     "export_pdf": "Export as PDF",
     "clear_content_button_title": "Clear Content",
+    "clear_content_confirm_title": "Clear all content?",
     "clear_content_confirm": "Are you sure you want to clear all content? This action cannot be undone.",
     "focus_mode": "Focus Mode",
     "exit_focus_mode": "Exit Focus Mode",
@@ -1005,7 +1012,8 @@
       "revert_button": "Revert to this version",
       "revert_confirm": "Are you sure you want to revert to this version? The current content will be overwritten, but will be saved in the history.",
       "revert_success_title": "Version Reverted",
-      "revert_success_desc": "The document has been reverted to the selected version."
+      "revert_success_desc": "The document has been reverted to the selected version.",
+      "revert_confirm_title": "Revert to this version?"
     },
     "export_md": "Export as Markdown",
     "find_replace": {
@@ -1016,7 +1024,12 @@
       "replace_all": "Replace All",
       "replaced_title": "Replacements made",
       "replaced_desc": "{count} occurrence(s) replaced."
-    }
+    },
+    "link_dialog": {
+      "title": "Insert Link",
+      "insert_button": "Insert"
+    },
+    "clear_content_confirm_title": "Clear all content?"
   },
   "outline": {
     "title": "Outline Builder",

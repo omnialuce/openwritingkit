@@ -6,13 +6,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Edit3, Save, Trash2 } from 'lucide-react';
+import { CalendarIcon, Edit3, Trash2 } from 'lucide-react';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
 import { useStoryContext, getDeadlineKey } from '@/contexts/StoryContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { storage } from '@/lib/storage';
 
 export function DeadlineCard() {
   const { t } = useLanguage();
@@ -24,18 +25,23 @@ export function DeadlineCard() {
 
   const [deadline, setDeadline] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     if (deadlineStorageKey) {
-      const savedDeadline = localStorage.getItem(deadlineStorageKey);
-      if (savedDeadline) {
-        setDeadline(new Date(savedDeadline));
-      } else {
-        setDeadline(null);
-      }
+      storage.getItem<string>(deadlineStorageKey).then(savedDeadline => {
+        if (savedDeadline) {
+          const date = new Date(savedDeadline);
+          if (isNaN(date.getTime())) {
+            setDeadline(null);
+          } else {
+            setDeadline(date);
+          }
+        } else {
+          setDeadline(null);
+        }
+      });
     } else {
       setDeadline(null);
     }
@@ -77,7 +83,7 @@ export function DeadlineCard() {
     if (!deadlineStorageKey) return;
     if (date) {
         setDeadline(date);
-        localStorage.setItem(deadlineStorageKey, date.toISOString());
+        storage.setItem(deadlineStorageKey, date.toISOString());
         toast({ title: t('word_goal.toast.deadline_set_title'), description: `${t('word_goal.toast.deadline_set_desc')} ${format(date, 'PPP')}.` });
     }
   };
@@ -85,7 +91,7 @@ export function DeadlineCard() {
   const handleRemoveDeadline = () => {
     if (!deadlineStorageKey) return;
     setDeadline(null);
-    localStorage.removeItem(deadlineStorageKey);
+    storage.removeItem(deadlineStorageKey);
     toast({ title: t('word_goal.toast.deadline_removed_title') });
   };
   

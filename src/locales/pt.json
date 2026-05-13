@@ -46,7 +46,11 @@
     "password_label": "Senha",
     "show_password": "Mostrar senha",
     "hide_password": "Ocultar senha",
-    "sign_in_button": "Entrar"
+    "sign_in_button": "Entrar",
+    "or": "ou",
+    "no_account": "Não tem uma conta?",
+    "sign_up": "Cadastrar-se",
+    "continue_with_google": "Continuar com o Google"
   },
   "signup": {
     "title": "Criar uma Conta",
@@ -67,7 +71,9 @@
       "password_mismatch_desc": "Suas senhas não são iguais.",
       "signup_successful_title": "Cadastro Realizado com Sucesso",
       "signup_successful_desc": "Por favor, faça login com sua nova conta.",
-      "signup_failed_title": "Falha no Cadastro"
+      "signup_failed_title": "Falha no Cadastro",
+      "password_too_short_title": "Senha Muito Curta",
+      "password_too_short_desc": "A senha deve ter pelo menos 8 caracteres."
     }
   },
   "auth": {
@@ -1008,7 +1014,8 @@
       "revert_button": "Reverter para esta versão",
       "revert_confirm": "Tem certeza de que deseja reverter para esta versão? O conteúdo atual será sobrescrito, mas será salvo no histórico.",
       "revert_success_title": "Versão Revertida",
-      "revert_success_desc": "O documento foi revertido para a versão selecionada."
+      "revert_success_desc": "O documento foi revertido para a versão selecionada.",
+      "revert_confirm_title": "Reverter para esta versão?"
     },
     "export_md": "Exportar como Markdown",
     "find_replace": {
@@ -1019,7 +1026,12 @@
       "replace_all": "Substituir Tudo",
       "replaced_title": "Substituições realizadas",
       "replaced_desc": "{count} ocorrência(s) substituída(s)."
-    }
+    },
+    "link_dialog": {
+      "title": "Inserir link",
+      "insert_button": "Inserir"
+    },
+    "clear_content_confirm_title": "Limpar todo o conteúdo?"
   },
   "outline": {
     "title": "Construtor de Estrutura",
